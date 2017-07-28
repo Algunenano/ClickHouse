@@ -16,31 +16,69 @@ namespace ErrorCodes
 }
 
 
-RemoteBlockInputStream::RemoteBlockInputStream(Connection & connection_, const String & query_,
-    const Settings * settings_, const Context & context_, ThrottlerPtr throttler_,
-    const Tables & external_tables_, QueryProcessingStage::Enum stage_)
-    : connection(&connection_), query(query_), throttler(throttler_), external_tables(external_tables_),
-    stage(stage_), context(context_)
+RemoteBlockInputStream::RemoteBlockInputStream(
+        Connection & connection,
+        const String & query_, const Settings * settings, const Context & context_,
+        const ThrottlerPtr & throttler, const Tables & external_tables_, QueryProcessingStage::Enum stage_)
+    : query(query_), context(context_), external_tables(external_tables_), stage(stage_)
 {
-    init(settings_);
+    init(settings);
+
+    create_multiplexed_connections = [this, &connection, throttler]()
+    {
+        Settings * settings = send_settings ? &context.getSettingsRef() : nullptr;
+        return std::make_unique<MultiplexedConnections>(connection, settings, throttler);
+    };
 }
 
-RemoteBlockInputStream::RemoteBlockInputStream(const ConnectionPoolWithFailoverPtr & pool_, const String & query_,
-    const Settings * settings_, const Context & context_, ThrottlerPtr throttler_,
-    const Tables & external_tables_, QueryProcessingStage::Enum stage_)
-    : pool(pool_), query(query_), throttler(throttler_), external_tables(external_tables_),
-    stage(stage_), context(context_)
+RemoteBlockInputStream::RemoteBlockInputStream(
+        std::vector<IConnectionPool::Entry> && connections,
+        const String & query_, const Settings * settings, const Context & context_,
+        const ThrottlerPtr & throttler, const Tables & external_tables_, QueryProcessingStage::Enum stage_)
+    : query(query_), context(context_), external_tables(external_tables_), stage(stage_)
 {
-    init(settings_);
+    init(settings);
+
+    create_multiplexed_connections = [this, connections, throttler]() mutable
+    {
+        const Settings * settings = send_settings ? &context.getSettingsRef() : nullptr;
+        return std::make_unique<MultiplexedConnections>(
+                std::move(connections), settings, throttler, append_extra_info);
+    };
 }
 
-RemoteBlockInputStream::RemoteBlockInputStream(ConnectionPoolWithFailoverPtrs && pools_, const String & query_,
-    const Settings * settings_, const Context & context_, ThrottlerPtr throttler_,
-    const Tables & external_tables_, QueryProcessingStage::Enum stage_)
-    : pools(std::move(pools_)), query(query_), throttler(throttler_), external_tables(external_tables_),
-    stage(stage_), context(context_)
+RemoteBlockInputStream::RemoteBlockInputStream(
+        const ConnectionPoolWithFailoverPtr & pool,
+        const String & query_, const Settings * settings, const Context & context_,
+        const ThrottlerPtr & throttler, const Tables & external_tables_, QueryProcessingStage::Enum stage_)
+    : query(query_), context(context_), external_tables(external_tables_), stage(stage_)
 {
-    init(settings_);
+    init(settings);
+
+    create_multiplexed_connections = [this, pool, throttler]()
+    {
+        const Settings * settings = send_settings ? &context.getSettingsRef() : nullptr;
+        const QualifiedTableName * main_table_ptr = main_table ? &main_table.value() : nullptr;
+        return std::make_unique<MultiplexedConnections>(
+                *pool, settings, throttler, append_extra_info, pool_mode, main_table_ptr);
+    };
+}
+
+RemoteBlockInputStream::RemoteBlockInputStream(
+        ConnectionPoolWithFailoverPtrs && pools,
+        const String & query_, const Settings * settings, const Context & context_,
+        const ThrottlerPtr & throttler, const Tables & external_tables_, QueryProcessingStage::Enum stage_)
+    : query(query_), context(context_), external_tables(external_tables_), stage(stage_)
+{
+    init(settings);
+
+    create_multiplexed_connections = [this, pools, throttler]()
+    {
+        const Settings * settings = send_settings ? &context.getSettingsRef() : nullptr;
+        const QualifiedTableName * main_table_ptr = main_table ? &main_table.value() : nullptr;
+        return std::make_unique<MultiplexedConnections>(
+                pools, settings, throttler, append_extra_info, pool_mode, main_table_ptr);
+    };
 }
 
 RemoteBlockInputStream::~RemoteBlockInputStream()
@@ -222,25 +260,6 @@ void RemoteBlockInputStream::readSuffixImpl()
     }
 }
 
-void RemoteBlockInputStream::createMultiplexedConnections()
-{
-    Settings * multiplexed_connections_settings = send_settings ? &context.getSettingsRef() : nullptr;
-    const QualifiedTableName * main_table_ptr = main_table ? &main_table.value() : nullptr;
-    if (connection != nullptr)
-        multiplexed_connections = std::make_unique<MultiplexedConnections>(
-                connection, multiplexed_connections_settings, throttler);
-    else if (pool != nullptr)
-        multiplexed_connections = std::make_unique<MultiplexedConnections>(
-                *pool, multiplexed_connections_settings, throttler,
-                append_extra_info, pool_mode, main_table_ptr);
-    else if (!pools.empty())
-        multiplexed_connections = std::make_unique<MultiplexedConnections>(
-                pools, multiplexed_connections_settings, throttler,
-                append_extra_info, pool_mode, main_table_ptr);
-    else
-        throw Exception("Internal error", ErrorCodes::LOGICAL_ERROR);
-}
-
 void RemoteBlockInputStream::init(const Settings * settings)
 {
     if (settings)
@@ -254,7 +273,7 @@ void RemoteBlockInputStream::init(const Settings * settings)
 
 void RemoteBlockInputStream::sendQuery()
 {
-    createMultiplexedConnections();
+    multiplexed_connections = create_multiplexed_connections();
 
     if (context.getSettingsRef().skip_unavailable_shards && 0 == multiplexed_connections->size())
         return;

@@ -12,12 +12,10 @@ namespace ErrorCodes
 }
 
 
-MultiplexedConnections::MultiplexedConnections(Connection * connection_, const Settings * settings_, ThrottlerPtr throttler_)
+MultiplexedConnections::MultiplexedConnections(
+        Connection & connection, const Settings * settings_, const ThrottlerPtr & throttler_)
     : settings(settings_), throttler(throttler_), supports_parallel_execution(false)
 {
-    if (connection_ == nullptr)
-        throw Exception("Invalid connection specified", ErrorCodes::LOGICAL_ERROR);
-
     active_connection_total_count = 1;
 
     ShardState shard_state;
@@ -30,20 +28,31 @@ MultiplexedConnections::MultiplexedConnections(Connection * connection_, const S
     replica_state.connection_index = 0;
     replica_state.shard_state = &shard_states[0];
 
-    connection_->setThrottler(throttler);
-    connections.push_back(connection_);
+    connection.setThrottler(throttler);
+    connections.push_back(&connection);
 
-    auto res = replica_map.emplace(connections[0]->socket.impl()->sockfd(), replica_state);
-    if (!res.second)
-        throw Exception("Invalid set of connections", ErrorCodes::LOGICAL_ERROR);
+    replica_map.emplace(connections[0]->socket.impl()->sockfd(), replica_state);
 }
 
 MultiplexedConnections::MultiplexedConnections(
-        ConnectionPoolWithFailover & pool_, const Settings * settings_, ThrottlerPtr throttler_,
-        bool append_extra_info, PoolMode pool_mode_, const QualifiedTableName * main_table)
-    : settings(settings_), throttler(throttler_), pool_mode(pool_mode_)
+        std::vector<IConnectionPool::Entry> && connections,
+        const Settings * settings_, const ThrottlerPtr & throttler_, bool append_extra_info)
+    : settings(settings_), throttler(throttler_)
 {
-    initFromShard(pool_, main_table);
+    initShard(connections);
+    registerShards();
+
+    if (append_extra_info)
+        block_extra_info = std::make_unique<BlockExtraInfo>();
+}
+
+MultiplexedConnections::MultiplexedConnections(
+        ConnectionPoolWithFailover & pool,
+        const Settings * settings_, const ThrottlerPtr & throttler_, bool append_extra_info,
+        PoolMode pool_mode, const QualifiedTableName * main_table)
+    : settings(settings_), throttler(throttler_)
+{
+    initShard(pool, pool_mode, main_table);
     registerShards();
 
     supports_parallel_execution = active_connection_total_count > 1;
@@ -53,18 +62,18 @@ MultiplexedConnections::MultiplexedConnections(
 }
 
 MultiplexedConnections::MultiplexedConnections(
-        const ConnectionPoolWithFailoverPtrs & pools_, const Settings * settings_, ThrottlerPtr throttler_,
-        bool append_extra_info, PoolMode pool_mode_, const QualifiedTableName * main_table)
-    : settings(settings_), throttler(throttler_), pool_mode(pool_mode_)
+        const ConnectionPoolWithFailoverPtrs & pools, const Settings * settings_, const ThrottlerPtr & throttler_,
+        bool append_extra_info, PoolMode pool_mode, const QualifiedTableName * main_table)
+    : settings(settings_), throttler(throttler_)
 {
-    if (pools_.empty())
+    if (pools.empty())
         throw Exception("Pools are not specified", ErrorCodes::LOGICAL_ERROR);
 
-    for (auto & pool : pools_)
+    for (auto & pool : pools)
     {
         if (!pool)
             throw Exception("Invalid pool specified", ErrorCodes::LOGICAL_ERROR);
-        initFromShard(*pool, main_table);
+        initShard(*pool, pool_mode, main_table);
     }
 
     registerShards();
@@ -243,7 +252,7 @@ Connection::Packet MultiplexedConnections::drain()
 
             case Protocol::Server::Exception:
             default:
-                /// If we receive an exception or an unknown package, we save it.
+                /// If we receive an exception or an unknown packet, we save it.
                 res = std::move(packet);
                 break;
         }
@@ -276,27 +285,32 @@ std::string MultiplexedConnections::dumpAddressesUnlocked() const
     return os.str();
 }
 
-void MultiplexedConnections::initFromShard(ConnectionPoolWithFailover & pool, const QualifiedTableName * main_table)
+void MultiplexedConnections::initShard(ConnectionPoolWithFailover & pool, PoolMode pool_mode, const QualifiedTableName * main_table)
 {
-    std::vector<IConnectionPool::Entry> entries;
+    std::vector<IConnectionPool::Entry> connections;
     if (main_table)
-        entries = pool.getManyChecked(settings, pool_mode, *main_table);
+        connections = pool.getManyChecked(settings, pool_mode, *main_table);
     else
-        entries = pool.getMany(settings, pool_mode);
+        connections = pool.getMany(settings, pool_mode);
 
+    initShard(connections);
+}
+
+void MultiplexedConnections::initShard(const std::vector<IConnectionPool::Entry> & connections)
+{
     /// If getMany() did not allocate connections and did not throw exceptions, this means that
     /// `skip_unavailable_shards` was set. Then just return.
-    if (entries.empty())
+    if (connections.empty())
         return;
 
     ShardState shard_state;
-    shard_state.allocated_connection_count = entries.size();
-    shard_state.active_connection_count = entries.size();
+    shard_state.allocated_connection_count = connections.size();
+    shard_state.active_connection_count = connections.size();
     active_connection_total_count += shard_state.active_connection_count;
 
     shard_states.push_back(shard_state);
 
-    pool_entries.insert(pool_entries.end(), entries.begin(), entries.end());
+    pool_entries.insert(pool_entries.end(), connections.begin(), connections.end());
 }
 
 void MultiplexedConnections::registerShards()

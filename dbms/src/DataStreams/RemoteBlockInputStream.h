@@ -21,19 +21,32 @@ class RemoteBlockInputStream : public IProfilingBlockInputStream
 {
 public:
     /// Takes already set connection
-    RemoteBlockInputStream(Connection & connection_, const String & query_, const Settings * settings_,
-        const Context & context_, ThrottlerPtr throttler_ = nullptr, const Tables & external_tables_ = Tables(),
-        QueryProcessingStage::Enum stage_ = QueryProcessingStage::Complete);
+    RemoteBlockInputStream(
+            Connection & connection,
+            const String & query_, const Settings * settings, const Context & context_,
+            const ThrottlerPtr & throttler = nullptr, const Tables & external_tables_ = Tables(),
+            QueryProcessingStage::Enum stage_ = QueryProcessingStage::Complete);
+
+    /// Accepts several connections already taken from pool.
+    RemoteBlockInputStream(
+            std::vector<IConnectionPool::Entry> && connections,
+            const String & query_, const Settings * settings_, const Context & context_,
+            const ThrottlerPtr & throttler = nullptr, const Tables & external_tables_ = Tables(),
+            QueryProcessingStage::Enum stage_ = QueryProcessingStage::Complete);
 
     /// Takes a pool and gets one or several connections from it
-    RemoteBlockInputStream(const ConnectionPoolWithFailoverPtr & pool_, const String & query_, const Settings * settings_,
-        const Context & context_, ThrottlerPtr throttler_ = nullptr, const Tables & external_tables_ = Tables(),
-        QueryProcessingStage::Enum stage_ = QueryProcessingStage::Complete);
+    RemoteBlockInputStream(
+            const ConnectionPoolWithFailoverPtr & pool,
+            const String & query_, const Settings * settings_, const Context & context_,
+            const ThrottlerPtr & throttler = nullptr, const Tables & external_tables_ = Tables(),
+            QueryProcessingStage::Enum stage_ = QueryProcessingStage::Complete);
 
     /// Takes a pool for each shard and gets one or several connections from it
-    RemoteBlockInputStream(ConnectionPoolWithFailoverPtrs && pools_, const String & query_, const Settings * settings_,
-        const Context & context_, ThrottlerPtr throttler_ = nullptr, const Tables & external_tables_ = Tables(),
-        QueryProcessingStage::Enum stage_ = QueryProcessingStage::Complete);
+    RemoteBlockInputStream(
+            ConnectionPoolWithFailoverPtrs && pools,
+            const String & query_, const Settings * settings_, const Context & context_,
+            const ThrottlerPtr & throttler = nullptr, const Tables & external_tables_ = Tables(),
+            QueryProcessingStage::Enum stage_ = QueryProcessingStage::Complete);
 
     ~RemoteBlockInputStream() override;
 
@@ -77,9 +90,6 @@ protected:
 
     void readSuffixImpl() override;
 
-    /// Creates an object to talk to one shard's replicas performing query
-    void createMultiplexedConnections();
-
     /// Returns true if query was sent
     bool isQueryPending() const;
 
@@ -95,25 +105,16 @@ private:
     void tryCancel(const char * reason);
 
 private:
-    /// Already set connection
-    Connection * connection = nullptr;
-
-    /// One shard's connections pool
-    ConnectionPoolWithFailoverPtr pool = nullptr;
-
-    /// Connections pools of one or several shards
-    ConnectionPoolWithFailoverPtrs pools;
+    std::function<std::unique_ptr<MultiplexedConnections>()> create_multiplexed_connections;
 
     std::unique_ptr<MultiplexedConnections> multiplexed_connections;
 
     const String query;
+    Context context;
     bool send_settings;
-    /// If != nullptr, used to limit network trafic
-    ThrottlerPtr throttler;
     /// Temporary tables needed to be sent to remote servers
     Tables external_tables;
     QueryProcessingStage::Enum stage;
-    Context context;
 
     /// Threads for reading from temporary tables and following sending of data
     /// to remote servers for GLOBAL-subqueries

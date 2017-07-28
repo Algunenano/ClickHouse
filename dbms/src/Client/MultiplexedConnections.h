@@ -20,23 +20,31 @@ class MultiplexedConnections final : private boost::noncopyable
 {
 public:
     /// Accepts ready connection.
-    MultiplexedConnections(Connection * connection_, const Settings * settings_, ThrottlerPtr throttler_);
+    MultiplexedConnections(
+            Connection & connection, const Settings * settings_, const ThrottlerPtr & throttler_);
+
+    /** Accepts a vector of connections to replicas of one shard already taken from pool.
+      * If the append_extra_info flag is set, additional information appended to each received block.
+      */
+    MultiplexedConnections(
+            std::vector<IConnectionPool::Entry> && connections,
+            const Settings * settings_, const ThrottlerPtr & throttler_, bool append_extra_info);
 
     /** Accepts a pool from which it will be necessary to get one or more connections.
       * If the append_extra_info flag is set, additional information appended to each received block.
-      * If the get_all_replicas flag is set, all connections are selected.
       */
     MultiplexedConnections(
-            ConnectionPoolWithFailover & pool_, const Settings * settings_, ThrottlerPtr throttler_,
-            bool append_extra_info, PoolMode pool_mode_, const QualifiedTableName * main_table = nullptr);
+            ConnectionPoolWithFailover & pool,
+            const Settings * settings_, const ThrottlerPtr & throttler_, bool append_extra_info,
+            PoolMode pool_mode, const QualifiedTableName * main_table = nullptr);
 
     /** Accepts pools, one for each shard, from which one will need to get one or more connections.
       * If the append_extra_info flag is set, additional information appended to each received block.
-      * If the do_broadcast flag is set, all connections are received.
       */
     MultiplexedConnections(
-            const ConnectionPoolWithFailoverPtrs & pools_, const Settings * settings_, ThrottlerPtr throttler_,
-            bool append_extra_info, PoolMode pool_mode_, const QualifiedTableName * main_table = nullptr);
+            const ConnectionPoolWithFailoverPtrs & pools,
+            const Settings * settings_, const ThrottlerPtr & throttler_, bool append_extra_info,
+            PoolMode pool_mode, const QualifiedTableName * main_table = nullptr);
 
     /// Send all content of external tables to replicas.
     void sendExternalTablesData(std::vector<ExternalTablesData> & data);
@@ -106,7 +114,8 @@ private:
     using ShardStates = std::vector<ShardState>;
 
 private:
-    void initFromShard(ConnectionPoolWithFailover & pool, const QualifiedTableName * main_table);
+    void initShard(ConnectionPoolWithFailover & pool, PoolMode pool_mode, const QualifiedTableName * main_table);
+    void initShard(const std::vector<IConnectionPool::Entry> & connections);
 
     void registerShards();
 
@@ -155,8 +164,6 @@ private:
     bool sent_query = false;
 
     bool cancelled = false;
-
-    PoolMode pool_mode = PoolMode::GET_MANY;
 
     /// A mutex for the sendCancel function to execute safely
     /// in separate thread.
