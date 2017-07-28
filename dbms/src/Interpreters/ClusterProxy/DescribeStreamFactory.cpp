@@ -10,8 +10,6 @@ namespace DB
 namespace
 {
 
-constexpr PoolMode pool_mode = PoolMode::GET_ALL;
-
 BlockExtraInfo toBlockExtraInfo(const Cluster::Address & address)
 {
     BlockExtraInfo block_extra_info;
@@ -28,46 +26,32 @@ BlockExtraInfo toBlockExtraInfo(const Cluster::Address & address)
 namespace ClusterProxy
 {
 
-BlockInputStreamPtr DescribeStreamFactory::createLocal(const ASTPtr & query_ast, const Context & context, const Cluster::Address & address)
+BlockInputStreamPtr DescribeStreamFactory::create(
+        const Cluster::ShardInfo & shard_info,
+        const String & query, const ASTPtr & query_ast, const Context & context,
+        const ThrottlerPtr & throttler)
 {
-    InterpreterDescribeQuery interpreter{query_ast, context};
-    BlockInputStreamPtr stream = interpreter.execute().in;
+    if (shard_info.isLocal())
+    {
+        InterpreterDescribeQuery interpreter{query_ast, context};
+        BlockInputStreamPtr stream = interpreter.execute().in;
 
-    /** Materialization is needed, since from remote servers the constants come materialized.
-      * If you do not do this, different types (Const and non-Const) columns will be produced in different threads,
-      * And this is not allowed, since all code is based on the assumption that in the block stream all types are the same.
-      */
-    BlockInputStreamPtr materialized_stream = std::make_shared<MaterializingBlockInputStream>(stream);
-
-    return std::make_shared<BlockExtraInfoInputStream>(materialized_stream, toBlockExtraInfo(address));
+        /** Materialization is needed, since from remote servers the constants come materialized.
+         * If you do not do this, different types (Const and non-Const) columns will be produced in different threads,
+         * And this is not allowed, since all code is based on the assumption that in the block stream all types are the same.
+         */
+        BlockInputStreamPtr materialized_stream = std::make_shared<MaterializingBlockInputStream>(stream);
+        return std::make_shared<BlockExtraInfoInputStream>(materialized_stream, toBlockExtraInfo(shard_info.local_addresses[0]));
+    }
+    else
+    {
+        auto stream = std::make_shared<RemoteBlockInputStream>(
+                shard_info.pool, query, &context.getSettingsRef(), context, throttler);
+        stream->setPoolMode(PoolMode::GET_ALL);
+        stream->appendExtraInfo();
+        return stream;
+    }
 }
 
-BlockInputStreamPtr DescribeStreamFactory::createRemote(
-        const ConnectionPoolWithFailoverPtr & pool, const std::string & query,
-        const Settings & settings, ThrottlerPtr throttler, const Context & context)
-{
-    auto stream = std::make_shared<RemoteBlockInputStream>(pool, query, &settings, context, throttler);
-    stream->setPoolMode(pool_mode);
-    stream->appendExtraInfo();
-    return stream;
 }
-
-BlockInputStreamPtr DescribeStreamFactory::createRemote(
-        ConnectionPoolWithFailoverPtrs && pools, const std::string & query,
-        const Settings & settings, ThrottlerPtr throttler, const Context & context)
-{
-    auto stream =  std::make_shared<RemoteBlockInputStream>(std::move(pools), query, &settings, context, throttler);
-    stream->setPoolMode(pool_mode);
-    stream->appendExtraInfo();
-    return stream;
-}
-
-PoolMode DescribeStreamFactory::getPoolMode() const
-{
-    return pool_mode;
-}
-
-
-}
-
 }

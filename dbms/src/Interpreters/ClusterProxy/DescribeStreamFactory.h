@@ -13,14 +13,10 @@ class DescribeStreamFactory final : public IStreamFactory
 public:
     DescribeStreamFactory() = default;
 
-    BlockInputStreamPtr createLocal(const ASTPtr & query_ast, const Context & context, const Cluster::Address & address) override;
-    BlockInputStreamPtr createRemote(
-            const ConnectionPoolWithFailoverPtr & pool, const std::string & query,
-            const Settings & settings, ThrottlerPtr throttler, const Context & context) override;
-    BlockInputStreamPtr createRemote(
-            ConnectionPoolWithFailoverPtrs && pools, const std::string & query,
-            const Settings & settings, ThrottlerPtr throttler, const Context & context) override;
-    PoolMode getPoolMode() const override;
+    virtual BlockInputStreamPtr create(
+            const Cluster::ShardInfo & shard_info,
+            const String & query, const ASTPtr & query_ast, const Context & context,
+            const ThrottlerPtr & throttler) override;
 };
 
 }

@@ -20,7 +20,7 @@ class ShardWithLocalReplicaBlockInputStream : public IProfilingBlockInputStream
 {
 public:
     ShardWithLocalReplicaBlockInputStream(
-            ASTPtr query_ast_, QualifiedTableName main_table_, Context context_,
+            String query_, ASTPtr query_ast_, QualifiedTableName main_table_, Context context_,
             QueryProcessingStage::Enum to_stage_)
         : query_ast(std::move(query_ast_)), main_table(std::move(main_table_)), context(std::move(context_))
         , to_stage(to_stage_)
@@ -47,10 +47,13 @@ protected:
 private:
     Logger * log = &Logger::get("ShardWithLocalReplicaBlockInputStream");
 
+    String query;
     ASTPtr query_ast;
     QualifiedTableName main_table;
     Context context;
     QueryProcessingStage::Enum to_stage;
+
+    // ConnectionPoolWithFailoverPtr connection_pool;
 
     std::mutex cancel_mutex;
     std::unique_ptr<IProfilingBlockInputStream> impl;

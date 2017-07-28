@@ -9,20 +9,40 @@ namespace ClusterProxy
 
 void ShardWithLocalReplicaBlockInputStream::readPrefix()
 {
-    InterpreterSelectQuery interpreter{query_ast, context, to_stage};
-    BlockInputStreamPtr stream = interpreter.execute().in;
+    bool use_local_replica = true;
 
-    /// Materialization is needed, since from remote servers the constants come materialized.
-    /// If you do not do this, different types (Const and non-Const) columns will be produced in different threads,
-    /// And this is not allowed, since all code is based on the assumption that in the block stream all types are the same.
-    auto materialized_stream = std::make_unique<MaterializingBlockInputStream>(stream);
+    // StoragePtr table = connection_context.tryGetTable(table_name.database, table_name.table);
+    // if (!table)
+    //     use_local_replica = false;
+    // else if
+    // {
+
+    // }
+
+
+    std::unique_ptr<IProfilingBlockInputStream> stream;
+
+    if (use_local_replica)
+    {
+        InterpreterSelectQuery interpreter{query_ast, context, to_stage};
+        BlockInputStreamPtr executed = interpreter.execute().in;
+
+        /// Materialization is needed, since from remote servers the constants come materialized.
+        /// If you do not do this, different types (Const and non-Const) columns will be produced in different threads,
+        /// And this is not allowed, since all code is based on the assumption that in the block stream all types are the same.
+        auto stream = std::make_unique<MaterializingBlockInputStream>(executed);
+    }
+    // else
+    //     stream = std::make_unique(RemoteBlockInputStream>(
+    //                                       std::move(connections), query,
+
 
     std::lock_guard<std::mutex> lock(cancel_mutex);
 
     if (isCancelled())
         return;
 
-    impl = std::move(materialized_stream);
+    impl = std::move(stream);
 
     if (progress_callback)
         impl->setProgressCallback(progress_callback);
