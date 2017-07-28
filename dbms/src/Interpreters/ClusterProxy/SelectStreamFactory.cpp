@@ -1,7 +1,6 @@
 #include <Interpreters/ClusterProxy/SelectStreamFactory.h>
-#include <Interpreters/InterpreterSelectQuery.h>
+#include <Interpreters/ClusterProxy/ShardWithLocalReplicaBlockInputStream.h>
 #include <DataStreams/RemoteBlockInputStream.h>
-#include <DataStreams/MaterializingBlockInputStream.h>
 
 namespace DB
 {
@@ -28,14 +27,7 @@ SelectStreamFactory::SelectStreamFactory(
 
 BlockInputStreamPtr SelectStreamFactory::createLocal(const ASTPtr & query_ast, const Context & context, const Cluster::Address & address)
 {
-    InterpreterSelectQuery interpreter{query_ast, context, processed_stage};
-    BlockInputStreamPtr stream = interpreter.execute().in;
-
-    /** Materialization is needed, since from remote servers the constants come materialized.
-      * If you do not do this, different types (Const and non-Const) columns will be produced in different threads,
-      * And this is not allowed, since all code is based on the assumption that in the block stream all types are the same.
-      */
-    return std::make_shared<MaterializingBlockInputStream>(stream);
+    return std::make_shared<ShardWithLocalReplicaBlockInputStream>(query_ast, main_table, context, processed_stage);
 }
 
 BlockInputStreamPtr SelectStreamFactory::createRemote(
