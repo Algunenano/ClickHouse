@@ -16,6 +16,7 @@
 #include <Common/CurrentThread.h>
 #include <Common/MemoryTracker.h>
 #include <Common/ThreadPool.h>
+#include <Common/ThreadProfileEvents.h>
 #include <Common/ThreadStatus.h>
 #include <Common/checkStackSize.h>
 #include <Common/setThreadName.h>
@@ -320,9 +321,14 @@ void PushingToViewsBlockOutputStream::flush()
 void PushingToViewsBlockOutputStream::process(const Block & block, ViewInfo & view)
 {
     Stopwatch watch;
-    auto * source_thread = current_thread; // Change thread context to store individual metrics per view
+    // Change thread context to store individual metrics per view
+    auto * source_thread = current_thread;
     current_thread = view.runtime_stats.thread_status.get();
-    SCOPE_EXIT({ current_thread = source_thread; });
+    *current_thread->last_rusage = RUsageCounters::current();
+    SCOPE_EXIT({
+        current_thread->updatePerformanceCounters();
+        current_thread = source_thread;
+    });
 
     try
     {
@@ -390,9 +396,14 @@ void PushingToViewsBlockOutputStream::process(const Block & block, ViewInfo & vi
 void PushingToViewsBlockOutputStream::process_prefix(ViewInfo & view)
 {
     Stopwatch watch;
-    auto * source_thread = current_thread; // Change thread context to store individual metrics per view
+    // Change thread context to store individual metrics per view
+    auto * source_thread = current_thread;
     current_thread = view.runtime_stats.thread_status.get();
-    SCOPE_EXIT({ current_thread = source_thread; });
+    *current_thread->last_rusage = RUsageCounters::current();
+    SCOPE_EXIT({
+        current_thread->updatePerformanceCounters();
+        current_thread = source_thread;
+    });
 
     try
     {
@@ -415,9 +426,14 @@ void PushingToViewsBlockOutputStream::process_prefix(ViewInfo & view)
 void PushingToViewsBlockOutputStream::process_suffix(ViewInfo & view)
 {
     Stopwatch watch;
-    auto * source_thread = current_thread; // Change thread context to store individual metrics per view
+    // Change thread context to store individual metrics per view
+    auto * source_thread = current_thread;
     current_thread = view.runtime_stats.thread_status.get();
-    SCOPE_EXIT({ current_thread = source_thread; });
+    *current_thread->last_rusage = RUsageCounters::current();
+    SCOPE_EXIT({
+        current_thread->updatePerformanceCounters();
+        current_thread = source_thread;
+    });
 
     try
     {
@@ -475,7 +491,7 @@ void PushingToViewsBlockOutputStream::log_query_views()
         }
         catch (...)
         {
-            LOG_WARNING(log, getCurrentExceptionMessage(true));
+            tryLogCurrentException(__PRETTY_FUNCTION__);
         }
     }
 }
