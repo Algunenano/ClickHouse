@@ -149,7 +149,12 @@ PushingToViewsBlockOutputStream::PushingToViewsBlockOutputStream(
         thread_status->memory_tracker.setParent(running_memory_tracker);
 
         QueryViewsLogElement::ViewRuntimeStats runtime_stats{
-            target_name, type, thread_status, 0, std::chrono::system_clock::now(), QueryViewsLogElement::ViewStatus::INIT};
+            target_name,
+            type,
+            thread_status,
+            0,
+            std::chrono::system_clock::now(),
+            QueryViewsLogElement::ViewStatus::EXCEPTION_BEFORE_START};
         views.emplace_back(ViewInfo{std::move(query), database_table, std::move(out), nullptr, std::move(runtime_stats)});
         current_thread = running_thread;
 
@@ -206,45 +211,30 @@ void PushingToViewsBlockOutputStream::write(const Block & block)
         return;
 
     /// Don't process materialized views if this block is duplicate
-    if (!getContext()->getSettingsRef().deduplicate_blocks_in_dependent_materialized_views && replicated_output && replicated_output->lastBlockIsDuplicate())
+    const Settings & settings = getContext()->getSettingsRef();
+    if (!settings.deduplicate_blocks_in_dependent_materialized_views && replicated_output && replicated_output->lastBlockIsDuplicate())
         return;
 
-    const Settings & settings = getContext()->getSettingsRef();
     const size_t max_threads = std::min(views.size(), (settings.parallel_view_processing ? static_cast<size_t>(settings.max_threads) : 1));
-    bool exception_happened = false;
     if (max_threads > 1)
     {
         ThreadPool pool(max_threads);
-        std::atomic_uint8_t exception_count = 0;
         for (auto & view : views)
         {
             pool.scheduleOrThrowOnError([&] {
                 setThreadName("PushingToViews");
-                if (exception_count.load(std::memory_order_relaxed))
-                    return;
-
                 process(block, view);
-                if (view.exception)
-                    exception_count.fetch_add(1, std::memory_order_relaxed);
             });
         }
         pool.wait();
-        exception_happened = exception_count.load(std::memory_order_relaxed) != 0;
     }
     else
     {
         for (auto & view : views)
         {
             process(block, view);
-            if (view.exception)
-            {
-                exception_happened = true;
-                break;
-            }
         }
     }
-    if (exception_happened)
-        check_exceptions_in_views();
 }
 
 void PushingToViewsBlockOutputStream::writePrefix()
@@ -258,7 +248,7 @@ void PushingToViewsBlockOutputStream::writePrefix()
         if (view.exception)
         {
             log_query_views();
-            throw;
+            std::rethrow_exception(view.exception);
         }
     }
 }
@@ -283,10 +273,13 @@ void PushingToViewsBlockOutputStream::writeSuffix()
         std::atomic_uint8_t exception_count = 0;
         for (auto & view : views)
         {
+            if (view.exception)
+            {
+                exception_happened = true;
+                continue;
+            }
             pool.scheduleOrThrowOnError([&] {
                 setThreadName("PushingToViews");
-                if (exception_count.load(std::memory_order_relaxed))
-                    return;
 
                 process_suffix(view);
                 if (view.exception)
@@ -294,18 +287,20 @@ void PushingToViewsBlockOutputStream::writeSuffix()
             });
         }
         pool.wait();
-        exception_happened = exception_count.load(std::memory_order_relaxed) != 0;
+        exception_happened |= exception_count.load(std::memory_order_relaxed) != 0;
     }
     else
     {
         for (auto & view : views)
         {
-            process_suffix(view);
             if (view.exception)
             {
                 exception_happened = true;
-                break;
+                continue;
             }
+            process_suffix(view);
+            if (view.exception)
+                exception_happened = true;
         }
     }
     if (exception_happened)
@@ -388,16 +383,15 @@ void PushingToViewsBlockOutputStream::process(const Block & block, ViewInfo & vi
         }
 
         in->readSuffix();
-        view.runtime_stats.setStatus(QueryViewsLogElement::ViewStatus::WRITTEN_BLOCK);
     }
     catch (Exception & ex)
     {
         ex.addMessage("while pushing to view " + view.table_id.getNameForLogs());
-        view.exception = std::current_exception();
+        view.set_exception(std::current_exception());
     }
     catch (...)
     {
-        view.exception = std::current_exception();
+        view.set_exception(std::current_exception());
     }
 
     view.runtime_stats.elapsed_ms += watch.elapsedMilliseconds();
@@ -418,16 +412,15 @@ void PushingToViewsBlockOutputStream::process_prefix(ViewInfo & view)
     try
     {
         view.out->writePrefix();
-        view.runtime_stats.setStatus(QueryViewsLogElement::ViewStatus::WRITTEN_PREFIX);
     }
     catch (Exception & ex)
     {
         ex.addMessage("while writing prefix to view " + view.table_id.getNameForLogs());
-        view.exception = std::current_exception();
+        view.set_exception(std::current_exception());
     }
     catch (...)
     {
-        view.exception = std::current_exception();
+        view.set_exception(std::current_exception());
     }
     view.runtime_stats.elapsed_ms += watch.elapsedMilliseconds();
 }
@@ -448,16 +441,16 @@ void PushingToViewsBlockOutputStream::process_suffix(ViewInfo & view)
     try
     {
         view.out->writeSuffix();
-        view.runtime_stats.setStatus(QueryViewsLogElement::ViewStatus::WRITTEN_SUFFIX);
+        view.runtime_stats.setStatus(QueryViewsLogElement::ViewStatus::QUERY_FINISH);
     }
     catch (Exception & ex)
     {
         ex.addMessage("while writing suffix to view " + view.table_id.getNameForLogs());
-        view.exception = std::current_exception();
+        view.set_exception(std::current_exception());
     }
     catch (...)
     {
-        view.exception = std::current_exception();
+        view.set_exception(std::current_exception());
     }
     view.runtime_stats.elapsed_ms += watch.elapsedMilliseconds();
     if (!view.exception)
@@ -487,12 +480,13 @@ void PushingToViewsBlockOutputStream::log_query_views()
 {
     const auto & settings = getContext()->getSettingsRef();
     const UInt64 min_query_duration = settings.log_queries_min_query_duration_ms.totalMilliseconds();
+    const QueryViewsLogElement::ViewStatus min_status = settings.log_queries_min_type;
     if (views.empty() || !settings.log_queries || !settings.log_query_views)
         return;
 
     for (auto & view : views)
     {
-        if (min_query_duration && view.runtime_stats.elapsed_ms <= min_query_duration)
+        if ((min_query_duration && view.runtime_stats.elapsed_ms <= min_query_duration) || (view.runtime_stats.event_status < min_status))
             continue;
 
         try
