@@ -376,6 +376,11 @@ void PushingToViewsBlockOutputStream::process(const Block & block, ViewInfo & vi
         else
             in = std::make_shared<OneBlockInputStream>(block);
 
+        in->setProgressCallback([this](const Progress & progress) {
+            CurrentThread::updateProgressIn(progress);
+            this->onProgress(progress);
+        });
+
         in->readPrefix();
 
         while (Block result_block = in->read())
@@ -503,5 +508,12 @@ void PushingToViewsBlockOutputStream::logQueryViews()
             tryLogCurrentException(__PRETTY_FUNCTION__);
         }
     }
+}
+
+
+void PushingToViewsBlockOutputStream::onProgress(const Progress & progress)
+{
+    if (getContext()->getProgressCallback())
+        getContext()->getProgressCallback()(progress);
 }
 }
