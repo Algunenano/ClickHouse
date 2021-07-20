@@ -177,6 +177,11 @@ public:
     /// Enable calculation of minimums and maximums by the result columns.
     void enableExtremes() { enabled_extremes = true; }
 
+    /** Check limits.
+      * But only those that can be checked within each separate stream.
+      */
+    bool checkTimeLimit() const;
+
 protected:
     /// Order is important: `table_locks` must be destroyed after `children` so that tables from
     /// which child streams read are protected by the locks during the lifetime of the child streams.
@@ -206,11 +211,6 @@ protected:
         std::unique_lock lock(children_mutex);
         children.push_back(child);
     }
-
-    /** Check limits.
-      * But only those that can be checked within each separate stream.
-      */
-    bool checkTimeLimit() const;
 
 #ifndef NDEBUG
     bool read_prefix_is_called = false;

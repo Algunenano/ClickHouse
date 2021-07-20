@@ -1440,6 +1440,15 @@ bool TCPHandler::isQueryCancelled()
 
     after_check_cancelled.restart();
 
+    bool ok = true;
+    if (state.io.in)
+        ok = state.io.in->checkTimeLimit();
+    else if (state.io.pipeline.initialized())
+        ok = state.io.pipeline.checkTimeLimit();
+
+    if (!ok)
+        return true;
+
     /// During request execution the only packet that can come from the client is stopping the query.
     if (static_cast<ReadBufferFromPocoSocket &>(*in).poll(0))
     {

@@ -42,6 +42,8 @@ public:
 
     /// Set the approximate total number of rows to read.
     virtual void addTotalRowsApprox(size_t value) = 0;
+
+    virtual bool checkTimeLimit() = 0;
 };
 
 /// Implementation for ISourceWithProgress
@@ -58,6 +60,8 @@ public:
     void setProcessListElement(QueryStatus * elem) final;
     void setProgressCallback(const ProgressCallback & callback) final { progress_callback = callback; }
     void addTotalRowsApprox(size_t value) final { total_rows_approx += value; }
+
+    bool checkTimeLimit() final;
 
 protected:
     /// Call this method to provide information about progress.

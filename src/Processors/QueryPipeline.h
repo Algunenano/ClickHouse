@@ -124,6 +124,7 @@ public:
     void setLimits(const StreamLocalLimits & limits) { pipe.setLimits(limits); }
     void setLeafLimits(const SizeLimits & limits) { pipe.setLeafLimits(limits); }
     void setQuota(const std::shared_ptr<const EnabledQuota> & quota) { pipe.setQuota(quota); }
+    bool checkTimeLimit() { return pipe.checkTimeLimit(); }
 
     /// For compatibility with IBlockInputStream.
     void setProgressCallback(const ProgressCallback & callback);

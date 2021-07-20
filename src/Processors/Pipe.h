@@ -106,6 +106,7 @@ public:
     void setLimits(const StreamLocalLimits & limits);
     void setLeafLimits(const SizeLimits & leaf_limits);
     void setQuota(const std::shared_ptr<const EnabledQuota> & quota);
+    bool checkTimeLimit();
 
     /// Do not allow to change the table while the processors of pipe are alive.
     void addTableLock(TableLockHolder lock) { holder.table_locks.emplace_back(std::move(lock)); }

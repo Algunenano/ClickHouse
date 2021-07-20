@@ -42,6 +42,8 @@ public:
     void setProgressCallback(const ProgressCallback & callback) final { stream->setProgressCallback(callback); }
     void addTotalRowsApprox(size_t value) final { stream->addTotalRowsApprox(value); }
 
+    bool checkTimeLimit() final;
+
     /// Stop reading from stream if output port is finished.
     void onUpdatePorts() override
     {

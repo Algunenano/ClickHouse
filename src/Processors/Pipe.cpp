@@ -870,4 +870,14 @@ void Pipe::setQuota(const std::shared_ptr<const EnabledQuota> & quota)
     }
 }
 
+bool Pipe::checkTimeLimit()
+{
+    bool ok = true;
+    for (auto & processor : processors)
+    {
+        if (auto * source_with_progress = dynamic_cast<ISourceWithProgress *>(processor.get()))
+            ok &= source_with_progress->checkTimeLimit();
+    }
+    return ok;
+}
 }

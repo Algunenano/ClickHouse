@@ -88,6 +88,14 @@ IProcessor::Status SourceFromInputStream::prepare()
     return status;
 }
 
+bool SourceFromInputStream::checkTimeLimit()
+{
+    bool ok = stream->checkTimeLimit();
+    if (!ok)
+        cancel();
+    return ok;
+}
+
 void SourceFromInputStream::work()
 {
     if (!is_generating_finished)
