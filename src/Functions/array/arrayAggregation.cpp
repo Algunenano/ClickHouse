@@ -1,6 +1,7 @@
 #include <DataTypes/DataTypesNumber.h>
 #include <DataTypes/DataTypesDecimal.h>
 #include <DataTypes/DataTypeDateTime64.h>
+#include <Columns/ColumnLowCardinality.h>
 #include <Columns/ColumnsNumber.h>
 #include <Columns/ColumnDecimal.h>
 #include "FunctionArrayMapped.h"
@@ -121,7 +122,8 @@ struct ArrayAggregateImpl
             return false;
         };
 
-        if (!callOnIndexAndDataType<void>(expression_return->getTypeId(), call))
+        DataTypePtr exp = removeLowCardinality(expression_return);
+        if (!callOnIndexAndDataType<void>(exp->getTypeId(), call))
         {
             throw Exception(
                 "array aggregation function cannot be performed on type " + expression_return->getName(),
@@ -339,6 +341,7 @@ struct ArrayAggregateImpl
     {
         const IColumn::Offsets & offsets = array.getOffsets();
         ColumnPtr res;
+        mapped = mapped->convertToFullColumnIfLowCardinality();
 
         if (executeType<UInt8>(mapped, offsets, res) ||
             executeType<UInt16>(mapped, offsets, res) ||
@@ -359,7 +362,7 @@ struct ArrayAggregateImpl
             executeType<Decimal128>(mapped, offsets, res))
             return res;
         else
-            throw Exception(ErrorCodes::ILLEGAL_COLUMN, "Unexpected column for arraySum: {}" + mapped->getName());
+            throw Exception(ErrorCodes::ILLEGAL_COLUMN, "Unexpected column for arraySum: {}", mapped->getName());
     }
 };
 

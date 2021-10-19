@@ -3,6 +3,7 @@
 #include <Columns/ColumnsCommon.h>
 #include <Common/PODArray.h>
 #include <Common/ProfileEvents.h>
+#include <DataTypes/DataTypeLowCardinality.h>
 #include <IO/WriteHelpers.h>
 #include <Functions/IFunction.h>
 
@@ -188,13 +189,14 @@ void ColumnFunction::appendArguments(const ColumnsWithTypeAndName & columns)
 
 void ColumnFunction::appendArgument(const ColumnWithTypeAndName & column)
 {
-    const auto & argumnet_types = function->getArgumentTypes();
+    const auto & argument_types = function->getArgumentTypes();
 
     auto index = captured_columns.size();
-    if (!is_short_circuit_argument && !column.type->equals(*argumnet_types[index]))
-        throw Exception("Cannot capture column " + std::to_string(argumnet_types.size()) +
-                        " because it has incompatible type: got " + column.type->getName() +
-                        ", but " + argumnet_types[index]->getName() + " is expected.", ErrorCodes::LOGICAL_ERROR);
+    if (!is_short_circuit_argument && !column.type->equals(*removeLowCardinality(argument_types[index]->getPtr())))
+        throw Exception(
+            "Cannot capture column " + std::to_string(argument_types.size()) + " because it has incompatible type: got "
+                + column.type->getName() + ", but " + argument_types[index]->getName() + " is expected",
+            ErrorCodes::LOGICAL_ERROR);
 
     captured_columns.push_back(column);
 }

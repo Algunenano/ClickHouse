@@ -4,6 +4,7 @@
 #include <Columns/ReverseIndex.h>
 
 #include <Columns/ColumnVector.h>
+#include <Columns/ColumnLowCardinality.h>
 #include <Columns/ColumnNullable.h>
 #include <Columns/ColumnString.h>
 #include <Columns/ColumnFixedString.h>
@@ -517,7 +518,19 @@ MutableColumnPtr ColumnUnique<ColumnType>::uniqueInsertRangeImpl(
         return nullptr;
     };
 
-    if (auto * nullable_column = checkAndGetColumn<ColumnNullable>(src))
+    ColumnPtr lc = src.getPtr();
+    if (auto * lc_column = checkAndGetColumn<ColumnLowCardinality>(src))
+    {
+        lc = lc_column->convertToFullColumn();
+        if (auto * nullable_column = checkAndGetColumn<ColumnNullable>(lc.get()))
+        {
+            src_column = typeid_cast<const ColumnType *>(&nullable_column->getNestedColumn());
+            null_map = &nullable_column->getNullMapData();
+        }
+        else
+            src_column = typeid_cast<const ColumnType *>(lc.get());
+    }
+    else if (auto * nullable_column = checkAndGetColumn<ColumnNullable>(src))
     {
         src_column = typeid_cast<const ColumnType *>(&nullable_column->getNestedColumn());
         null_map = &nullable_column->getNullMapData();

@@ -6,6 +6,7 @@
 #include <Columns/ColumnArray.h>
 #include <Columns/ColumnConst.h>
 #include <Columns/ColumnFunction.h>
+#include <Columns/ColumnLowCardinality.h>
 #include <Common/typeid_cast.h>
 #include <Common/assert_cast.h>
 #include <Functions/IFunction.h>
@@ -75,7 +76,7 @@ public:
             if (!array_type)
                 throw Exception("Argument " + toString(i + 2) + " of function " + getName() + " must be array. Found "
                                 + arguments[i + 1]->getName() + " instead.", ErrorCodes::ILLEGAL_TYPE_OF_ARGUMENT);
-            nested_types[i] = recursiveRemoveLowCardinality(array_type->getNestedType());
+            nested_types[i] = array_type->getNestedType();
         }
 
         const DataTypeFunction * function_type = checkAndGetDataType<DataTypeFunction>(arguments[0].get());
@@ -126,11 +127,15 @@ public:
 
             /// The types of the remaining arguments are already checked in getLambdaArgumentTypes.
 
-            DataTypePtr return_type = removeLowCardinality(data_type_function->getReturnType());
-            if (Impl::needBoolean() && !WhichDataType(return_type).isUInt8())
-                throw Exception("Expression for function " + getName() + " must return UInt8, found "
-                                + return_type->getName(), ErrorCodes::ILLEGAL_TYPE_OF_ARGUMENT);
-
+            DataTypePtr return_type = data_type_function->getReturnType();
+            if (Impl::needBoolean())
+            {
+                return_type = removeLowCardinality(data_type_function->getReturnType());
+                if (!WhichDataType(return_type).isUInt8())
+                    throw Exception(
+                        "Expression for function " + getName() + " must return UInt8, found " + return_type->getName(),
+                        ErrorCodes::ILLEGAL_TYPE_OF_ARGUMENT);
+            }
             const auto * first_array_type = checkAndGetDataType<DataTypeArray>(arguments[1].type.get());
 
             return Impl::getReturnType(return_type, first_array_type->getNestedType());
@@ -217,9 +222,8 @@ public:
                     column_first_array = column_array;
                 }
 
-                arrays.emplace_back(ColumnWithTypeAndName(column_array->getDataPtr(),
-                                                          recursiveRemoveLowCardinality(array_type->getNestedType()),
-                                                          array_with_type_and_name.name));
+                arrays.emplace_back(
+                    ColumnWithTypeAndName(column_array->getDataPtr(), array_type->getNestedType(), array_with_type_and_name.name));
             }
 
             /// Put all the necessary columns multiplied by the sizes of arrays into the columns.
@@ -228,7 +232,7 @@ public:
             replicated_column_function->appendArguments(arrays);
 
             auto lambda_result = replicated_column_function->reduce().column;
-            if (lambda_result->lowCardinality())
+            if (Impl::needBoolean() /* && !return_type->lowCardinality() && lambda_result->lowCardinality() */)
                 lambda_result = lambda_result->convertToFullColumnIfLowCardinality();
 
             return Impl::execute(*column_first_array, lambda_result);

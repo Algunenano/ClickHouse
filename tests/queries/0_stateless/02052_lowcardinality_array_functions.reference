@@ -1,0 +1,36 @@
+toLowConst	Array(LowCardinality(String))
+toLowConst	['hi']
+toLowCol	Array(LowCardinality(String))
+toLowCol	['hi']
+toLowToNullConst	Array(LowCardinality(Nullable(String)))
+toLowToNullConst	['hi']
+toLowToNullCol	Array(LowCardinality(Nullable(String)))
+toLowToNullCol	['hi']
+fromLowConst	Array(LowCardinality(String))
+fromLowConst	['hi']
+fromLowCol	Array(LowCardinality(String))
+fromLowCol	['hi']
+fromLowNullConst	Array(LowCardinality(Nullable(String)))
+fromLowNullConst	['hi',NULL]
+fromLowNullCol	Array(LowCardinality(Nullable(String)))
+fromLowNullCol	['hi',NULL]
+concatFromLowConst	Array(LowCardinality(String))
+concatFromLowConst	['hi there']
+concatFromLowCol	Array(LowCardinality(String))
+concatFromLowCol	['hi there']
+concatFromLowNullConst	Array(LowCardinality(Nullable(String)))
+concatFromLowNullConst	['hi there',NULL]
+concatFromLowNullCol	Array(LowCardinality(Nullable(String)))
+concatFromLowNullCol	['hi there',NULL]
+filterLowConst	Array(LowCardinality(UInt64))
+filterLowConst	[2,4]
+filterLowCol	Array(LowCardinality(UInt64))
+filterLowCol	[2,4]
+sumLowConst	Array(LowCardinality(UInt8))
+sumLowConst	[4,6]
+sumLowCol	Array(LowCardinality(UInt8))
+sumLowCol	[4,6]
+minLowConst	LowCardinality(UInt64)
+minLowConst	2
+minLowCol	LowCardinality(UInt64)
+minLowCol	2
