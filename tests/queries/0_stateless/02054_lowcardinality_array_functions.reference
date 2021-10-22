@@ -22,15 +22,23 @@ concatFromLowNullConst	Array(LowCardinality(Nullable(String)))
 concatFromLowNullConst	['hi there',NULL]
 concatFromLowNullCol	Array(LowCardinality(Nullable(String)))
 concatFromLowNullCol	['hi there',NULL]
-filterLowConst	Array(LowCardinality(UInt64))
+filterLowConst	Array(UInt64)
 filterLowConst	[2,4]
-filterLowCol	Array(LowCardinality(UInt64))
+filterLowCol	Array(UInt64)
 filterLowCol	[2,4]
-sumLowConst	Array(LowCardinality(UInt8))
-sumLowConst	[4,6]
-sumLowCol	Array(LowCardinality(UInt8))
-sumLowCol	[4,6]
-minLowConst	LowCardinality(UInt64)
-minLowConst	2
-minLowCol	LowCardinality(UInt64)
-minLowCol	2
+sumLowConst	UInt64
+sumLowConst	10
+sumLowCol	UInt64
+sumLowCol	10
+sumLowConst	UInt64
+sumLowConst	6
+sumLowCol	UInt64
+sumLowCol	6
+reduceLowConst	UInt64
+reduceLowConst	6
+reduceLowCol	UInt64
+reduceLowCol	6
+reduceLowNullConst	Nullable(UInt64)
+reduceLowNullConst	6
+reduceLowNullCol	Nullable(UInt64)
+reduceLowNullCol	6
