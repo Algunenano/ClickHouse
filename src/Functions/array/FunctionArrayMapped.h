@@ -14,6 +14,8 @@
 #include <IO/WriteHelpers.h>
 #include <Interpreters/Context_fwd.h>
 
+#include <base/logger_useful.h>
+#include <Poco/Logger.h>
 
 namespace DB
 {
@@ -55,6 +57,8 @@ public:
     bool isVariadic() const override { return true; }
     size_t getNumberOfArguments() const override { return 0; }
     bool isSuitableForShortCircuitArgumentsExecution(const DataTypesWithConstInfo & /*arguments*/) const override { return true; }
+    bool canBeExecutedOnLowCardinalityDictionary() const override { return true; }
+    bool useDefaultImplementationForLowCardinalityColumns() const override { return false; }
 
     /// Called if at least one function argument is a lambda expression.
     /// For argument-lambda expressions, it defines the types of arguments of these expressions.
@@ -99,6 +103,7 @@ public:
 
         if (arguments.size() == 1)
         {
+            LOG_WARNING(&Poco::Logger::get("TYPE 1"), arguments[0].type.get()->getName());
             const auto * array_type = checkAndGetDataType<DataTypeArray>(arguments[0].type.get());
 
             if (!array_type)
@@ -119,7 +124,9 @@ public:
                 throw Exception("Function " + getName() + " needs one array argument.",
                     ErrorCodes::NUMBER_OF_ARGUMENTS_DOESNT_MATCH);
 
+            LOG_WARNING(&Poco::Logger::get("TYPE 2 F"), arguments[0].type.get()->getName());
             const auto * data_type_function = checkAndGetDataType<DataTypeFunction>(arguments[0].type.get());
+            LOG_WARNING(&Poco::Logger::get("TYPE 2 FR"), data_type_function->getName());
 
             if (!data_type_function)
                 throw Exception("First argument for function " + getName() + " must be a function.",
@@ -128,6 +135,7 @@ public:
             /// The types of the remaining arguments are already checked in getLambdaArgumentTypes.
 
             DataTypePtr return_type = data_type_function->getReturnType();
+            LOG_WARNING(&Poco::Logger::get("TYPE 2 R"), data_type_function->getReturnType().get()->getName());
             if (Impl::needBoolean())
             {
                 return_type = removeLowCardinality(data_type_function->getReturnType());
@@ -136,7 +144,10 @@ public:
                         "Expression for function " + getName() + " must return UInt8, found " + return_type->getName(),
                         ErrorCodes::ILLEGAL_TYPE_OF_ARGUMENT);
             }
+            LOG_WARNING(&Poco::Logger::get("TYPE 2 F2"), arguments[1].type.get()->getName());
             const auto * first_array_type = checkAndGetDataType<DataTypeArray>(arguments[1].type.get());
+            LOG_WARNING(&Poco::Logger::get("TYPE 2 FINAL 1"), first_array_type->getName());
+            LOG_WARNING(&Poco::Logger::get("TYPE 2 FINAL 2"), first_array_type->getNestedType()->getName());
 
             return Impl::getReturnType(return_type, first_array_type->getNestedType());
         }

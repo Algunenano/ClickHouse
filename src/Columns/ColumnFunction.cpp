@@ -192,7 +192,7 @@ void ColumnFunction::appendArgument(const ColumnWithTypeAndName & column)
     const auto & argument_types = function->getArgumentTypes();
 
     auto index = captured_columns.size();
-    if (!is_short_circuit_argument && !column.type->equals(*removeLowCardinality(argument_types[index]->getPtr())))
+    if (!is_short_circuit_argument && !column.type->equals(*argument_types[index]))
         throw Exception(
             "Cannot capture column " + std::to_string(argument_types.size()) + " because it has incompatible type: got "
                 + column.type->getName() + ", but " + argument_types[index]->getName() + " is expected",

@@ -16,6 +16,9 @@
 #include <cstdlib>
 #include <memory>
 
+#include <base/logger_useful.h>
+#include <Poco/Logger.h>
+
 #if !defined(ARCADIA_BUILD)
 #    include <Common/config.h>
 #endif
@@ -312,6 +315,12 @@ DataTypePtr IFunctionOverloadResolver::getReturnType(const ColumnsWithTypeAndNam
         convertLowCardinalityColumnsToFull(args_without_low_cardinality);
 
         auto type_without_low_cardinality = getReturnTypeWithoutLowCardinality(args_without_low_cardinality);
+        LOG_WARNING(&Poco::Logger::get("LC 0"), "{}", getName());
+        LOG_WARNING(&Poco::Logger::get("LC 1"), "{}", canBeExecutedOnLowCardinalityDictionary());
+        LOG_WARNING(&Poco::Logger::get("LC 2"), "{}", has_low_cardinality);
+        LOG_WARNING(&Poco::Logger::get("LC 3"), "{}", num_full_low_cardinality_columns);
+        LOG_WARNING(&Poco::Logger::get("LC 4"), "{}", num_full_ordinary_columns);
+        LOG_WARNING(&Poco::Logger::get("LC 5"), "{}", type_without_low_cardinality->canBeInsideLowCardinality());
 
         if (canBeExecutedOnLowCardinalityDictionary() && has_low_cardinality
             && num_full_low_cardinality_columns <= 1 && num_full_ordinary_columns == 0
