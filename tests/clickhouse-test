@@ -174,7 +174,7 @@ def need_retry(args, stdout, stderr, total_time):
     # instead of "Session expired" or "Connection loss"
     # Retry if session was expired during test execution
     session_uptime = get_zookeeper_session_uptime(args)
-    if session_uptime is not None and session_uptime < math.ceil(total_time):
+    if session_uptime is not None and session_uptime is not 0 and session_uptime < math.ceil(total_time):
         return True
     return any(msg in stdout for msg in MESSAGES_TO_RETRY) or any(msg in stderr for msg in MESSAGES_TO_RETRY)
 
