@@ -136,6 +136,46 @@ public:
         const IColumn * columns_param[] = {&column->getNestedColumn()};
 
         const IColumn * filter_column = columns[num_arguments - 1];
+//        throw Exception(filter_column->getName(), ErrorCodes::LOGICAL_ERROR);
+        std::cout << filter_column->getName() << "\n";
+        if (const ColumnConst * const_column = typeid_cast<const ColumnConst *>(filter_column))
+        {
+            std::cout << "IS CONST\n";
+            if (const_column->isNullable())
+            {
+                std::cout << "IS NULLABLE\n";
+                if (const_column->onlyNull())
+                {
+                    std::cout << "IS NULL\n";
+                    return;
+                }
+                else
+                {
+                    auto & nullable_column = assert_cast<const ColumnNullable &>(const_column->getDataColumn());
+                    auto * filter_column2 = assert_cast<const ColumnUInt8 *>(nullable_column.getNestedColumnPtr().get());
+                    UInt8 v = filter_column2->getElement(0);
+                    std::cout << "IS OTHER " << v << "\n";
+                    return;
+                }
+
+            }
+            else
+            {
+                const auto * nested = const_column->getDataColumnPtr().get();
+
+                if (auto * nullable_column = typeid_cast<const ColumnNullable *>(nested))
+                    nested = nullable_column->getNestedColumnPtr().get();
+
+                /// We can either ignore the flag (1) or the whole data(0)
+                if (assert_cast<const ColumnUInt8 *>(nested)->getData().data()[0] == 0)
+                    return;
+
+
+                // TODO: The other part
+            }
+
+        }
+
         if (const ColumnNullable * nullable_column = typeid_cast<const ColumnNullable *>(filter_column))
             filter_column = nullable_column->getNestedColumnPtr().get();
         if constexpr (result_is_nullable)

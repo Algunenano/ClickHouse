@@ -19,6 +19,7 @@
 #include <Common/assert_cast.h>
 #include <Common/JSONBuilder.h>
 #include <AggregateFunctions/AggregateFunctionArray.h>
+#include <AggregateFunctions/AggregateFunctionIf.h>
 #include <AggregateFunctions/AggregateFunctionState.h>
 #include <IO/Operators.h>
 #include <Interpreters/JIT/compileFunction.h>
@@ -870,8 +871,20 @@ void Aggregator::prepareAggregateInstructions(Columns columns, AggregateColumns 
 
     for (size_t i = 0; i < params.aggregates_size; ++i)
     {
+        const auto * that = aggregate_functions[i];
+//        std::cout << aggregate_functions[i]->getName() << "\n";
+//        const auto iffunc = typeid_cast<const AggregateFunctionIf*>(aggregate_functions[i]);
+//        std::cout << (iffunc != nullptr) <<"\n";
+
         for (size_t j = 0; j < aggregate_columns[i].size(); ++j)
         {
+//            std::cout << columns.at(params.aggregates[i].arguments[j])->getName() << "\n";
+            if (j == aggregate_columns[i].size() - 1)
+            {
+                materialized_columns.push_back(columns.at(params.aggregates[i].arguments[j]));
+                aggregate_columns[i][j] = materialized_columns.back().get();
+                continue;
+            }
             materialized_columns.push_back(columns.at(params.aggregates[i].arguments[j])->convertToFullColumnIfConst());
             aggregate_columns[i][j] = materialized_columns.back().get();
 
@@ -886,7 +899,6 @@ void Aggregator::prepareAggregateInstructions(Columns columns, AggregateColumns 
         aggregate_functions_instructions[i].arguments = aggregate_columns[i].data();
         aggregate_functions_instructions[i].state_offset = offsets_of_aggregate_states[i];
 
-        const auto * that = aggregate_functions[i];
         /// Unnest consecutive trailing -State combinators
         while (const auto * func = typeid_cast<const AggregateFunctionState *>(that))
             that = func->getNestedFunction().get();
