@@ -47,6 +47,9 @@ bool ParserTableExpression::parseImpl(Pos & pos, ASTPtr & node, Expected & expec
         }
     }
 
+    if (ParserKeyword("COMPLETE").ignore(pos, expected))
+        res->complete = true;
+
     if (res->database_and_table_name)
         res->children.emplace_back(res->database_and_table_name);
     if (res->table_function)

@@ -25,10 +25,11 @@ struct DatabaseAndTableWithAlias
     String table;
     String alias;
     UUID uuid = UUIDHelpers::Nil;
+    bool complete = false;
 
     DatabaseAndTableWithAlias() = default;
-    explicit DatabaseAndTableWithAlias(const ASTPtr & identifier_node, const String & current_database = "");
-    explicit DatabaseAndTableWithAlias(const ASTTableIdentifier & identifier, const String & current_database = "");
+    explicit DatabaseAndTableWithAlias(const ASTPtr & identifier_node, const String & current_database = "", bool complete = false);
+    explicit DatabaseAndTableWithAlias(const ASTTableIdentifier & identifier, const String & current_database = "", bool complete = false);
     explicit DatabaseAndTableWithAlias(const ASTTableExpression & table_expression, const String & current_database = "");
 
 

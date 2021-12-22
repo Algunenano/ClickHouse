@@ -23,6 +23,7 @@ while (false)
 void ASTTableExpression::updateTreeHashImpl(SipHash & hash_state) const
 {
     hash_state.update(final);
+    hash_state.update(complete);
     IAST::updateTreeHashImpl(hash_state);
 }
 
@@ -141,6 +142,12 @@ void ASTTableExpression::formatImpl(const FormatSettings & settings, FormatState
                 << "OFFSET " << (settings.hilite ? hilite_none : "");
             sample_offset->formatImpl(settings, state, frame);
         }
+    }
+
+    if (complete)
+    {
+        settings.ostr << (settings.hilite ? hilite_keyword : "") << settings.nl_or_ws << indent_str << "COMPLETE"
+                      << (settings.hilite ? hilite_none : "");
     }
 }
 

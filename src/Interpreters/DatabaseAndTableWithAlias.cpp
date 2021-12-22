@@ -5,11 +5,12 @@
 
 #include <Common/typeid_cast.h>
 
-#include <Parsers/IAST.h>
 #include <Parsers/ASTIdentifier.h>
-#include <Parsers/ASTTablesInSelectQuery.h>
 #include <Parsers/ASTSelectQuery.h>
 #include <Parsers/ASTSubquery.h>
+#include <Parsers/ASTTablesInSelectQuery.h>
+#include <Parsers/IAST.h>
+#include <Parsers/formatAST.h>
 
 namespace DB
 {
@@ -18,7 +19,8 @@ namespace ErrorCodes
     extern const int LOGICAL_ERROR;
 }
 
-DatabaseAndTableWithAlias::DatabaseAndTableWithAlias(const ASTTableIdentifier & identifier, const String & current_database)
+DatabaseAndTableWithAlias::DatabaseAndTableWithAlias(const ASTTableIdentifier & identifier, const String & current_database, bool complete_)
+    : complete(complete_)
 {
     alias = identifier.tryGetAlias();
 
@@ -28,19 +30,19 @@ DatabaseAndTableWithAlias::DatabaseAndTableWithAlias(const ASTTableIdentifier & 
         database = current_database;
 }
 
-DatabaseAndTableWithAlias::DatabaseAndTableWithAlias(const ASTPtr & node, const String & current_database)
+DatabaseAndTableWithAlias::DatabaseAndTableWithAlias(const ASTPtr & node, const String & current_database, bool complete_)
 {
     const auto * identifier = node->as<ASTTableIdentifier>();
     if (!identifier)
         throw Exception("Logical error: table identifier expected", ErrorCodes::LOGICAL_ERROR);
 
-    *this = DatabaseAndTableWithAlias(*identifier, current_database);
+    *this = DatabaseAndTableWithAlias(*identifier, current_database, complete_);
 }
 
 DatabaseAndTableWithAlias::DatabaseAndTableWithAlias(const ASTTableExpression & table_expression, const String & current_database)
 {
     if (table_expression.database_and_table_name)
-        *this = DatabaseAndTableWithAlias(table_expression.database_and_table_name, current_database);
+        *this = DatabaseAndTableWithAlias(table_expression.database_and_table_name, current_database, table_expression.complete);
     else if (table_expression.table_function)
         alias = table_expression.table_function->tryGetAlias();
     else if (table_expression.subquery)
@@ -102,8 +104,10 @@ std::optional<DatabaseAndTableWithAlias> getDatabaseAndTable(const ASTSelectQuer
     ASTPtr database_and_table_name = table_expression->database_and_table_name;
     if (!database_and_table_name || !database_and_table_name->as<ASTTableIdentifier>())
         return {};
+    LOG_WARNING(&Poco::Logger::get("getDatabaseAndTable"), "Query {}", DB::serializeAST(select, true));
+    LOG_WARNING(&Poco::Logger::get("getDatabaseAndTable"), "Complete {}", table_expression->complete);
 
-    return DatabaseAndTableWithAlias(database_and_table_name);
+    return DatabaseAndTableWithAlias(database_and_table_name, "", table_expression->complete);
 }
 
 }

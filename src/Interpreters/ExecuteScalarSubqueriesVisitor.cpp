@@ -77,10 +77,17 @@ void ExecuteScalarSubqueriesMatcher::visit(const ASTSubquery & subquery, ASTPtr 
     auto hash = subquery.getTreeHash();
     auto scalar_query_hash_str = toString(hash.first) + "_" + toString(hash.second);
 
+    bool is_local = false;
     Block scalar;
+    /// TODO: ADD events
     if (data.getContext()->hasQueryContext() && data.getContext()->getQueryContext()->hasScalar(scalar_query_hash_str))
     {
         scalar = data.getContext()->getQueryContext()->getScalar(scalar_query_hash_str);
+    }
+    else if (data.local_scalars.count(scalar_query_hash_str))
+    {
+        scalar = data.local_scalars[scalar_query_hash_str];
+        is_local = true;
     }
     else if (data.scalars.count(scalar_query_hash_str))
     {
@@ -100,6 +107,7 @@ void ExecuteScalarSubqueriesMatcher::visit(const ASTSubquery & subquery, ASTPtr 
         options.analyze(data.only_analyze);
 
         auto interpreter = InterpreterSelectWithUnionQuery(subquery_select, subquery_context, options);
+        is_local = interpreter.usesViewSource();
         Block block;
 
         if (data.only_analyze)
@@ -218,7 +226,10 @@ void ExecuteScalarSubqueriesMatcher::visit(const ASTSubquery & subquery, ASTPtr 
         ast = std::move(func);
     }
 
-    data.scalars[scalar_query_hash_str] = std::move(scalar);
+    if (is_local)
+        data.local_scalars[scalar_query_hash_str] = std::move(scalar);
+    else
+        data.scalars[scalar_query_hash_str] = std::move(scalar);
 }
 
 void ExecuteScalarSubqueriesMatcher::visit(const ASTFunction & func, ASTPtr & ast, Data & data)

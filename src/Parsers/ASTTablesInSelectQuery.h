@@ -24,6 +24,7 @@ namespace DB
   *  SAMPLE 1 / 10
   *  SAMPLE 0.1
   *  SAMPLE 1000000
+  *  Materialized views definition might contain also the COMPLETE modifier
   *
   * Table expressions may be combined with JOINs of following kinds:
   *  [GLOBAL] [ANY|ALL|ASOF|SEMI] [INNER|LEFT|RIGHT|FULL] [OUTER] JOIN table_expr
@@ -52,6 +53,7 @@ struct ASTTableExpression : public IAST
     bool final = false;
     ASTPtr sample_size;
     ASTPtr sample_offset;
+    bool complete = false;
 
     using IAST::IAST;
     String getID(char) const override { return "TableExpression"; }

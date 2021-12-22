@@ -320,6 +320,15 @@ bool ASTSelectQuery::final() const
     return table_expression->final;
 }
 
+bool ASTSelectQuery::complete() const
+{
+    const ASTTableExpression * table_expression = getFirstTableExpression(*this);
+    if (!table_expression)
+        return {};
+
+    return table_expression->complete;
+}
+
 bool ASTSelectQuery::withFill() const
 {
     const ASTPtr order_by = orderBy();

@@ -128,6 +128,7 @@ public:
 
     const ASTTablesInSelectQueryElement * join() const;
     bool final() const;
+    bool complete() const;
     bool withFill() const;
     void replaceDatabaseAndTable(const String & database_name, const String & table_name);
     void replaceDatabaseAndTable(const StorageID & table_id);
