@@ -196,25 +196,27 @@ public:
         const AggregateDataPtr * rhs,
         Arena * arena) const = 0;
 
-    /** The same for single place.
+    /** The same for single place
       */
     virtual void addBatchSinglePlace( /// NOLINT
-        size_t batch_size, AggregateDataPtr place, const IColumn ** columns, Arena * arena, ssize_t if_argument_pos = -1) const = 0;
+        size_t batch_size,
+        AggregateDataPtr place,
+        const IColumn ** columns,
+        Arena * arena) const = 0;
 
     /// The version of "addBatchSinglePlace", that handle sparse columns as arguments.
     virtual void addBatchSparseSinglePlace(
         AggregateDataPtr place, const IColumn ** columns, Arena * arena) const = 0;
 
-    /** The same for single place when need to aggregate only filtered data.
-      * Instead of using an if-column, the condition is combined inside the null_map
+    /** The same for single place when need to aggregate filtered data (nullable or -if column)
+      * The discard_map will discard any value except 0 (same as a null_map)
       */
-    virtual void addBatchSinglePlaceNotNull( /// NOLINT
+    virtual void addBatchSinglePlaceConditional( /// NOLINT
         size_t batch_size,
         AggregateDataPtr place,
         const IColumn ** columns,
-        const UInt8 * null_map,
-        Arena * arena,
-        ssize_t if_argument_pos = -1) const = 0;
+        const UInt8 * discard_map,
+        Arena * arena) const = 0;
 
     virtual void addBatchSinglePlaceFromInterval( /// NOLINT
         size_t batch_begin, size_t batch_end, AggregateDataPtr place, const IColumn ** columns, Arena * arena, ssize_t if_argument_pos = -1)
@@ -408,22 +410,13 @@ public:
     }
 
     void addBatchSinglePlace( /// NOLINT
-        size_t batch_size, AggregateDataPtr place, const IColumn ** columns, Arena * arena, ssize_t if_argument_pos = -1) const override
+        size_t batch_size,
+        AggregateDataPtr place,
+        const IColumn ** columns,
+        Arena * arena) const override
     {
-        if (if_argument_pos >= 0)
-        {
-            const auto & flags = assert_cast<const ColumnUInt8 &>(*columns[if_argument_pos]).getData();
-            for (size_t i = 0; i < batch_size; ++i)
-            {
-                if (flags[i])
-                    static_cast<const Derived *>(this)->add(place, columns, i, arena);
-            }
-        }
-        else
-        {
-            for (size_t i = 0; i < batch_size; ++i)
-                static_cast<const Derived *>(this)->add(place, columns, i, arena);
-        }
+        for (size_t i = 0; i < batch_size; ++i)
+            static_cast<const Derived *>(this)->add(place, columns, i, arena);
     }
 
     void addBatchSparseSinglePlace(
@@ -439,27 +432,16 @@ public:
             static_cast<const Derived *>(this)->add(place, &values, offset_it.getValueIndex(), arena);
     }
 
-    void addBatchSinglePlaceNotNull( /// NOLINT
+    void addBatchSinglePlaceConditional( /// NOLINT
         size_t batch_size,
         AggregateDataPtr place,
         const IColumn ** columns,
-        const UInt8 * null_map,
-        Arena * arena,
-        ssize_t if_argument_pos = -1) const override
+        const UInt8 * discard_map,
+        Arena * arena) const override
     {
-        if (if_argument_pos >= 0)
-        {
-            const auto & flags = assert_cast<const ColumnUInt8 &>(*columns[if_argument_pos]).getData();
-            for (size_t i = 0; i < batch_size; ++i)
-                if (!null_map[i] && flags[i])
-                    static_cast<const Derived *>(this)->add(place, columns, i, arena);
-        }
-        else
-        {
-            for (size_t i = 0; i < batch_size; ++i)
-                if (!null_map[i])
-                    static_cast<const Derived *>(this)->add(place, columns, i, arena);
-        }
+        for (size_t i = 0; i < batch_size; ++i)
+            if (!discard_map[i])
+                static_cast<const Derived *>(this)->add(place, columns, i, arena);
     }
 
     void addBatchSinglePlaceFromInterval( /// NOLINT

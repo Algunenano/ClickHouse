@@ -1,9 +1,10 @@
 #pragma once
 
-#include <DataTypes/DataTypesNumber.h>
-#include <Columns/ColumnsNumber.h>
-#include <Common/assert_cast.h>
+#include <AggregateFunctions/Helpers.h>
 #include <AggregateFunctions/IAggregateFunction.h>
+#include <Columns/ColumnsNumber.h>
+#include <DataTypes/DataTypesNumber.h>
+#include <Common/assert_cast.h>
 
 #include <Common/config.h>
 
@@ -108,21 +109,19 @@ public:
         nested_func->addBatch(batch_size, places, place_offset, columns, arena, num_arguments - 1);
     }
 
-    void addBatchSinglePlace(
-        size_t batch_size, AggregateDataPtr place, const IColumn ** columns, Arena * arena, ssize_t) const override
+    void addBatchSinglePlace(size_t batch_size, AggregateDataPtr place, const IColumn ** columns, Arena * arena) const override
     {
-        nested_func->addBatchSinglePlace(batch_size, place, columns, arena, num_arguments - 1);
+        const auto * if_flags = assert_cast<const ColumnUInt8 &>(*columns[num_arguments - 1]).getData().data();
+        std::unique_ptr<UInt8[]> final_discard(reverseFilterArray(if_flags, batch_size));
+        nested_func->addBatchSinglePlaceConditional(batch_size, place, columns, final_discard.get(), arena);
     }
 
-    void addBatchSinglePlaceNotNull(
-        size_t batch_size,
-        AggregateDataPtr place,
-        const IColumn ** columns,
-        const UInt8 * null_map,
-        Arena * arena,
-        ssize_t) const override
+    void addBatchSinglePlaceConditional(
+        size_t batch_size, AggregateDataPtr place, const IColumn ** columns, const UInt8 * discard_map, Arena * arena) const override
     {
-        nested_func->addBatchSinglePlaceNotNull(batch_size, place, columns, null_map, arena, num_arguments - 1);
+        const auto * if_flags = assert_cast<const ColumnUInt8 &>(*columns[num_arguments - 1]).getData().data();
+        std::unique_ptr<UInt8[]> final_discard(mergeNullAndFilterArrays(discard_map, if_flags, batch_size));
+        nested_func->addBatchSinglePlaceConditional(batch_size, place, columns, final_discard.get(), arena);
     }
 
     void merge(AggregateDataPtr __restrict place, ConstAggregateDataPtr rhs, Arena * arena) const override

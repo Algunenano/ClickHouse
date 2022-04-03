@@ -135,66 +135,30 @@ public:
     }
 
     void addBatchSinglePlace( /// NOLINT
-        size_t batch_size, AggregateDataPtr place, const IColumn ** columns, Arena * arena, ssize_t if_argument_pos = -1) const override
-    {
-        if (if_argument_pos >= 0)
-        {
-            const auto & flags = assert_cast<const ColumnUInt8 &>(*columns[if_argument_pos]).getData();
-            nested_function->addBatchSinglePlace(batch_size, place, columns, arena, if_argument_pos);
-            for (size_t i = 0; i < batch_size; ++i)
-            {
-                if (flags[i])
-                {
-                    place[size_of_data] = 1;
-                    break;
-                }
-            }
-        }
-        else
-        {
-            if (batch_size)
-            {
-                nested_function->addBatchSinglePlace(batch_size, place, columns, arena, if_argument_pos);
-                place[size_of_data] = 1;
-            }
-        }
-    }
-
-    void addBatchSinglePlaceNotNull( /// NOLINT
         size_t batch_size,
         AggregateDataPtr place,
         const IColumn ** columns,
-        const UInt8 * null_map,
-        Arena * arena,
-        ssize_t if_argument_pos = -1) const override
+        Arena * arena) const override
     {
-        if (if_argument_pos >= 0)
+        if (batch_size)
         {
-            const auto & flags = assert_cast<const ColumnUInt8 &>(*columns[if_argument_pos]).getData();
-            nested_function->addBatchSinglePlaceNotNull(batch_size, place, columns, null_map, arena, if_argument_pos);
-            for (size_t i = 0; i < batch_size; ++i)
-            {
-                if (flags[i] && !null_map[i])
-                {
-                    place[size_of_data] = 1;
-                    break;
-                }
-            }
+            nested_function->addBatchSinglePlace(batch_size, place, columns, arena);
+            place[size_of_data] = 1;
         }
-        else
+    }
+
+    void addBatchSinglePlaceConditional( /// NOLINT
+        size_t batch_size,
+        AggregateDataPtr place,
+        const IColumn ** columns,
+        const UInt8 * discard_map,
+        Arena * arena) const override
+    {
+        if (batch_size)
         {
-            if (batch_size)
-            {
-                nested_function->addBatchSinglePlaceNotNull(batch_size, place, columns, null_map, arena, if_argument_pos);
-                for (size_t i = 0; i < batch_size; ++i)
-                {
-                    if (!null_map[i])
-                    {
-                        place[size_of_data] = 1;
-                        break;
-                    }
-                }
-            }
+            nested_function->addBatchSinglePlaceConditional(batch_size, place, columns, discard_map, arena);
+            if (!memoryIsZero(discard_map, batch_size))
+                place[size_of_data] = 1;
         }
     }
 

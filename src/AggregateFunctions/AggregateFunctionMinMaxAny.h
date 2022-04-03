@@ -1158,71 +1158,37 @@ public:
         this->data(place).changeIfBetter(*columns[0], row_num, arena);
     }
 
-    void addBatchSinglePlace(
-        size_t batch_size, AggregateDataPtr place, const IColumn ** columns, Arena * arena, ssize_t if_argument_pos) const override
+    void addBatchSinglePlace(size_t batch_size, AggregateDataPtr place, const IColumn ** columns, Arena * arena) const override
     {
         if constexpr (is_any)
             if (this->data(place).has())
                 return;
-        if (if_argument_pos >= 0)
+        for (size_t i = 0; i < batch_size; ++i)
         {
-            const auto & flags = assert_cast<const ColumnUInt8 &>(*columns[if_argument_pos]).getData();
-            for (size_t i = 0; i < batch_size; ++i)
-            {
-                if (flags[i])
-                {
-                    this->data(place).changeIfBetter(*columns[0], i, arena);
-                    if constexpr (is_any)
-                        break;
-                }
-            }
+            this->data(place).changeIfBetter(*columns[0], i, arena);
+            if constexpr (is_any)
+                break;
         }
-        else
+    }
+
+    void addBatchSinglePlaceConditional( /// NOLINT
+        size_t batch_size,
+        AggregateDataPtr place,
+        const IColumn ** columns,
+        const UInt8 * discard_map,
+        Arena * arena) const override
+    {
+        if constexpr (is_any)
+            if (this->data(place).has())
+                return;
+
+        for (size_t i = 0; i < batch_size; ++i)
         {
-            for (size_t i = 0; i < batch_size; ++i)
+            if (!discard_map[i])
             {
                 this->data(place).changeIfBetter(*columns[0], i, arena);
                 if constexpr (is_any)
                     break;
-            }
-        }
-    }
-
-    void addBatchSinglePlaceNotNull( /// NOLINT
-        size_t batch_size,
-        AggregateDataPtr place,
-        const IColumn ** columns,
-        const UInt8 * null_map,
-        Arena * arena,
-        ssize_t if_argument_pos = -1) const override
-    {
-        if constexpr (is_any)
-            if (this->data(place).has())
-                return;
-
-        if (if_argument_pos >= 0)
-        {
-            const auto & flags = assert_cast<const ColumnUInt8 &>(*columns[if_argument_pos]).getData();
-            for (size_t i = 0; i < batch_size; ++i)
-            {
-                if (!null_map[i] && flags[i])
-                {
-                    this->data(place).changeIfBetter(*columns[0], i, arena);
-                    if constexpr (is_any)
-                        break;
-                }
-            }
-        }
-        else
-        {
-            for (size_t i = 0; i < batch_size; ++i)
-            {
-                if (!null_map[i])
-                {
-                    this->data(place).changeIfBetter(*columns[0], i, arena);
-                    if constexpr (is_any)
-                        break;
-                }
             }
         }
     }

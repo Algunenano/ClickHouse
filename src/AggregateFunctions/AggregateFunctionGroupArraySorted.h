@@ -36,8 +36,8 @@ inline TColumn readItem(const IColumn * column, Arena * arena, size_t row)
 }
 
 template <typename TColumn, typename TFilter = void>
-size_t
-getFirstNElements_low_threshold(const TColumn * data, int num_elements, int threshold, size_t * results, const TFilter * filter = nullptr)
+size_t getFirstNElements_low_threshold(
+    const TColumn * data, int num_elements, int threshold, size_t * results, const TFilter * discard_map = nullptr)
 {
     for (int i = 0; i < threshold; i++)
     {
@@ -52,7 +52,7 @@ getFirstNElements_low_threshold(const TColumn * data, int num_elements, int thre
     {
         if constexpr (!std::is_same_v<TFilter, void>)
         {
-            if (filter[i] == 0)
+            if (discard_map[i])
                 continue;
         }
 
@@ -90,7 +90,7 @@ struct SortableItem
 
 template <typename TColumn, typename TFilter = void>
 size_t getFirstNElements_high_threshold(
-    const TColumn * data, size_t num_elements, size_t threshold, size_t * results, const TFilter * filter = nullptr)
+    const TColumn * data, size_t num_elements, size_t threshold, size_t * results, const TFilter * discard_map = nullptr)
 {
     std::vector<SortableItem<TColumn>> dataIndexed(num_elements);
     size_t num_elements_filtered = 0;
@@ -99,7 +99,7 @@ size_t getFirstNElements_high_threshold(
     {
         if constexpr (!std::is_same_v<TFilter, void>)
         {
-            if (filter[i] == 0)
+            if (discard_map[i])
                 continue;
         }
 
@@ -124,19 +124,19 @@ size_t getFirstNElements_high_threshold(
 static const size_t THRESHOLD_MAX_CUSTOM_FUNCTION = 1000;
 
 template <typename TColumn>
-size_t getFirstNElements(const TColumn * data, size_t num_elements, size_t threshold, size_t * results, const UInt8 * filter = nullptr)
+size_t getFirstNElements(const TColumn * data, size_t num_elements, size_t threshold, size_t * results, const UInt8 * discard_map)
 {
     if (threshold < THRESHOLD_MAX_CUSTOM_FUNCTION)
     {
-        if (filter != nullptr)
-            return getFirstNElements_low_threshold(data, num_elements, threshold, results, filter);
+        if (discard_map != nullptr)
+            return getFirstNElements_low_threshold(data, num_elements, threshold, results, discard_map);
         else
             return getFirstNElements_low_threshold(data, num_elements, threshold, results);
     }
     else
     {
-        if (filter != nullptr)
-            return getFirstNElements_high_threshold(data, num_elements, threshold, results, filter);
+        if (discard_map != nullptr)
+            return getFirstNElements_high_threshold(data, num_elements, threshold, results, discard_map);
         else
             return getFirstNElements_high_threshold(data, num_elements, threshold, results);
     }
@@ -202,8 +202,8 @@ public:
     }
 
     template <typename TColumn, bool is_plain, typename TFunc>
-    void
-    forFirstRows(size_t batch_size, const IColumn ** columns, size_t data_column, Arena * arena, ssize_t if_argument_pos, TFunc func) const
+    void forFirstRows(
+        size_t batch_size, const IColumn ** columns, size_t data_column, Arena * arena, const UInt8 * discard_map, TFunc func) const
     {
         const TColumn * values = nullptr;
         std::unique_ptr<std::vector<TColumn>> values_vector;
@@ -222,42 +222,38 @@ public:
             values = column.getData().data();
         }
 
-        const UInt8 * filter = nullptr;
-        StringRef refFilter;
-
-        if (if_argument_pos >= 0)
-        {
-            refFilter = columns[if_argument_pos]->getRawData();
-            filter = reinterpret_cast<const UInt8 *>(refFilter.data);
-        }
-
-        size_t num_elements = getFirstNElements(values, batch_size, threshold, best_rows.data(), filter);
+        size_t num_elements = getFirstNElements(values, batch_size, threshold, best_rows.data(), discard_map);
         for (size_t i = 0; i < num_elements; i++)
         {
             func(best_rows[i], values);
         }
     }
 
-    void addBatchSinglePlace(
-        size_t batch_size, AggregateDataPtr place, const IColumn ** columns, Arena * arena, ssize_t if_argument_pos) const override
+    void addBatchSinglePlace(size_t batch_size, AggregateDataPtr place, const IColumn ** columns, Arena * arena) const override
+    {
+        addBatchSinglePlaceConditional(batch_size, place, columns, nullptr, arena);
+    }
+
+    void addBatchSinglePlaceConditional(
+        size_t batch_size, AggregateDataPtr place, const IColumn ** columns, const UInt8 * discard_map, Arena * arena) const override
     {
         State & data = this->data(place);
 
         if constexpr (use_column_b)
         {
             forFirstRows<TColumnB, is_plain_b>(
-                batch_size, columns, 1, arena, if_argument_pos, [columns, &arena, &data](size_t row, const TColumnB * values)
-                {
-                    data.add(readItem<TColumnA, is_plain_a>(columns[0], arena, row), values[row]);
-                });
+                batch_size,
+                columns,
+                1,
+                arena,
+                discard_map,
+                [columns, &arena, &data](size_t row, const TColumnB * values)
+                { data.add(readItem<TColumnA, is_plain_a>(columns[0], arena, row), values[row]); });
         }
         else
         {
             forFirstRows<TColumnA, is_plain_a>(
-                batch_size, columns, 0, arena, if_argument_pos, [&data](size_t row, const TColumnA * values)
-                {
-                    data.add(values[row]);
-                });
+                batch_size, columns, 0, arena, discard_map, [&data](size_t row, const TColumnA * values) { data.add(values[row]); });
         }
     }
 

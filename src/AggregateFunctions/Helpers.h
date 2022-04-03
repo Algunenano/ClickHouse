@@ -277,4 +277,40 @@ static IAggregateFunction * createWithStringType(const IDataType & argument_type
     return nullptr;
 }
 
+
+// TODO: Optimize all of them
+// TODO: Return also (size_t) the amount of elements ? or discard_all and discard_none
+// TODO: Change return type to sth safer (or better API)
+static inline UInt8 * mergeNullAndFilterArrays(const UInt8 * __restrict null_map, const UInt8 * __restrict filter_map, size_t batch_size)
+{
+    auto final_discard = std::make_unique<UInt8[]>(batch_size);
+    for (size_t i = 0; i < batch_size; ++i)
+        final_discard[i] = (!!null_map[i]) | (!filter_map[i]);
+    return final_discard.release();
+}
+
+static inline UInt8 * mergeTwoDiscardArrays(const UInt8 * __restrict d1, const UInt8 * __restrict d2, size_t batch_size)
+{
+    auto final_discard = std::make_unique<UInt8[]>(batch_size);
+    for (size_t i = 0; i < batch_size; ++i)
+        final_discard[i] = d1[i] | d2[i];
+    return final_discard.release();
+}
+
+static inline UInt8 * mergeNullAndNullableFilterArrays(
+    const UInt8 * __restrict null_map, const UInt8 * __restrict filter_map, const UInt8 * __restrict filter_null_map, size_t batch_size)
+{
+    auto final_discard = std::make_unique<UInt8[]>(batch_size);
+    for (size_t i = 0; i < batch_size; ++i)
+        final_discard[i] = (!!null_map[i]) | (!filter_map[i]) | (!!filter_null_map[i]);
+    return final_discard.release();
+}
+
+static inline UInt8 * reverseFilterArray(const UInt8 * filter_map, size_t batch_size)
+{
+    auto final_discard = std::make_unique<UInt8[]>(batch_size);
+    for (size_t i = 0; i < batch_size; ++i)
+        final_discard[i] = !filter_map[i];
+    return final_discard.release();
+}
 }

@@ -95,9 +95,9 @@ struct AggregateFunctionSumData
         Impl::add(sum, local_sum);
     }
 
-    template <typename Value, bool add_if_zero>
+    template <typename Value>
     void NO_SANITIZE_UNDEFINED NO_INLINE
-    addManyConditionalInternal(const Value * __restrict ptr, const UInt8 * __restrict condition_map, size_t count)
+    addManyConditional(const Value * __restrict ptr, const UInt8 * __restrict discard_map, size_t count)
     {
         const auto * end = ptr + count;
 
@@ -105,15 +105,16 @@ struct AggregateFunctionSumData
             (is_integer<T> && !is_big_int_v<T>)
             || (is_decimal<T> && !std::is_same_v<T, Decimal256> && !std::is_same_v<T, Decimal128>))
         {
-            /// For integers we can vectorize the operation if we replace the null check using a multiplication (by 0 for null, 1 for not null)
+            /// For integers we can vectorize the operation if we replace the null check using a multiplication
+            /// (by 0 to discard, 1 to keep)
             /// https://quick-bench.com/q/MLTnfTvwC2qZFVeWHfOBR3U7a8I
             T local_sum{};
             while (ptr < end)
             {
-                T multiplier = !*condition_map == add_if_zero;
+                T multiplier = !*discard_map;
                 Impl::add(local_sum, *ptr * multiplier);
                 ++ptr;
-                ++condition_map;
+                ++discard_map;
             }
             Impl::add(sum, local_sum);
             return;
@@ -137,13 +138,13 @@ struct AggregateFunctionSumData
                 {
                     equivalent_integer value;
                     std::memcpy(&value, &ptr[i], sizeof(Value));
-                    value &= (!condition_map[i] != add_if_zero) - 1;
+                    value &= !!discard_map[i] - 1;
                     Value d;
                     std::memcpy(&d, &value, sizeof(Value));
                     Impl::add(partial_sums[i], d);
                 }
                 ptr += unroll_count;
-                condition_map += unroll_count;
+                discard_map += unroll_count;
             }
 
             for (size_t i = 0; i < unroll_count; ++i)
@@ -153,24 +154,12 @@ struct AggregateFunctionSumData
         T local_sum{};
         while (ptr < end)
         {
-            if (!*condition_map == add_if_zero)
+            if (!*discard_map)
                 Impl::add(local_sum, *ptr);
             ++ptr;
-            ++condition_map;
+            ++discard_map;
         }
         Impl::add(sum, local_sum);
-    }
-
-    template <typename Value>
-    void ALWAYS_INLINE addManyNotNull(const Value * __restrict ptr, const UInt8 * __restrict null_map, size_t count)
-    {
-        return addManyConditionalInternal<Value, true>(ptr, null_map, count);
-    }
-
-    template <typename Value>
-    void ALWAYS_INLINE addManyConditional(const Value * __restrict ptr, const UInt8 * __restrict cond_map, size_t count)
-    {
-        return addManyConditionalInternal<Value, false>(ptr, cond_map, count);
     }
 
     void NO_SANITIZE_UNDEFINED merge(const AggregateFunctionSumData & rhs)
@@ -248,8 +237,8 @@ struct AggregateFunctionSumKahanData
         }
     }
 
-    template <typename Value, bool add_if_zero>
-    void NO_INLINE addManyConditionalInternal(const Value * __restrict ptr, const UInt8 * __restrict condition_map, size_t count)
+    template <typename Value>
+    void NO_INLINE addManyConditionalInternal(const Value * __restrict ptr, const UInt8 * __restrict discard_map, size_t count)
     {
         constexpr size_t unroll_count = 4;
         T partial_sums[unroll_count]{};
@@ -261,10 +250,10 @@ struct AggregateFunctionSumKahanData
         while (ptr < unrolled_end)
         {
             for (size_t i = 0; i < unroll_count; ++i)
-                if ((!condition_map[i]) == add_if_zero)
+                if (!discard_map[i])
                     addImpl(ptr[i], partial_sums[i], partial_compensations[i]);
             ptr += unroll_count;
-            condition_map += unroll_count;
+            discard_map += unroll_count;
         }
 
         for (size_t i = 0; i < unroll_count; ++i)
@@ -272,23 +261,17 @@ struct AggregateFunctionSumKahanData
 
         while (ptr < end)
         {
-            if ((!*condition_map) == add_if_zero)
+            if (!*discard_map)
                 addImpl(*ptr, sum, compensation);
             ++ptr;
-            ++condition_map;
+            ++discard_map;
         }
     }
 
     template <typename Value>
-    void ALWAYS_INLINE addManyNotNull(const Value * __restrict ptr, const UInt8 * __restrict null_map, size_t count)
+    void ALWAYS_INLINE addManyConditional(const Value * __restrict ptr, const UInt8 * __restrict discard_map, size_t count)
     {
-        return addManyConditionalInternal<Value, true>(ptr, null_map, count);
-    }
-
-    template <typename Value>
-    void ALWAYS_INLINE addManyConditional(const Value * __restrict ptr, const UInt8 * __restrict cond_map, size_t count)
-    {
-        return addManyConditionalInternal<Value, false>(ptr, cond_map, count);
+        return addManyConditional(ptr, discard_map, count);
     }
 
     void ALWAYS_INLINE mergeImpl(T & to_sum, T & to_compensation, T from_sum, T from_compensation)
@@ -384,40 +367,17 @@ public:
             this->data(place).add(column.getData()[row_num]);
     }
 
-    void addBatchSinglePlace(
-        size_t batch_size, AggregateDataPtr place, const IColumn ** columns, Arena *, ssize_t if_argument_pos) const override
+    void addBatchSinglePlace(size_t batch_size, AggregateDataPtr place, const IColumn ** columns, Arena *) const override
     {
         const auto & column = assert_cast<const ColVecType &>(*columns[0]);
-        if (if_argument_pos >= 0)
-        {
-            const auto & flags = assert_cast<const ColumnUInt8 &>(*columns[if_argument_pos]).getData();
-            this->data(place).addManyConditional(column.getData().data(), flags.data(), batch_size);
-        }
-        else
-        {
-            this->data(place).addMany(column.getData().data(), batch_size);
-        }
+        this->data(place).addMany(column.getData().data(), batch_size);
     }
 
-    void addBatchSinglePlaceNotNull(
-        size_t batch_size, AggregateDataPtr place, const IColumn ** columns, const UInt8 * null_map, Arena *, ssize_t if_argument_pos)
-        const override
+    void addBatchSinglePlaceConditional(
+        size_t batch_size, AggregateDataPtr place, const IColumn ** columns, const UInt8 * discard_map, Arena *) const override
     {
         const auto & column = assert_cast<const ColVecType &>(*columns[0]);
-        if (if_argument_pos >= 0)
-        {
-            /// Merge the 2 sets of flags (null and if) into a single one. This allows us to use parallelizable sums when available
-            const auto * if_flags = assert_cast<const ColumnUInt8 &>(*columns[if_argument_pos]).getData().data();
-            auto final_flags = std::make_unique<UInt8[]>(batch_size);
-            for (size_t i = 0; i < batch_size; ++i)
-                final_flags[i] = (!null_map[i]) & if_flags[i];
-
-            this->data(place).addManyConditional(column.getData().data(), final_flags.get(), batch_size);
-        }
-        else
-        {
-            this->data(place).addManyNotNull(column.getData().data(), null_map, batch_size);
-        }
+        this->data(place).addManyConditional(column.getData().data(), discard_map, batch_size);
     }
 
     void merge(AggregateDataPtr __restrict place, ConstAggregateDataPtr rhs, Arena *) const override

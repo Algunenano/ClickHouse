@@ -4,10 +4,11 @@
 #include <IO/WriteHelpers.h>
 
 #include <array>
-#include <DataTypes/DataTypesNumber.h>
+#include <AggregateFunctions/Helpers.h>
+#include <AggregateFunctions/IAggregateFunction.h>
 #include <Columns/ColumnNullable.h>
 #include <Columns/ColumnsCommon.h>
-#include <AggregateFunctions/IAggregateFunction.h>
+#include <DataTypes/DataTypesNumber.h>
 #include <Common/assert_cast.h>
 
 #include <Common/config.h>
@@ -53,37 +54,15 @@ public:
         ++data(place).count;
     }
 
-    void addBatchSinglePlace(
-        size_t batch_size, AggregateDataPtr place, const IColumn ** columns, Arena *, ssize_t if_argument_pos) const override
+    void addBatchSinglePlace(size_t batch_size, AggregateDataPtr place, const IColumn **, Arena *) const override
     {
-        if (if_argument_pos >= 0)
-        {
-            const auto & flags = assert_cast<const ColumnUInt8 &>(*columns[if_argument_pos]).getData();
-            data(place).count += countBytesInFilter(flags);
-        }
-        else
-        {
-            data(place).count += batch_size;
-        }
+        data(place).count += batch_size;
     }
 
-    void addBatchSinglePlaceNotNull(
-        size_t batch_size,
-        AggregateDataPtr place,
-        const IColumn ** columns,
-        const UInt8 * null_map,
-        Arena *,
-        ssize_t if_argument_pos) const override
+    void addBatchSinglePlaceConditional(
+        size_t batch_size, AggregateDataPtr place, const IColumn **, const UInt8 * discard_map, Arena *) const override
     {
-        if (if_argument_pos >= 0)
-        {
-            const auto & flags = assert_cast<const ColumnUInt8 &>(*columns[if_argument_pos]).getData();
-            data(place).count += countBytesInFilterWithNull(flags, null_map);
-        }
-        else
-        {
-            data(place).count += batch_size - countBytesInFilter(null_map, batch_size);
-        }
+        data(place).count += batch_size - countBytesInFilter(discard_map, batch_size);
     }
 
     void merge(AggregateDataPtr __restrict place, ConstAggregateDataPtr rhs, Arena *) const override
@@ -203,19 +182,19 @@ public:
         data(place).count += !assert_cast<const ColumnNullable &>(*columns[0]).isNullAt(row_num);
     }
 
-    void addBatchSinglePlace(
-        size_t batch_size, AggregateDataPtr place, const IColumn ** columns, Arena *, ssize_t if_argument_pos) const override
+    void addBatchSinglePlace(size_t batch_size, AggregateDataPtr place, const IColumn ** columns, Arena *) const override
     {
         const auto & nc = assert_cast<const ColumnNullable &>(*columns[0]);
-        if (if_argument_pos >= 0)
-        {
-            const auto & flags = assert_cast<const ColumnUInt8 &>(*columns[if_argument_pos]).getData();
-            data(place).count += countBytesInFilterWithNull(flags, nc.getNullMapData().data());
-        }
-        else
-        {
-            data(place).count += batch_size - countBytesInFilter(nc.getNullMapData().data(), batch_size);
-        }
+        data(place).count += batch_size - countBytesInFilter(nc.getNullMapData().data(), batch_size);
+    }
+
+    void addBatchSinglePlaceConditional(
+        size_t batch_size, AggregateDataPtr place, const IColumn ** columns, const UInt8 * discard_map, Arena *) const override
+    {
+        /// TODO: This should be optimized (multiple conversions)
+        const auto & nc = assert_cast<const ColumnNullable &>(*columns[0]);
+        std::unique_ptr<UInt8[]> final_discard(mergeTwoDiscardArrays(nc.getNullMapData().data(), discard_map, batch_size));
+        data(place).count += batch_size - countBytesInFilter(final_discard.get(), batch_size);
     }
 
     void merge(AggregateDataPtr __restrict place, ConstAggregateDataPtr rhs, Arena *) const override

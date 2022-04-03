@@ -224,53 +224,23 @@ public:
         ++this->data(place).denominator;
     }
 
-    void
-    addBatchSinglePlace(size_t batch_size, AggregateDataPtr place, const IColumn ** columns, Arena *, ssize_t if_argument_pos) const final
+    void addBatchSinglePlace(size_t batch_size, AggregateDataPtr place, const IColumn ** columns, Arena *) const final
     {
         AggregateFunctionSumData<Numerator> sum_data;
         const auto & column = assert_cast<const ColVecType &>(*columns[0]);
-        if (if_argument_pos >= 0)
-        {
-            const auto & flags = assert_cast<const ColumnUInt8 &>(*columns[if_argument_pos]).getData();
-            sum_data.addManyConditional(column.getData().data(), flags.data(), batch_size);
-            this->data(place).denominator += countBytesInFilter(flags.data(), batch_size);
-        }
-        else
-        {
-            sum_data.addMany(column.getData().data(), batch_size);
-            this->data(place).denominator += batch_size;
-        }
+        sum_data.addMany(column.getData().data(), batch_size);
         increment(place, sum_data.sum);
+        this->data(place).denominator += batch_size;
     }
 
-    void addBatchSinglePlaceNotNull(
-        size_t batch_size, AggregateDataPtr place, const IColumn ** columns, const UInt8 * null_map, Arena *, ssize_t if_argument_pos)
-        const final
+    void addBatchSinglePlaceConditional(
+        size_t batch_size, AggregateDataPtr place, const IColumn ** columns, const UInt8 * discard_map, Arena *) const final
     {
         AggregateFunctionSumData<Numerator> sum_data;
         const auto & column = assert_cast<const ColVecType &>(*columns[0]);
-        if (if_argument_pos >= 0)
-        {
-            /// Merge the 2 sets of flags (null and if) into a single one. This allows us to use parallelizable sums when available
-            const auto * if_flags = assert_cast<const ColumnUInt8 &>(*columns[if_argument_pos]).getData().data();
-            auto final_flags = std::make_unique<UInt8[]>(batch_size);
-            size_t used_value = 0;
-            for (size_t i = 0; i < batch_size; ++i)
-            {
-                UInt8 kept = (!null_map[i]) & !!if_flags[i];
-                final_flags[i] = kept;
-                used_value += kept;
-            }
-
-            sum_data.addManyConditional(column.getData().data(), final_flags.get(), batch_size);
-            this->data(place).denominator += used_value;
-        }
-        else
-        {
-            sum_data.addManyNotNull(column.getData().data(), null_map, batch_size);
-            this->data(place).denominator += batch_size - countBytesInFilter(null_map, batch_size);
-        }
+        sum_data.addManyConditional(column.getData().data(), discard_map, batch_size);
         increment(place, sum_data.sum);
+        this->data(place).denominator += batch_size - countBytesInFilter(discard_map, batch_size);
     }
 
     String getName() const override { return "avg"; }

@@ -1,6 +1,7 @@
 #include <AggregateFunctions/AggregateFunctionCombinatorFactory.h>
 #include <AggregateFunctions/AggregateFunctionIf.h>
-#include "AggregateFunctionNull.h"
+#include <AggregateFunctions/AggregateFunctionNull.h>
+#include <AggregateFunctions/Helpers.h>
 
 namespace DB
 {
@@ -119,7 +120,7 @@ public:
         }
     }
 
-    void addBatchSinglePlace(size_t batch_size, AggregateDataPtr place, const IColumn ** columns, Arena * arena, ssize_t) const override
+    void addBatchSinglePlace(size_t batch_size, AggregateDataPtr place, const IColumn ** columns, Arena * arena) const override
     {
         const ColumnNullable * column = assert_cast<const ColumnNullable *>(columns[0]);
         const UInt8 * null_map = column->getNullMapData().data();
@@ -141,26 +142,20 @@ public:
 
         /// Combine the 2 flag arrays so we can call a simplified version (one check vs 2)
         /// Note that now the null map will contain 0 if not null and not filtered, or 1 for null or filtered (or both)
-
-        auto final_nulls = std::make_unique<UInt8[]>(batch_size);
-
-        if (filter_null_map)
-            for (size_t i = 0; i < batch_size; ++i)
-                final_nulls[i] = (!!null_map[i]) | (!filter_values[i]) | (!!filter_null_map[i]);
-        else
-            for (size_t i = 0; i < batch_size; ++i)
-                final_nulls[i] = (!!null_map[i]) | (!filter_values[i]);
+        std::unique_ptr<UInt8[]> final_discard(
+            filter_null_map ? mergeNullAndNullableFilterArrays(null_map, filter_values, filter_null_map, batch_size)
+                            : mergeNullAndFilterArrays(null_map, filter_values, batch_size));
 
         if constexpr (result_is_nullable)
         {
-            if (!memoryIsByte(final_nulls.get(), batch_size, 1))
+            if (!memoryIsByte(final_discard.get(), batch_size, 1))
                 this->setFlag(place);
             else
                 return; /// No work to do.
         }
 
-        this->nested_function->addBatchSinglePlaceNotNull(
-            batch_size, this->nestedPlace(place), columns_param, final_nulls.get(), arena, -1);
+        this->nested_function->addBatchSinglePlaceConditional(
+            batch_size, this->nestedPlace(place), columns_param, final_discard.get(), arena);
     }
 
 #if USE_EMBEDDED_COMPILER
