@@ -4,14 +4,23 @@
 #include <mutex>
 
 #include <Core/Types.h>
-#include <Common/ProfileEvents.h>
 #include <IO/OpenedFile.h>
+#include <Common/CurrentMetrics.h>
+#include <Common/ProfileEvents.h>
+#include <Common/Stopwatch.h>
 
 
 namespace ProfileEvents
 {
     extern const Event OpenedFileCacheHits;
     extern const Event OpenedFileCacheMisses;
+    extern const Event OpenedFileCacheWaitMilliseconds;
+}
+
+
+namespace CurrentMetrics
+{
+    extern const Metric OpenedFileCacheWaiting;
 }
 
 namespace DB
@@ -30,7 +39,7 @@ private:
     using Key = std::pair<std::string /* path */, int /* flags */>;
 
     using OpenedFileWeakPtr = std::weak_ptr<OpenedFile>;
-    using Files = std::map<Key, OpenedFileWeakPtr>;
+    using Files = std::map<Key, OpenedFileWeakPtr>; /// Maybe try flat_hash_map
 
     Files files;
     std::mutex mutex;
@@ -42,7 +51,11 @@ public:
     {
         Key key(path, flags);
 
+        Stopwatch waiting_watch(CLOCK_MONOTONIC_COARSE);
+        CurrentMetrics::Increment waiting_increment{CurrentMetrics::OpenedFileCacheWaiting};
         std::lock_guard lock(mutex);
+        waiting_increment.destroy();
+        ProfileEvents::increment(ProfileEvents::OpenedFileCacheWaitMilliseconds, waiting_watch.elapsedMilliseconds());
 
         auto [it, inserted] = files.emplace(key, OpenedFilePtr{});
         if (!inserted)
@@ -61,7 +74,11 @@ public:
             [key, this](auto ptr)
             {
                 {
+                    Stopwatch eraser_watch(CLOCK_MONOTONIC_COARSE);
+                    CurrentMetrics::Increment eraser_increment{CurrentMetrics::OpenedFileCacheWaiting};
                     std::lock_guard another_lock(mutex);
+                    eraser_increment.destroy();
+                    ProfileEvents::increment(ProfileEvents::OpenedFileCacheWaitMilliseconds, eraser_watch.elapsedMilliseconds());
                     files.erase(key);
                 }
                 delete ptr;

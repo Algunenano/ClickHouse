@@ -95,6 +95,7 @@
     M(S3Requests, "S3 requests") \
     M(KeeperAliveConnections, "Number of alive connections") \
     M(KeeperOutstandingRequets, "Number of outstanding requests") \
+    M(OpenedFileCacheWaiting, "Number of threads waiting to access the cache of opened files") \
 
 namespace CurrentMetrics
 {

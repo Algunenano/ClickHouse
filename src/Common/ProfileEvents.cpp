@@ -39,6 +39,7 @@
     M(MMappedFileCacheMisses, "") \
     M(OpenedFileCacheHits, "") \
     M(OpenedFileCacheMisses, "") \
+    M(OpenedFileCacheWaitMilliseconds, "Time spent waiting to access the cache of opened files") \
     M(AIOWrite, "Number of writes with Linux or FreeBSD AIO interface") \
     M(AIOWriteBytes, "Number of bytes written with Linux or FreeBSD AIO interface") \
     M(AIORead, "Number of reads with Linux or FreeBSD AIO interface") \
