@@ -199,34 +199,33 @@ protected:
         ;
 
 private:
+    size_t mmap_min_alignment = ::getPageSize();
     void * allocNoTrack(size_t size, size_t alignment)
     {
         void * buf;
-        size_t mmap_min_alignment = ::getPageSize();
 
-        if (size >= MMAP_THRESHOLD)
+        if unlikely (size >= MMAP_THRESHOLD)
         {
-            if (alignment > mmap_min_alignment)
+            if unlikely (alignment > mmap_min_alignment)
                 throw DB::Exception(fmt::format("Too large alignment {}: more than page size when allocating {}.",
                     ReadableSize(alignment), ReadableSize(size)), DB::ErrorCodes::BAD_ARGUMENTS);
 
-            buf = mmap(getMmapHint(), size, PROT_READ | PROT_WRITE,
-                       mmap_flags, -1, 0);
-            if (MAP_FAILED == buf)
+            buf = mmap(getMmapHint(), size, PROT_READ | PROT_WRITE, mmap_flags, -1, 0);
+            if unlikely (MAP_FAILED == buf)
                 DB::throwFromErrno(fmt::format("Allocator: Cannot mmap {}.", ReadableSize(size)), DB::ErrorCodes::CANNOT_ALLOCATE_MEMORY);
 
             /// No need for zero-fill, because mmap guarantees it.
         }
         else
         {
-            if (alignment <= MALLOC_MIN_ALIGNMENT)
+            if likely (alignment <= MALLOC_MIN_ALIGNMENT)
             {
                 if constexpr (clear_memory)
                     buf = ::calloc(size, 1);
                 else
                     buf = ::malloc(size);
 
-                if (nullptr == buf)
+                if unlikely (nullptr == buf)
                     DB::throwFromErrno(fmt::format("Allocator: Cannot malloc {}.", ReadableSize(size)), DB::ErrorCodes::CANNOT_ALLOCATE_MEMORY);
             }
             else
@@ -234,7 +233,7 @@ private:
                 buf = nullptr;
                 int res = posix_memalign(&buf, alignment, size);
 
-                if (0 != res)
+                if unlikely (0 != res)
                     DB::throwFromErrno(fmt::format("Cannot allocate memory (posix_memalign) {}.", ReadableSize(size)),
                         DB::ErrorCodes::CANNOT_ALLOCATE_MEMORY, res);
 
@@ -247,9 +246,9 @@ private:
 
     void freeNoTrack(void * buf, size_t size)
     {
-        if (size >= MMAP_THRESHOLD)
+        if unlikely (size >= MMAP_THRESHOLD)
         {
-            if (0 != munmap(buf, size))
+            if unlikely (0 != munmap(buf, size))
                 DB::throwFromErrno(fmt::format("Allocator: Cannot munmap {}.", ReadableSize(size)), DB::ErrorCodes::CANNOT_MUNMAP);
         }
         else
@@ -258,10 +257,10 @@ private:
         }
     }
 
-    void checkSize(size_t size)
+    inline ALWAYS_INLINE void checkSize(size_t size)
     {
         /// More obvious exception in case of possible overflow (instead of just "Cannot mmap").
-        if (size >= 0x8000000000000000ULL)
+        if unlikely (size >= 0x8000000000000000ULL)
             throw DB::Exception(DB::ErrorCodes::LOGICAL_ERROR, "Too large size ({}) passed to allocator. It indicates an error.", size);
     }
 
