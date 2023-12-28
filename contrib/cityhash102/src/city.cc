@@ -107,6 +107,12 @@ static uint64 Rotate(uint64 val, int shift) {
   return shift == 0 ? val : ((val >> shift) | (val << (64 - shift)));
 }
 
+template <int shift>
+static uint64 RotateT(uint64 val)
+{
+    return shift == 0 ? val : ((val >> shift) | (val << (64 - shift)));
+}
+
 // Equivalent to Rotate(), but requires the second arg to be non-zero.
 // On x86-64, and probably others, it's possible for this to compile
 // to a single instruction if both args are already in registers.
@@ -165,6 +171,19 @@ static pair<uint64, uint64> WeakHashLen32WithSeeds(
   a += y;
   b += Rotate(a, 44);
   return make_pair(a + z, b + c);
+}
+
+// Return a 16-byte hash for 48 bytes.  Quick and dirty.
+// Callers do best to use "random-looking" values for a and b.
+static pair<uint64, uint64> WeakHashLen32WithSeedsN(
+        uint64 w, uint64 x, uint64 y, uint64 z, uint64 a, uint64 b) {
+    a += w;
+    b = RotateT<21>(b + a + z);
+    uint64 c = a;
+    a += x;
+    a += y;
+    b += RotateT<44>(a);
+    return make_pair(a + z, b + c);
 }
 
 // Return a 16-byte hash for s[0] ... s[31], a, and b.  Quick and dirty.
@@ -283,7 +302,7 @@ static uint128 CityMurmur(const char *s, size_t len, uint128 seed) {
   return uint128(a ^ b, HashLen16(b, a));
 }
 
-uint128 CityHash128WithSeed(const char *s, size_t len, uint128 seed) {
+uint128 CityHash128WithSeedOriginal(const char *s, size_t len, uint128 seed) {
   if (len < 128) {
     return CityMurmur(s, len, seed);
   }
@@ -321,6 +340,86 @@ uint128 CityHash128WithSeed(const char *s, size_t len, uint128 seed) {
     s += 64;
     len -= 128;
   } while (LIKELY(len >= 128));
+  y += Rotate(w.first, 37) * k0 + z;
+  x += Rotate(v.first + z, 49) * k0;
+  // If 0 < len < 128, hash up to 4 chunks of 32 bytes each from the end of s.
+  for (size_t tail_done = 0; tail_done < len; ) {
+    tail_done += 32;
+    y = Rotate(y - x, 42) * k0 + v.second;
+    w.first += Fetch64(s + len - tail_done + 16);
+    x = Rotate(x, 49) * k0 + w.first;
+    w.first += v.first;
+    v = WeakHashLen32WithSeeds(s + len - tail_done, v.first, v.second);
+  }
+  // At this point our 48 bytes of state should contain more than
+  // enough information for a strong 128-bit hash.  We use two
+  // different 48-byte-to-8-byte hashes to get a 16-byte final result.
+  x = HashLen16(x, v.first);
+  y = HashLen16(y, w.first);
+  return uint128(HashLen16(x + v.second, w.second) + y,
+                 HashLen16(x + w.second, y + v.second));
+}
+
+
+uint128 CityHash128WithSeed(const char *s, size_t len, uint128 seed) {
+  if (len < 128) {
+    return CityMurmur(s, len, seed);
+  }
+
+  // We expect len >= 128 to be the common case.  Keep 56 bytes of state:
+  // v, w, x, y, and z.
+  pair<uint64, uint64> v, w;
+  uint64 x = Uint128Low64(seed);
+  uint64 y = Uint128High64(seed);
+  uint64 z = len * k1;
+  v.first = RotateT<49>(y ^ k1) * k1 + Fetch64(s);
+  v.second = RotateT<42>(v.first) * k1 + Fetch64(s + 8);
+  w.first = RotateT<35>(y + z) * k1 + x;
+  w.second = RotateT<53>(x + Fetch64(s + 88)) * k1;
+
+  // This is the same inner loop as CityHash64(), manually unrolled.
+  for (size_t i = 0; i < len / 128; i++)
+  {
+      uint64 parts[16] = {
+              Fetch64(s),
+              Fetch64(s + 8),
+              Fetch64(s + 16),
+              Fetch64(s + 24),
+              Fetch64(s + 32),
+              Fetch64(s + 40),
+              Fetch64(s + 48),
+              Fetch64(s + 56),
+              Fetch64(s + 64),
+              Fetch64(s + 72),
+              Fetch64(s + 80),
+              Fetch64(s + 88),
+              Fetch64(s + 96),
+              Fetch64(s + 104),
+              Fetch64(s + 112),
+              Fetch64(s + 120)
+      };
+      {
+          x = RotateT<37>(x + y + v.first + parts[2]) * k1;
+          y = RotateT<42>(y + v.second + parts[6]) * k1;
+          x ^= w.second;
+          y ^= v.first;
+          v = WeakHashLen32WithSeeds(parts[0], parts[1], parts[2], parts[3], v.second * k1, x + w.first);
+          z = RotateT<33>(z ^ w.first);
+          w = WeakHashLen32WithSeeds(parts[4], parts[5], parts[6], parts[7], z + w.second, y);
+
+          z = RotateT<37>(z + y + v.first + parts[10]) * k1;
+          y = RotateT<42>(y + v.second + parts[14]) * k1;
+          z ^= w.second;
+          y ^= v.first;
+          v = WeakHashLen32WithSeeds(parts[8], parts[9], parts[10], parts[11], v.second * k1, z + w.first);
+          x = RotateT<33>(x ^ w.first);
+          w = WeakHashLen32WithSeeds(parts[12], parts[13], parts[14], parts[15], x + w.second, y);
+      }
+    s += 128;
+  }
+
+  len -= 128 * (len / 128);
+
   y += Rotate(w.first, 37) * k0 + z;
   x += Rotate(v.first + z, 49) * k0;
   // If 0 < len < 128, hash up to 4 chunks of 32 bytes each from the end of s.
@@ -479,3 +578,26 @@ uint128 CityHashCrc128(const char *s, size_t len) {
 }
 
 #endif
+
+
+//#include <benchmark/benchmark.h>
+//
+//static void BenchCityHash128WithSeedOriginal(benchmark::State& state) {
+//    char * data = new char[state.range(0)];
+//    for (auto _ : state) {
+//        benchmark::DoNotOptimize(CityHash_v1_0_2::CityHash128WithSeedOriginal(data, state.range(0), CityHash_v1_0_2::uint128(0, 0)));
+//    }
+//    delete data;
+//}
+//
+//static void BenchCityHash128WithSeedNew(benchmark::State& state) {
+//    char * data = new char[state.range(0)];
+//    for (auto _ : state) {
+//        benchmark::DoNotOptimize(CityHash_v1_0_2::CityHash128WithSeed(data, state.range(0), CityHash_v1_0_2::uint128(0, 0)));
+//    }
+//    delete data;
+//}
+//
+//BENCHMARK(BenchCityHash128WithSeedOriginal)->RangeMultiplier(2)->Range(1 << 10, 1 << 18);
+//BENCHMARK(BenchCityHash128WithSeedNew)->RangeMultiplier(2)->Range(1 << 10, 1 << 18);
+//BENCHMARK_MAIN();
