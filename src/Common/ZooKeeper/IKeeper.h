@@ -53,7 +53,7 @@ struct ACL
 
 using ACLs = std::vector<ACL>;
 
-struct Stat
+struct __attribute__((packed)) Stat
 {
     int64_t czxid{0};
     int64_t mzxid{0};

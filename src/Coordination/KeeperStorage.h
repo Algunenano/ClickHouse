@@ -22,6 +22,10 @@ using ResponseCallback = std::function<void(const Coordination::ZooKeeperRespons
 using ChildrenSet = absl::flat_hash_set<StringRef, StringRefHash>;
 using SessionAndTimeout = std::unordered_map<int64_t, int64_t>;
 
+static_assert(sizeof(ChildrenSet) == 32);
+static_assert(sizeof(String) == 24);
+static_assert(sizeof(std::optional<UInt64>) == 16);
+
 struct KeeperStorageSnapshot;
 
 /// Keeper state machine almost equal to the ZooKeeper's state machine.
@@ -32,12 +36,6 @@ class KeeperStorage
 public:
     struct Node
     {
-        uint64_t acl_id = 0; /// 0 -- no ACL by default
-        bool is_sequental = false;
-        Coordination::Stat stat{};
-        int32_t seq_num = 0;
-        uint64_t size_bytes; // save size to avoid calculate every time
-
         Node() : size_bytes(sizeof(Node)) { }
 
         /// Object memory size
@@ -66,6 +64,11 @@ public:
 
         void recalculateSize();
 
+        Coordination::Stat stat{};
+        uint64_t acl_id = 0; /// 0 -- no ACL by default
+        bool is_sequental = false;
+        int32_t seq_num = 0;
+        uint64_t size_bytes; // save size to avoid calculate every time
     private:
         String data;
         ChildrenSet children{};
@@ -156,12 +159,18 @@ public:
     //    state of that same object from the storage and applying the deltas
     //    in the same order as they are defined
     //  - quickly commit the changes to the storage
-    struct CreateNodeDelta
+    struct SequentialCreateNodeDelta
     {
-        Coordination::Stat stat;
-        bool is_sequental;
         Coordination::ACLs acls;
         String data;
+        std::unique_ptr<Coordination::Stat> stat;
+    };
+
+    struct NotSequentialCreateNodeDelta
+    {
+        Coordination::ACLs acls;
+        String data;
+        std::unique_ptr<Coordination::Stat> stat;
     };
 
     struct RemoveNodeDelta
@@ -203,21 +212,33 @@ public:
         AuthID auth_id;
     };
 
-    using Operation = std::
-        variant<CreateNodeDelta, RemoveNodeDelta, UpdateNodeDelta, SetACLDelta, AddAuthDelta, ErrorDelta, SubDeltaEnd, FailedMultiDelta>;
+    using Operation = std::variant<
+        SequentialCreateNodeDelta,
+        NotSequentialCreateNodeDelta,
+        RemoveNodeDelta,
+        UpdateNodeDelta,
+        SetACLDelta,
+        AddAuthDelta,
+        ErrorDelta,
+        SubDeltaEnd,
+        FailedMultiDelta>;
 
     struct Delta
     {
-        Delta(String path_, int64_t zxid_, Operation operation_) : path(std::move(path_)), zxid(zxid_), operation(std::move(operation_)) { }
+        Delta(String path_, int64_t zxid_, Operation && operation_) : path(std::move(path_)), zxid(zxid_), operation(std::move(operation_))
+        {
+        }
 
         Delta(int64_t zxid_, Coordination::Error error) : Delta("", zxid_, ErrorDelta{error}) { }
 
-        Delta(int64_t zxid_, Operation subdelta) : Delta("", zxid_, subdelta) { }
+        Delta(int64_t zxid_, Operation && subdelta) : Delta("", zxid_, std::move(subdelta)) { }
 
         String path;
         int64_t zxid;
         Operation operation;
     };
+
+    static_assert(sizeof(Operation) == 64);
 
     struct UncommittedState
     {
