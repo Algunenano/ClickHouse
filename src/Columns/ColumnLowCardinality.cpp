@@ -901,6 +901,29 @@ ColumnPtr ColumnLowCardinality::cloneWithDefaultOnNull() const
     return res;
 }
 
+void ColumnLowCardinality::forEachSubcolumn(MutableColumnCallback callback)
+{
+    callback(idx.getPositionsPtr());
+
+    /// Column doesn't own dictionary if it's shared.
+    if (!dictionary.isShared())
+        callback(dictionary.getColumnUniquePtr());
+}
+
+void ColumnLowCardinality::forEachSubcolumnRecursively(RecursiveMutableColumnCallback callback)
+{
+    callback(*idx.getPositionsPtr());
+    idx.getPositionsPtr()->forEachSubcolumnRecursively(callback);
+
+    /// Column doesn't own dictionary if it's shared.
+    if (!dictionary.isShared())
+    {
+        callback(*dictionary.getColumnUniquePtr());
+        dictionary.getColumnUniquePtr()->forEachSubcolumnRecursively(callback);
+    }
+}
+
+
 bool isColumnLowCardinalityNullable(const IColumn & column)
 {
     if (const auto * lc_column = checkAndGetColumn<ColumnLowCardinality>(&column))
