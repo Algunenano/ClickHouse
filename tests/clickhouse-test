@@ -73,6 +73,12 @@ VERSION_PATTERN = r"^((\d+\.)?(\d+\.)?(\d+\.)?\d+)$"
 
 TEST_MAX_RUN_TIME_IN_SECONDS = 180
 
+stop_time = None
+exit_code = None
+server_died = None
+multiprocessing_manager = None
+restarted_tests = None
+
 
 class SharedEngineReplacer:
     ENGINES_NON_REPLICATED_REGEXP = r"[ =]((Collapsing|VersionedCollapsing|Summing|Replacing|Aggregating|)MergeTree\(?\)?)"
@@ -2258,13 +2264,6 @@ class TestSuite:
             return None
 
         return TestSuite(args, suite_path, suite_tmp_path, suite)
-
-
-stop_time = None
-exit_code = None
-server_died = None
-multiprocessing_manager = None
-restarted_tests = None
 
 
 class ServerDied(Exception):
