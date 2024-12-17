@@ -658,8 +658,8 @@ def get_stacktraces_from_clickhouse(args):
         return None
 
 
-def print_stacktraces() -> None:
-    server_pid = get_server_pid()
+def print_stacktraces(args) -> None:
+    server_pid = get_server_pid(args)
 
     bt = None
 
@@ -696,7 +696,7 @@ def print_stacktraces() -> None:
     )
 
 
-def get_server_pid():
+def get_server_pid(args):
     # lsof does not work in stress tests for some reason
     cmd_lsof = f"lsof -i tcp:{args.tcp_port} -s tcp:LISTEN -Fp | sed 's/^p//p;d'"
     cmd_pidof = "pidof -s clickhouse-server"
@@ -1244,7 +1244,7 @@ class TestCase:
         self.show_whitespaces_in_diff = args.show_whitespaces_in_diff
 
     # should skip test, should increment skipped_total, skip reason
-    def should_skip_test(self, suite) -> Optional[FailureReason]:
+    def should_skip_test(self, args, suite) -> Optional[FailureReason]:
         tags = self.tags
 
         if tags and ("disabled" in tags) and not args.disabled:
@@ -1565,14 +1565,14 @@ class TestCase:
         return TestResult(self.name, TestStatus.OK, None, total_time, description)
 
     @staticmethod
-    def print_test_time(test_time) -> str:
+    def print_test_time(args, test_time) -> str:
         if args.print_time:
             return f" {test_time:.2f} sec."
         return ""
 
-    def process_result(self, result: TestResult, messages):
+    def process_result(self, args, result: TestResult, messages):
         description_full = messages[result.status]
-        description_full += self.print_test_time(result.total_time)
+        description_full += self.print_test_time(args, result.total_time)
         if result.reason is not None:
             description_full += f"\nReason: {result.reason.value} "
 
@@ -1786,7 +1786,7 @@ class TestCase:
         start_time = datetime.now()
 
         try:
-            skip_reason = self.should_skip_test(suite)
+            skip_reason = self.should_skip_test(args, suite)
             if skip_reason is not None:
                 return TestResult(self.name, TestStatus.SKIPPED, skip_reason, 0.0, "")
 
@@ -1967,23 +1967,6 @@ class TestCase:
 
 class TestSuite:
     @staticmethod
-    def tests_in_suite_key_func(item: str) -> float:
-        if args.order == "random":
-            return random.random()
-
-        reverse = 1 if args.order == "asc" else -1
-
-        if -1 == item.find("_"):
-            return 99998
-
-        prefix, _ = item.split("_", 1)
-
-        try:
-            return reverse * int(prefix)
-        except ValueError:
-            return 99997
-
-    @staticmethod
     def render_test_template(j2env, suite_dir, test_name):
         """
         Render template for test and reference file if needed
@@ -2147,8 +2130,24 @@ class TestSuite:
                 _ = x
                 return True
 
+        def tests_in_suite_key_func(item: str) -> float:
+            if args.order == "random":
+                return random.random()
+
+            reverse = 1 if args.order == "asc" else -1
+
+            if -1 == item.find("_"):
+                return 99998
+
+            prefix, _ = item.split("_", 1)
+
+            try:
+                return reverse * int(prefix)
+            except ValueError:
+                return 99997
+
         self.all_tests: List[str] = self.get_tests_list(
-            self.tests_in_suite_key_func, filter_func
+            tests_in_suite_key_func, filter_func
         )
 
         all_tags_and_random_settings_limits = (
@@ -2163,12 +2162,12 @@ class TestSuite:
         self.sequential_tests = []
         self.parallel_tests = []
         for test_name in self.all_tests:
-            if self.is_sequential_test(test_name) and not args.no_sequential:
+            if self.is_sequential_test(args, test_name) and not args.no_sequential:
                 self.sequential_tests.append(test_name)
             elif not args.no_parallel:
                 self.parallel_tests.append(test_name)
 
-    def is_sequential_test(self, test_name):
+    def is_sequential_test(self, args, test_name):
         if args.sequential:
             if any(s in test_name for s in args.sequential):
                 return True
@@ -2276,7 +2275,9 @@ class GlobalTimeout(Exception):
     pass
 
 
-def run_tests_array(all_tests_with_params: Tuple[List[str], int, TestSuite, bool]):
+def run_tests_array(
+    args, all_tests_with_params: Tuple[List[str], int, TestSuite, bool]
+):
     (
         all_tests,
         num_tests,
@@ -2380,7 +2381,7 @@ def run_tests_array(all_tests_with_params: Tuple[List[str], int, TestSuite, bool
                     test_result = test_case.run(
                         args, test_suite, client_options, server_logs_level
                     )
-                    test_result = test_case.process_result(test_result, MESSAGES)
+                    test_result = test_case.process_result(args, test_result, MESSAGES)
                 except TimeoutError:
                     break
                 finally:
@@ -2603,32 +2604,17 @@ def check_table_column(args, database, table, column):
     )
 
 
-def suite_key_func(item: str) -> Union[float, Tuple[int, str]]:
-    if args.order == "random":
-        return random.random()
-
-    if -1 == item.find("_"):
-        return 99998, ""
-
-    prefix, suffix = item.split("_", 1)
-
-    try:
-        return int(prefix), suffix
-    except ValueError:
-        return 99997, ""
-
-
-def extract_key(key: str) -> str:
+def extract_key(args, key: str) -> str:
     return subprocess.getstatusoutput(
         args.extract_from_config + " --try --config " + args.configserver + key
     )[1]
 
 
-def run_tests_process(*args, **kwargs):
-    return run_tests_array(*args, **kwargs)
+def run_tests_process(process_args, *args, **kwargs):
+    return run_tests_array(process_args, *args, **kwargs)
 
 
-def do_run_tests(jobs, test_suite: TestSuite):
+def do_run_tests(args, jobs, test_suite: TestSuite):
     print(
         "Found",
         len(test_suite.parallel_tests),
@@ -2661,7 +2647,10 @@ def do_run_tests(jobs, test_suite: TestSuite):
         for _ in range(jobs):
             process = multiprocessing.Process(
                 target=run_tests_process,
-                args=((parallel_tests, batch_size, test_suite, True),),
+                args=(
+                    args,
+                    (parallel_tests, batch_size, test_suite, True),
+                ),
             )
             processes.append(process)
             process.start()
@@ -2955,9 +2944,9 @@ def main(args):
         msg = "Server is not responding. Cannot execute 'SELECT 1' query."
         if args.hung_check:
             print(msg)
-            pid = get_server_pid()
+            pid = get_server_pid(args)
             print("Got server pid", pid)
-            print_stacktraces()
+            print_stacktraces(args)
         raise TestException(msg)
 
     args.build_flags = collect_build_flags(args)
@@ -2996,7 +2985,9 @@ def main(args):
         args.zookeeper = True
 
     if args.shard is None:
-        args.shard = bool(extract_key(' --key listen_host | grep -E "127.0.0.2|::"'))
+        args.shard = bool(
+            extract_key(args, ' --key listen_host | grep -E "127.0.0.2|::"')
+        )
 
     def create_common_database(args, db_name):
         create_database_retries = 0
@@ -3052,6 +3043,20 @@ def main(args):
     cloud_skip_list = try_get_skip_list(base_dir, "../queries-no-cloud-tests.txt")
     private_skip_list = try_get_skip_list(base_dir, "../queries-no-private-tests.txt")
 
+    def suite_key_func(item: str) -> Union[float, Tuple[int, str]]:
+        if args.order == "random":
+            return random.random()
+
+        if -1 == item.find("_"):
+            return 99998, ""
+
+        prefix, suffix = item.split("_", 1)
+
+        try:
+            return int(prefix), suffix
+        except ValueError:
+            return 99997, ""
+
     for suite in sorted(os.listdir(base_dir), key=suite_key_func):
         if server_died.is_set():
             break
@@ -3062,7 +3067,7 @@ def main(args):
 
         test_suite.cloud_skip_list = cloud_skip_list
         test_suite.private_skip_list = private_skip_list
-        total_tests_run += do_run_tests(args.jobs, test_suite)
+        total_tests_run += do_run_tests(args, args.jobs, test_suite)
 
     if server_died.is_set():
         exit_code.value = 1
@@ -3115,7 +3120,7 @@ def main(args):
             print(processlist.decode())
             print(get_transactions_list(args))
 
-            print_stacktraces()
+            print_stacktraces(args)
             exit_code.value = 1
         else:
             print(colored("\nNo queries hung.", args, "green", attrs=["bold"]))
@@ -3579,41 +3584,41 @@ if __name__ == "__main__":
     signal.signal(signal.SIGHUP, signal_handler)
 
     try:
-        args = parse_args()
+        process_args = parse_args()
     except Exception as e:
         print(e, file=sys.stderr)
         sys.exit(1)
 
-    if args.queries and not os.path.isdir(args.queries):
+    if process_args.queries and not os.path.isdir(process_args.queries):
         print(
-            f"Cannot access the specified directory with queries ({args.queries})",
+            f"Cannot access the specified directory with queries ({process_args.queries})",
             file=sys.stderr,
         )
         assert False, "No --queries provided"
 
-    CAPTURE_CLIENT_STACKTRACE = args.capture_client_stacktrace
+    CAPTURE_CLIENT_STACKTRACE = process_args.capture_client_stacktrace
 
     # Autodetect the directory with queries if not specified
-    if args.queries is None:
-        args.queries = "queries"
+    if process_args.queries is None:
+        process_args.queries = "queries"
 
-    if not os.path.isdir(args.queries):
+    if not os.path.isdir(process_args.queries):
         # If we're running from the repo
-        args.queries = os.path.join(
+        process_args.queries = os.path.join(
             os.path.dirname(os.path.abspath(__file__)), "queries"
         )
 
-    if not os.path.isdir(args.queries):
+    if not os.path.isdir(process_args.queries):
         # Next we're going to try some system directories, don't write 'stdout' files into them.
-        if args.tmp is None:
-            args.tmp = "/tmp/clickhouse-test"
+        if process_args.tmp is None:
+            process_args.tmp = "/tmp/clickhouse-test"
 
-        args.queries = "/usr/local/share/clickhouse-test/queries"
+        process_args.queries = "/usr/local/share/clickhouse-test/queries"
 
-    if not os.path.isdir(args.queries):
-        args.queries = "/usr/share/clickhouse-test/queries"
+    if not os.path.isdir(process_args.queries):
+        process_args.queries = "/usr/share/clickhouse-test/queries"
 
-    if not os.path.isdir(args.queries):
+    if not os.path.isdir(process_args.queries):
         print(
             "Failed to detect path to the queries directory. Please specify it with "
             "'--queries' option.",
@@ -3621,67 +3626,67 @@ if __name__ == "__main__":
         )
         sys.exit(1)
 
-    print("Using queries from '" + args.queries + "' directory")
+    print("Using queries from '" + process_args.queries + "' directory")
 
-    if args.tmp is None:
-        args.tmp = args.queries
+    if process_args.tmp is None:
+        process_args.tmp = process_args.queries
 
-    if args.client:
+    if process_args.client:
         print(
             "WARNING: --client option is deprecated and will be removed the the future, use --binary instead",
             file=sys.stderr,
         )
 
-    args.client = find_clickhouse_command(args.binary, "client")
+    process_args.client = find_clickhouse_command(process_args.binary, "client")
 
-    if args.extract_from_config:
+    if process_args.extract_from_config:
         print(
             "WARNING: --extract_from_config option is deprecated and will be removed the the future",
             file=sys.stderr,
         )
-    args.extract_from_config = find_clickhouse_command(
-        args.binary, "extract-from-config"
+    process_args.extract_from_config = find_clickhouse_command(
+        process_args.binary, "extract-from-config"
     )
 
-    if args.configclient:
-        args.client += " --config-file=" + args.configclient
+    if process_args.configclient:
+        process_args.client += " --config-file=" + process_args.configclient
 
     tcp_host = os.getenv("CLICKHOUSE_HOST")
     if tcp_host is not None:
-        args.tcp_host = tcp_host
-        args.client += f" --host={tcp_host}"
+        process_args.tcp_host = tcp_host
+        process_args.client += f" --host={tcp_host}"
     else:
-        args.tcp_host = "localhost"
+        process_args.tcp_host = "localhost"
 
     tcp_port = os.getenv("CLICKHOUSE_PORT_TCP")
     if tcp_port is not None:
-        args.tcp_port = int(tcp_port)
-        args.client += f" --port={tcp_port}"
+        process_args.tcp_port = int(tcp_port)
+        process_args.client += f" --port={tcp_port}"
     else:
-        args.tcp_port = 9440 if args.secure else 9000
-        if args.secure:
-            os.environ["CLICKHOUSE_PORT_TCP"] = str(args.tcp_port)
+        process_args.tcp_port = 9440 if process_args.secure else 9000
+        if process_args.secure:
+            os.environ["CLICKHOUSE_PORT_TCP"] = str(process_args.tcp_port)
 
     http_port = os.getenv("CLICKHOUSE_PORT_HTTP")
     if http_port is not None:
-        args.http_port = int(http_port)
+        process_args.http_port = int(http_port)
     else:
-        args.http_port = 8443 if args.secure else 8123
-        os.environ["CLICKHOUSE_PORT_HTTP"] = str(args.http_port)
-        if args.secure and os.getenv("CLICKHOUSE_PORT_HTTP_PROTO") is None:
+        process_args.http_port = 8443 if process_args.secure else 8123
+        os.environ["CLICKHOUSE_PORT_HTTP"] = str(process_args.http_port)
+        if process_args.secure and os.getenv("CLICKHOUSE_PORT_HTTP_PROTO") is None:
             os.environ["CLICKHOUSE_PORT_HTTP_PROTO"] = "https"
 
     client_database = os.getenv("CLICKHOUSE_DATABASE")
     if client_database is not None:
-        args.client += f" --database={client_database}"
-        args.client_database = client_database
+        process_args.client += f" --database={client_database}"
+        process_args.client_database = client_database
     else:
-        args.client_database = "default"
+        process_args.client_database = "default"
 
-    if args.upgrade_check:
-        args.client += " --fake-drop"
+    if process_args.upgrade_check:
+        process_args.client += " --fake-drop"
 
-    if args.client_option or args.secure:
+    if process_args.client_option or process_args.secure:
         # Set options for client
         if "CLICKHOUSE_CLIENT_OPT" in os.environ:
             os.environ["CLICKHOUSE_CLIENT_OPT"] += " "
@@ -3689,7 +3694,7 @@ if __name__ == "__main__":
             os.environ["CLICKHOUSE_CLIENT_OPT"] = ""
         os.environ["CLICKHOUSE_CLIENT_OPT"] += get_additional_client_options(args)
 
-        if args.secure:
+        if process_args.secure:
             os.environ["CLICKHOUSE_CLIENT_OPT"] += " --secure "
 
         # Set options for curl
@@ -3699,23 +3704,23 @@ if __name__ == "__main__":
             os.environ["CLICKHOUSE_URL_PARAMS"] = ""
 
         client_options_query_str = get_additional_client_options_url(args)
-        args.client_options_query_str = client_options_query_str + "&"
-        args.client_options_query_str += os.environ["CLICKHOUSE_URL_PARAMS"]
+        process_args.client_options_query_str = client_options_query_str + "&"
+        process_args.client_options_query_str += os.environ["CLICKHOUSE_URL_PARAMS"]
         os.environ["CLICKHOUSE_URL_PARAMS"] += client_options_query_str
     else:
-        args.client_options_query_str = ""
+        process_args.client_options_query_str = ""
 
-    if args.jobs is None:
-        args.jobs = multiprocessing.cpu_count()
+    if process_args.jobs is None:
+        process_args.jobs = multiprocessing.cpu_count()
 
-    if args.db_engine and args.db_engine == "Ordinary":
+    if process_args.db_engine and process_args.db_engine == "Ordinary":
         MESSAGES_TO_RETRY.append(" locking attempt on ")
 
-    if args.replace_replicated_with_shared:
-        args.s3_storage = True
+    if process_args.replace_replicated_with_shared:
+        process_args.s3_storage = True
 
     try:
-        main(args)
+        main(process_args)
     except ServerDied as e:
         print(f"{e}", file=sys.stderr)
         sys.exit(1)
