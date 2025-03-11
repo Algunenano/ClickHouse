@@ -8,6 +8,7 @@
 #include <Common/SettingsChanges.h>
 
 #include <unordered_map>
+#include <vector>
 
 #include <boost/blank.hpp>
 
@@ -877,20 +878,22 @@ SettingsTierType BaseSettings<TTraits>::SettingFieldRef::getTier() const
 using AliasMap = std::unordered_map<std::string_view, std::string_view>;
 
 /// NOLINTNEXTLINE
-#define DECLARE_SETTINGS_TRAITS(SETTINGS_TRAITS_NAME, LIST_OF_SETTINGS_MACRO) \
-    DECLARE_SETTINGS_TRAITS_COMMON(SETTINGS_TRAITS_NAME, LIST_OF_SETTINGS_MACRO, 0)
+#define DECLARE_SETTINGS_TRAITS(SETTINGS_TRAITS_NAME, LIST_OF_SETTINGS_MACRO, LIST_OF_SETTINGS_SUPPORTED_TYPES_MACRO) \
+    DECLARE_SETTINGS_TRAITS_COMMON(SETTINGS_TRAITS_NAME, LIST_OF_SETTINGS_MACRO, LIST_OF_SETTINGS_SUPPORTED_TYPES_MACRO, 0)
 
 /// NOLINTNEXTLINE
-#define DECLARE_SETTINGS_TRAITS_ALLOW_CUSTOM_SETTINGS(SETTINGS_TRAITS_NAME, LIST_OF_SETTINGS_MACRO) \
-    DECLARE_SETTINGS_TRAITS_COMMON(SETTINGS_TRAITS_NAME, LIST_OF_SETTINGS_MACRO, 1)
+#define DECLARE_SETTINGS_TRAITS_ALLOW_CUSTOM_SETTINGS(SETTINGS_TRAITS_NAME, LIST_OF_SETTINGS_MACRO, LIST_OF_SETTINGS_SUPPORTED_TYPES_MACRO) \
+    DECLARE_SETTINGS_TRAITS_COMMON(SETTINGS_TRAITS_NAME, LIST_OF_SETTINGS_MACRO, LIST_OF_SETTINGS_SUPPORTED_TYPES_MACRO, 1)
 
 /// NOLINTNEXTLINE
-#define DECLARE_SETTINGS_TRAITS_COMMON(SETTINGS_TRAITS_NAME, LIST_OF_SETTINGS_MACRO, ALLOW_CUSTOM_SETTINGS) \
+#define DECLARE_SETTINGS_TRAITS_COMMON(SETTINGS_TRAITS_NAME, LIST_OF_SETTINGS_MACRO, LIST_OF_SETTINGS_SUPPORTED_TYPES_MACRO, ALLOW_CUSTOM_SETTINGS) \
     struct SETTINGS_TRAITS_NAME \
     { \
         struct Data \
         { \
-            LIST_OF_SETTINGS_MACRO(DECLARE_SETTINGS_TRAITS_, SKIP_ALIAS) \
+            Data(); \
+            LIST_OF_SETTINGS_MACRO(DECLARE_SETTINGS_DATA_TYPE_POSITION_TRAITS_, SKIP_ALIAS) \
+            LIST_OF_SETTINGS_SUPPORTED_TYPES_MACRO(SKIP_ALIAS, DECLARE_SETTINGS_DATA_TYPE_VECTOR_TRAITS_) \
         }; \
         \
         class Accessor \
@@ -920,7 +923,7 @@ using AliasMap = std::unordered_map<std::string_view, std::string_view>;
             Accessor(); \
             struct FieldInfo \
             { \
-                String name; \
+                const String name; \
                 const char * type; \
                 const char * description; \
                 UInt64 flags; \
@@ -999,8 +1002,19 @@ struct DefineAliases
 #define DECLARE_SETTINGS_TRAITS_(TYPE, NAME, DEFAULT, DESCRIPTION, FLAGS) \
     SettingField##TYPE NAME {DEFAULT};
 
+#define DECLARE_SETTINGS_DATA_TYPE_VECTOR_TRAITS_(CLASS_NAME, TYPE) \
+    std::vector<SettingField##TYPE> data_##TYPE;
+
+#define DECLARE_SETTINGS_DATA_TYPE_POSITION_TRAITS_(TYPE, NAME, DEFAULT, DESCRIPTION, FLAGS) \
+    static UInt16 position_##NAME;
+
 /// NOLINTNEXTLINE
 #define IMPLEMENT_SETTINGS_TRAITS(SETTINGS_TRAITS_NAME, LIST_OF_SETTINGS_MACRO) \
+    SETTINGS_TRAITS_NAME::Data::Data() \
+    { \
+        LIST_OF_SETTINGS_MACRO(IMPLEMENT_SETTINGS_DATA_TYPE_TRAITS_, SKIP_ALIAS) \
+    } \
+    \
     const SETTINGS_TRAITS_NAME::Accessor & SETTINGS_TRAITS_NAME::Accessor::instance() \
     { \
         static const Accessor the_instance = [] \
@@ -1031,22 +1045,30 @@ struct DefineAliases
     \
     template class BaseSettings<SETTINGS_TRAITS_NAME>;
 
+#define IMPLEMENT_SETTINGS_DATA_TYPE_TRAITS_(TYPE, NAME, DEFAULT, DESCRIPTION, FLAGS) \
+    position_##NAME = data_##TYPE.size(); \
+    data_##TYPE.push_back(SettingField##TYPE{DEFAULT}); \
+
 /// NOLINTNEXTLINE
 #define IMPLEMENT_SETTINGS_TRAITS_(TYPE, NAME, DEFAULT, DESCRIPTION, FLAGS) \
     res.field_infos.emplace_back( \
-        FieldInfo{#NAME, #TYPE, DESCRIPTION, \
+        FieldInfo \
+        { \
+            #NAME, \
+            #TYPE, \
+            DESCRIPTION, \
             static_cast<UInt64>(FLAGS), \
             [](const Field & value) -> Field { return static_cast<Field>(SettingField##TYPE{value}); }, \
             [](const Field & value) -> String { return SettingField##TYPE{value}.toString(); }, \
             [](const String & str) -> Field { SettingField##TYPE temp; temp.parseFromString(str); return static_cast<Field>(temp); }, \
-            [](Data & data, const Field & value) { data.NAME = value; }, \
-            [](const Data & data) -> Field { return static_cast<Field>(data.NAME); }, \
-            [](Data & data, const String & str) { data.NAME.parseFromString(str); }, \
-            [](const Data & data) -> String { return data.NAME.toString(); }, \
-            [](const Data & data) -> bool { return data.NAME.changed; }, \
-            [](Data & data) { data.NAME = SettingField##TYPE{DEFAULT}; }, \
-            [](const Data & data, WriteBuffer & out) { data.NAME.writeBinary(out); }, \
-            [](Data & data, ReadBuffer & in) { data.NAME.readBinary(in); }, \
+            [](Data & data, const Field & value) { data.data_##TYPE[data.position_##NAME] = value; }, \
+            [](const Data & data) -> Field { return static_cast<Field>(data.data_##TYPE[data.position_##NAME]); }, \
+            [](Data & data, const String & str) { data.data_##TYPE[data.position_##NAME].parseFromString(str); }, \
+            [](const Data & data) -> String { return data.data_##TYPE[data.position_##NAME].toString(); }, \
+            [](const Data & data) -> bool { return data.data_##TYPE[data.position_##NAME].changed; }, \
+            [](Data & data) { data.data_##TYPE[data.position_##NAME] = SettingField##TYPE{DEFAULT}; }, \
+            [](const Data & data, WriteBuffer & out) { data.data_##TYPE[data.position_##NAME].writeBinary(out); }, \
+            [](Data & data, ReadBuffer & in) { data.data_##TYPE[data.position_##NAME].readBinary(in); }, \
             []() -> String { return SettingField##TYPE{DEFAULT}.toString(); } \
         });
 }

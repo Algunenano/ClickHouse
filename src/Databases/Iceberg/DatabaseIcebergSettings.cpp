@@ -27,15 +27,17 @@ namespace ErrorCodes
 #define LIST_OF_DATABASE_ICEBERG_SETTINGS(M, ALIAS) \
     DATABASE_ICEBERG_RELATED_SETTINGS(M, ALIAS)
 
-DECLARE_SETTINGS_TRAITS(DatabaseIcebergSettingsTraits, LIST_OF_DATABASE_ICEBERG_SETTINGS)
+DECLARE_SETTINGS_TRAITS(DatabaseIcebergSettingsTraits, LIST_OF_DATABASE_ICEBERG_SETTINGS, DATABASE_ICEBERG_SETTINGS_SUPPORTED_TYPES)
 IMPLEMENT_SETTINGS_TRAITS(DatabaseIcebergSettingsTraits, LIST_OF_DATABASE_ICEBERG_SETTINGS)
 
 struct DatabaseIcebergSettingsImpl : public BaseSettings<DatabaseIcebergSettingsTraits>
 {
 };
 
+DATABASE_ICEBERG_SETTINGS_SUPPORTED_TYPES(DatabaseIcebergSettings, IMPLEMENT_SETTING_SUBSCRIPT_OPERATOR)
+
 #define INITIALIZE_SETTING_EXTERN(TYPE, NAME, DEFAULT, DESCRIPTION, FLAGS) \
-    DatabaseIcebergSettings##TYPE NAME = &DatabaseIcebergSettingsImpl ::NAME;
+    DatabaseIcebergSettings##TYPE##Impl NAME = { &DatabaseIcebergSettingsImpl ::data_##TYPE , & DatabaseIcebergSettingsImpl :: position_##NAME}; \
 
 namespace DatabaseIcebergSetting
 {
@@ -60,7 +62,7 @@ DatabaseIcebergSettings::DatabaseIcebergSettings(DatabaseIcebergSettings && sett
 
 DatabaseIcebergSettings::~DatabaseIcebergSettings() = default;
 
-DATABASE_ICEBERG_SETTINGS_SUPPORTED_TYPES(DatabaseIcebergSettings, IMPLEMENT_SETTING_SUBSCRIPT_OPERATOR)
+
 
 
 void DatabaseIcebergSettings::applyChanges(const SettingsChanges & changes)
