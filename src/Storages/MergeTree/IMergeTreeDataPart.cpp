@@ -72,14 +72,14 @@ namespace DB
 
 namespace MergeTreeSetting
 {
-    extern const MergeTreeSettingsBool allow_remote_fs_zero_copy_replication;
-    extern const MergeTreeSettingsBool exclude_deleted_rows_for_part_size_in_merge;
-    extern const MergeTreeSettingsBool fsync_part_directory;
-    extern const MergeTreeSettingsBool load_existing_rows_count_for_old_parts;
-    extern const MergeTreeSettingsBool primary_key_lazy_load;
-    extern const MergeTreeSettingsFloat primary_key_ratio_of_unique_prefix_values_to_skip_suffix_columns;
-    extern const MergeTreeSettingsFloat ratio_of_defaults_for_sparse_serialization;
-    extern const MergeTreeSettingsBool columns_and_secondary_indices_sizes_lazy_calculation;
+    extern MergeTreeSettingsBool allow_remote_fs_zero_copy_replication;
+    extern MergeTreeSettingsBool exclude_deleted_rows_for_part_size_in_merge;
+    extern MergeTreeSettingsBool fsync_part_directory;
+    extern MergeTreeSettingsBool load_existing_rows_count_for_old_parts;
+    extern MergeTreeSettingsBool primary_key_lazy_load;
+    extern MergeTreeSettingsFloat primary_key_ratio_of_unique_prefix_values_to_skip_suffix_columns;
+    extern MergeTreeSettingsFloat ratio_of_defaults_for_sparse_serialization;
+    extern MergeTreeSettingsBool columns_and_secondary_indices_sizes_lazy_calculation;
 }
 
 namespace ErrorCodes

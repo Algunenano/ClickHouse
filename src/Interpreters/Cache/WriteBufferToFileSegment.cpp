@@ -18,7 +18,7 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsUInt64 temporary_data_in_cache_reserve_space_wait_lock_timeout_milliseconds;
+    extern SettingsUInt64 temporary_data_in_cache_reserve_space_wait_lock_timeout_milliseconds;
 }
 
 namespace ErrorCodes

@@ -26,8 +26,8 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsBool formatdatetime_parsedatetime_m_is_month_name;
-    extern const SettingsBool parsedatetime_parse_without_leading_zeros;
+    extern SettingsBool formatdatetime_parsedatetime_m_is_month_name;
+    extern SettingsBool parsedatetime_parse_without_leading_zeros;
 }
 
 namespace ErrorCodes

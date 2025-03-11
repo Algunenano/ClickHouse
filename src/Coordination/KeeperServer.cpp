@@ -54,26 +54,26 @@ namespace DB
 
 namespace CoordinationSetting
 {
-    extern const CoordinationSettingsBool async_replication;
-    extern const CoordinationSettingsBool auto_forwarding;
-    extern const CoordinationSettingsUInt64 configuration_change_tries_count;
-    extern const CoordinationSettingsMilliseconds election_timeout_lower_bound_ms;
-    extern const CoordinationSettingsMilliseconds election_timeout_upper_bound_ms;
-    extern const CoordinationSettingsBool experimental_use_rocksdb;
-    extern const CoordinationSettingsUInt64 fresh_log_gap;
-    extern const CoordinationSettingsMilliseconds heart_beat_interval_ms;
-    extern const CoordinationSettingsMilliseconds leadership_expiry_ms;
-    extern const CoordinationSettingsUInt64 max_requests_append_size;
-    extern const CoordinationSettingsMilliseconds operation_timeout_ms;
-    extern const CoordinationSettingsBool quorum_reads;
-    extern const CoordinationSettingsUInt64 raft_limits_reconnect_limit;
-    extern const CoordinationSettingsUInt64 raft_limits_response_limit;
-    extern const CoordinationSettingsLogsLevel raft_logs_level;
-    extern const CoordinationSettingsUInt64 reserved_log_items;
-    extern const CoordinationSettingsMilliseconds shutdown_timeout;
-    extern const CoordinationSettingsUInt64 snapshot_distance;
-    extern const CoordinationSettingsUInt64 stale_log_gap;
-    extern const CoordinationSettingsMilliseconds startup_timeout;
+    extern CoordinationSettingsBool async_replication;
+    extern CoordinationSettingsBool auto_forwarding;
+    extern CoordinationSettingsUInt64 configuration_change_tries_count;
+    extern CoordinationSettingsMilliseconds election_timeout_lower_bound_ms;
+    extern CoordinationSettingsMilliseconds election_timeout_upper_bound_ms;
+    extern CoordinationSettingsBool experimental_use_rocksdb;
+    extern CoordinationSettingsUInt64 fresh_log_gap;
+    extern CoordinationSettingsMilliseconds heart_beat_interval_ms;
+    extern CoordinationSettingsMilliseconds leadership_expiry_ms;
+    extern CoordinationSettingsUInt64 max_requests_append_size;
+    extern CoordinationSettingsMilliseconds operation_timeout_ms;
+    extern CoordinationSettingsBool quorum_reads;
+    extern CoordinationSettingsUInt64 raft_limits_reconnect_limit;
+    extern CoordinationSettingsUInt64 raft_limits_response_limit;
+    extern CoordinationSettingsLogsLevel raft_logs_level;
+    extern CoordinationSettingsUInt64 reserved_log_items;
+    extern CoordinationSettingsMilliseconds shutdown_timeout;
+    extern CoordinationSettingsUInt64 snapshot_distance;
+    extern CoordinationSettingsUInt64 stale_log_gap;
+    extern CoordinationSettingsMilliseconds startup_timeout;
 }
 
 namespace ErrorCodes

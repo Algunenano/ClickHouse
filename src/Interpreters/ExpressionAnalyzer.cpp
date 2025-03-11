@@ -88,28 +88,28 @@ using LogAST = DebugASTLog<false>; /// set to true to enable logs
 
 namespace Setting
 {
-    extern const SettingsBool compile_sort_description;
-    extern const SettingsUInt64 distributed_group_by_no_merge;
-    extern const SettingsBool enable_early_constant_folding;
-    extern const SettingsBool enable_positional_arguments;
-    extern const SettingsBool group_by_use_nulls;
-    extern const SettingsUInt64 max_bytes_in_set;
-    extern const SettingsUInt64 max_rows_in_set;
-    extern const SettingsMaxThreads max_threads;
-    extern const SettingsUInt64 min_count_to_compile_aggregate_expression;
-    extern const SettingsUInt64 min_count_to_compile_sort_description;
-    extern const SettingsOverflowMode set_overflow_mode;
-    extern const SettingsBool optimize_aggregation_in_order;
-    extern const SettingsBool optimize_read_in_order;
-    extern const SettingsUInt64 parallel_replicas_count;
-    extern const SettingsBool query_plan_aggregation_in_order;
-    extern const SettingsBool query_plan_read_in_order;
-    extern const SettingsUInt64 use_index_for_in_with_subqueries_max_values;
-    extern const SettingsBool allow_suspicious_types_in_group_by;
-    extern const SettingsBool allow_suspicious_types_in_order_by;
-    extern const SettingsBool allow_not_comparable_types_in_order_by;
-    extern const SettingsNonZeroUInt64 grace_hash_join_initial_buckets;
-    extern const SettingsNonZeroUInt64 grace_hash_join_max_buckets;
+    extern SettingsBool compile_sort_description;
+    extern SettingsUInt64 distributed_group_by_no_merge;
+    extern SettingsBool enable_early_constant_folding;
+    extern SettingsBool enable_positional_arguments;
+    extern SettingsBool group_by_use_nulls;
+    extern SettingsUInt64 max_bytes_in_set;
+    extern SettingsUInt64 max_rows_in_set;
+    extern SettingsMaxThreads max_threads;
+    extern SettingsUInt64 min_count_to_compile_aggregate_expression;
+    extern SettingsUInt64 min_count_to_compile_sort_description;
+    extern SettingsOverflowMode set_overflow_mode;
+    extern SettingsBool optimize_aggregation_in_order;
+    extern SettingsBool optimize_read_in_order;
+    extern SettingsUInt64 parallel_replicas_count;
+    extern SettingsBool query_plan_aggregation_in_order;
+    extern SettingsBool query_plan_read_in_order;
+    extern SettingsUInt64 use_index_for_in_with_subqueries_max_values;
+    extern SettingsBool allow_suspicious_types_in_group_by;
+    extern SettingsBool allow_suspicious_types_in_order_by;
+    extern SettingsBool allow_not_comparable_types_in_order_by;
+    extern SettingsNonZeroUInt64 grace_hash_join_initial_buckets;
+    extern SettingsNonZeroUInt64 grace_hash_join_max_buckets;
 }
 
 

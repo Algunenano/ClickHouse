@@ -48,8 +48,8 @@ namespace DB
 
 namespace Setting
 {
-    extern const SettingsBool allow_not_comparable_types_in_comparison_functions;
-    extern const SettingsBool validate_enum_literals_in_operators;
+    extern SettingsBool allow_not_comparable_types_in_comparison_functions;
+    extern SettingsBool validate_enum_literals_in_operators;
 }
 
 namespace ErrorCodes

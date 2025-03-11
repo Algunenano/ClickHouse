@@ -36,35 +36,35 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsUInt64 max_insert_block_size;
-    extern const SettingsMilliseconds stream_flush_interval_ms;
-    extern const SettingsBool stream_like_engine_allow_direct_select;
-    extern const SettingsString stream_like_engine_insert_queue;
-    extern const SettingsUInt64 output_format_avro_rows_in_file;
+    extern SettingsUInt64 max_insert_block_size;
+    extern SettingsMilliseconds stream_flush_interval_ms;
+    extern SettingsBool stream_like_engine_allow_direct_select;
+    extern SettingsString stream_like_engine_insert_queue;
+    extern SettingsUInt64 output_format_avro_rows_in_file;
 }
 
 namespace NATSSetting
 {
-    extern const NATSSettingsString nats_credential_file;
-    extern const NATSSettingsMilliseconds nats_flush_interval_ms;
-    extern const NATSSettingsString nats_format;
-    extern const NATSSettingsStreamingHandleErrorMode nats_handle_error_mode;
-    extern const NATSSettingsUInt64 nats_max_block_size;
-    extern const NATSSettingsUInt64 nats_max_reconnect;
-    extern const NATSSettingsUInt64 nats_max_rows_per_message;
-    extern const NATSSettingsUInt64 nats_num_consumers;
-    extern const NATSSettingsString nats_password;
-    extern const NATSSettingsString nats_queue_group;
-    extern const NATSSettingsUInt64 nats_reconnect_wait;
-    extern const NATSSettingsString nats_schema;
-    extern const NATSSettingsBool nats_secure;
-    extern const NATSSettingsString nats_server_list;
-    extern const NATSSettingsUInt64 nats_skip_broken_messages;
-    extern const NATSSettingsUInt64 nats_startup_connect_tries;
-    extern const NATSSettingsString nats_subjects;
-    extern const NATSSettingsString nats_token;
-    extern const NATSSettingsString nats_url;
-    extern const NATSSettingsString nats_username;
+    extern NATSSettingsString nats_credential_file;
+    extern NATSSettingsMilliseconds nats_flush_interval_ms;
+    extern NATSSettingsString nats_format;
+    extern NATSSettingsStreamingHandleErrorMode nats_handle_error_mode;
+    extern NATSSettingsUInt64 nats_max_block_size;
+    extern NATSSettingsUInt64 nats_max_reconnect;
+    extern NATSSettingsUInt64 nats_max_rows_per_message;
+    extern NATSSettingsUInt64 nats_num_consumers;
+    extern NATSSettingsString nats_password;
+    extern NATSSettingsString nats_queue_group;
+    extern NATSSettingsUInt64 nats_reconnect_wait;
+    extern NATSSettingsString nats_schema;
+    extern NATSSettingsBool nats_secure;
+    extern NATSSettingsString nats_server_list;
+    extern NATSSettingsUInt64 nats_skip_broken_messages;
+    extern NATSSettingsUInt64 nats_startup_connect_tries;
+    extern NATSSettingsString nats_subjects;
+    extern NATSSettingsString nats_token;
+    extern NATSSettingsString nats_url;
+    extern NATSSettingsString nats_username;
 }
 
 static const uint32_t QUEUE_SIZE = 100000;

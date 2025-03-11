@@ -26,15 +26,15 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsBool allow_settings_after_format_in_insert;
-    extern const SettingsDialect dialect;
-    extern const SettingsBool input_format_defaults_for_omitted_fields;
-    extern const SettingsUInt64 interactive_delay;
-    extern const SettingsUInt64 max_insert_block_size;
-    extern const SettingsUInt64 max_parser_backtracks;
-    extern const SettingsUInt64 max_parser_depth;
-    extern const SettingsUInt64 max_query_size;
-    extern const SettingsBool implicit_select;
+    extern SettingsBool allow_settings_after_format_in_insert;
+    extern SettingsDialect dialect;
+    extern SettingsBool input_format_defaults_for_omitted_fields;
+    extern SettingsUInt64 interactive_delay;
+    extern SettingsUInt64 max_insert_block_size;
+    extern SettingsUInt64 max_parser_backtracks;
+    extern SettingsUInt64 max_parser_depth;
+    extern SettingsUInt64 max_query_size;
+    extern SettingsBool implicit_select;
 }
 
 namespace ErrorCodes

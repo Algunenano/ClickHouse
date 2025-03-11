@@ -8,7 +8,7 @@ namespace DB
 
 namespace MergeTreeSetting
 {
-    extern const MergeTreeSettingsBool materialize_ttl_recalculate_only;
+    extern MergeTreeSettingsBool materialize_ttl_recalculate_only;
 }
 
 namespace ErrorCodes

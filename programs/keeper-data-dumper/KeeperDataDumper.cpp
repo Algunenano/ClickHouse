@@ -19,7 +19,7 @@ using namespace DB;
 
 namespace DB::CoordinationSetting
 {
-    extern const CoordinationSettingsBool compress_logs;
+    extern CoordinationSettingsBool compress_logs;
 }
 
 void dumpMachine(std::shared_ptr<KeeperStateMachine<DB::KeeperMemoryStorage>> machine)

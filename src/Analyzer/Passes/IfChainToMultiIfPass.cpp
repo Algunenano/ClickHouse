@@ -12,10 +12,10 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsBool allow_execute_multiif_columnar;
-    extern const SettingsBool allow_experimental_variant_type;
-    extern const SettingsBool optimize_if_chain_to_multiif;
-    extern const SettingsBool use_variant_as_common_type;
+    extern SettingsBool allow_execute_multiif_columnar;
+    extern SettingsBool allow_experimental_variant_type;
+    extern SettingsBool optimize_if_chain_to_multiif;
+    extern SettingsBool use_variant_as_common_type;
 }
 
 namespace

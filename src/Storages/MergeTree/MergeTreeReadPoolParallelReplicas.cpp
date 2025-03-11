@@ -92,7 +92,7 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsUInt64 parallel_replicas_mark_segment_size;
+    extern SettingsUInt64 parallel_replicas_mark_segment_size;
 }
 
 namespace ErrorCodes

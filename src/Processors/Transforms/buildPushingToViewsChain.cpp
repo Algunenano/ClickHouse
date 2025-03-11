@@ -50,24 +50,24 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsBool allow_experimental_analyzer;
-    extern const SettingsBool deduplicate_blocks_in_dependent_materialized_views;
-    extern const SettingsBool ignore_materialized_views_with_dropped_target_table;
-    extern const SettingsSeconds lock_acquire_timeout;
-    extern const SettingsBool log_queries;
-    extern const SettingsMilliseconds log_queries_min_query_duration_ms;
-    extern const SettingsLogQueriesType log_queries_min_type;
-    extern const SettingsBool log_query_views;
-    extern const SettingsBool materialized_views_ignore_errors;
-    extern const SettingsUInt64 max_block_size;
-    extern const SettingsMaxThreads max_threads;
-    extern const SettingsUInt64 min_insert_block_size_bytes;
-    extern const SettingsUInt64 min_insert_block_size_bytes_for_materialized_views;
-    extern const SettingsUInt64 min_insert_block_size_rows;
-    extern const SettingsUInt64 min_insert_block_size_rows_for_materialized_views;
-    extern const SettingsBool parallel_view_processing;
-    extern const SettingsBool use_concurrency_control;
-    extern const SettingsBool use_async_executor_for_materialized_views;
+    extern SettingsBool allow_experimental_analyzer;
+    extern SettingsBool deduplicate_blocks_in_dependent_materialized_views;
+    extern SettingsBool ignore_materialized_views_with_dropped_target_table;
+    extern SettingsSeconds lock_acquire_timeout;
+    extern SettingsBool log_queries;
+    extern SettingsMilliseconds log_queries_min_query_duration_ms;
+    extern SettingsLogQueriesType log_queries_min_type;
+    extern SettingsBool log_query_views;
+    extern SettingsBool materialized_views_ignore_errors;
+    extern SettingsUInt64 max_block_size;
+    extern SettingsMaxThreads max_threads;
+    extern SettingsUInt64 min_insert_block_size_bytes;
+    extern SettingsUInt64 min_insert_block_size_bytes_for_materialized_views;
+    extern SettingsUInt64 min_insert_block_size_rows;
+    extern SettingsUInt64 min_insert_block_size_rows_for_materialized_views;
+    extern SettingsBool parallel_view_processing;
+    extern SettingsBool use_concurrency_control;
+    extern SettingsBool use_async_executor_for_materialized_views;
 }
 
 namespace ErrorCodes

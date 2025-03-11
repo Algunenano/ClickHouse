@@ -35,7 +35,7 @@ namespace DB
 
 namespace S3RequestSetting
 {
-    extern const S3RequestSettingsUInt64 max_single_read_retries;
+    extern S3RequestSettingsUInt64 max_single_read_retries;
 }
 
 namespace ErrorCodes
@@ -53,7 +53,7 @@ ReadBufferFromS3::ReadBufferFromS3(
     const String & bucket_,
     const String & key_,
     const String & version_id_,
-    const S3::S3RequestSettings & request_settings_,
+    const S3RequestSettings & request_settings_,
     const ReadSettings & settings_,
     bool use_external_buffer_,
     size_t offset_,

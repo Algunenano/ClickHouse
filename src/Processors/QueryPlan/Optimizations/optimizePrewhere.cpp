@@ -14,8 +14,8 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsBool optimize_move_to_prewhere;
-    extern const SettingsBool optimize_move_to_prewhere_if_final;
+    extern SettingsBool optimize_move_to_prewhere;
+    extern SettingsBool optimize_move_to_prewhere_if_final;
 }
 
 namespace QueryPlanOptimizations

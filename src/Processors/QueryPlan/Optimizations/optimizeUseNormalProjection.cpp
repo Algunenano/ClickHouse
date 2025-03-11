@@ -18,8 +18,8 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsString preferred_optimize_projection_name;
-    extern const SettingsBool force_optimize_projection;
+    extern SettingsString preferred_optimize_projection_name;
+    extern SettingsBool force_optimize_projection;
 }
 }
 

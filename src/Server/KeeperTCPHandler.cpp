@@ -45,9 +45,9 @@ namespace DB
 
 namespace CoordinationSetting
 {
-    extern const CoordinationSettingsUInt64 log_slow_connection_operation_threshold_ms;
-    extern const CoordinationSettingsUInt64 log_slow_total_threshold_ms;
-    extern const CoordinationSettingsBool use_xid_64;
+    extern CoordinationSettingsUInt64 log_slow_connection_operation_threshold_ms;
+    extern CoordinationSettingsUInt64 log_slow_total_threshold_ms;
+    extern CoordinationSettingsBool use_xid_64;
 }
 
 struct LastOp

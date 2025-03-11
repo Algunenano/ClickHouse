@@ -10,8 +10,8 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsSchemaInferenceMode schema_inference_mode;
-    extern const SettingsInt64 zstd_window_log_max;
+    extern SettingsSchemaInferenceMode schema_inference_mode;
+    extern SettingsInt64 zstd_window_log_max;
 }
 
 namespace ErrorCodes

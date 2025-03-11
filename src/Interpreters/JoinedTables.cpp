@@ -30,11 +30,11 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsBool asterisk_include_alias_columns;
-    extern const SettingsBool asterisk_include_materialized_columns;
-    extern const SettingsBool enable_optimize_predicate_expression;
-    extern const SettingsBool joined_subquery_requires_alias;
-    extern const SettingsJoinAlgorithm join_algorithm;
+    extern SettingsBool asterisk_include_alias_columns;
+    extern SettingsBool asterisk_include_materialized_columns;
+    extern SettingsBool enable_optimize_predicate_expression;
+    extern SettingsBool joined_subquery_requires_alias;
+    extern SettingsJoinAlgorithm join_algorithm;
 }
 
 namespace ErrorCodes

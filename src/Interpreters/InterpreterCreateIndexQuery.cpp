@@ -17,9 +17,9 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsBool allow_create_index_without_type;
-    extern const SettingsBool create_index_ignore_unique;
-    extern const SettingsSeconds lock_acquire_timeout;
+    extern SettingsBool allow_create_index_without_type;
+    extern SettingsBool create_index_ignore_unique;
+    extern SettingsSeconds lock_acquire_timeout;
 }
 
 namespace ErrorCodes

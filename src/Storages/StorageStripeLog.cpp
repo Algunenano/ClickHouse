@@ -51,9 +51,9 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsSeconds lock_acquire_timeout;
-    extern const SettingsUInt64 max_compress_block_size;
-    extern const SettingsSeconds max_execution_time;
+    extern SettingsSeconds lock_acquire_timeout;
+    extern SettingsUInt64 max_compress_block_size;
+    extern SettingsSeconds max_execution_time;
 }
 
 namespace ErrorCodes

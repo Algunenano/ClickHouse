@@ -54,12 +54,12 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsBool optimize_trivial_approximate_count_query;
+    extern SettingsBool optimize_trivial_approximate_count_query;
 }
 
 namespace RocksDBSetting
 {
-    extern const RocksDBSettingsBool optimize_for_bulk_insert;
+    extern RocksDBSettingsBool optimize_for_bulk_insert;
 }
 
 namespace ErrorCodes

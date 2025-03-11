@@ -83,35 +83,35 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsBool aggregate_functions_null_for_empty;
-    extern const SettingsBool analyzer_compatibility_join_using_top_level_identifier;
-    extern const SettingsBool asterisk_include_alias_columns;
-    extern const SettingsBool asterisk_include_materialized_columns;
-    extern const SettingsString count_distinct_implementation;
-    extern const SettingsBool enable_global_with_statement;
-    extern const SettingsBool enable_order_by_all;
-    extern const SettingsBool enable_positional_arguments;
-    extern const SettingsBool enable_scalar_subquery_optimization;
-    extern const SettingsBool extremes;
-    extern const SettingsBool force_grouping_standard_compatibility;
-    extern const SettingsBool format_display_secrets_in_show_and_select;
-    extern const SettingsBool joined_subquery_requires_alias;
-    extern const SettingsUInt64 max_bytes_in_set;
-    extern const SettingsUInt64 max_expanded_ast_elements;
-    extern const SettingsUInt64 max_result_rows;
-    extern const SettingsUInt64 max_rows_in_set;
-    extern const SettingsUInt64 max_subquery_depth;
-    extern const SettingsBool prefer_column_name_to_alias;
-    extern const SettingsBool rewrite_count_distinct_if_with_count_distinct_implementation;
-    extern const SettingsOverflowMode set_overflow_mode;
-    extern const SettingsBool single_join_prefer_left_table;
-    extern const SettingsBool transform_null_in;
-    extern const SettingsBool validate_enum_literals_in_operators;
-    extern const SettingsUInt64 use_structure_from_insertion_table_in_table_functions;
-    extern const SettingsBool allow_suspicious_types_in_group_by;
-    extern const SettingsBool allow_suspicious_types_in_order_by;
-    extern const SettingsBool allow_not_comparable_types_in_order_by;
-    extern const SettingsBool use_concurrency_control;
+    extern SettingsBool aggregate_functions_null_for_empty;
+    extern SettingsBool analyzer_compatibility_join_using_top_level_identifier;
+    extern SettingsBool asterisk_include_alias_columns;
+    extern SettingsBool asterisk_include_materialized_columns;
+    extern SettingsString count_distinct_implementation;
+    extern SettingsBool enable_global_with_statement;
+    extern SettingsBool enable_order_by_all;
+    extern SettingsBool enable_positional_arguments;
+    extern SettingsBool enable_scalar_subquery_optimization;
+    extern SettingsBool extremes;
+    extern SettingsBool force_grouping_standard_compatibility;
+    extern SettingsBool format_display_secrets_in_show_and_select;
+    extern SettingsBool joined_subquery_requires_alias;
+    extern SettingsUInt64 max_bytes_in_set;
+    extern SettingsUInt64 max_expanded_ast_elements;
+    extern SettingsUInt64 max_result_rows;
+    extern SettingsUInt64 max_rows_in_set;
+    extern SettingsUInt64 max_subquery_depth;
+    extern SettingsBool prefer_column_name_to_alias;
+    extern SettingsBool rewrite_count_distinct_if_with_count_distinct_implementation;
+    extern SettingsOverflowMode set_overflow_mode;
+    extern SettingsBool single_join_prefer_left_table;
+    extern SettingsBool transform_null_in;
+    extern SettingsBool validate_enum_literals_in_operators;
+    extern SettingsUInt64 use_structure_from_insertion_table_in_table_functions;
+    extern SettingsBool allow_suspicious_types_in_group_by;
+    extern SettingsBool allow_suspicious_types_in_order_by;
+    extern SettingsBool allow_not_comparable_types_in_order_by;
+    extern SettingsBool use_concurrency_control;
 }
 
 

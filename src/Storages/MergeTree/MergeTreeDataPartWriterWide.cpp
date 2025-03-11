@@ -19,8 +19,8 @@ namespace DB
 
 namespace MergeTreeSetting
 {
-    extern const MergeTreeSettingsUInt64 max_file_name_length;
-    extern const MergeTreeSettingsBool replace_long_file_name_to_hash;
+    extern MergeTreeSettingsUInt64 max_file_name_length;
+    extern MergeTreeSettingsBool replace_long_file_name_to_hash;
 }
 
 namespace ErrorCodes

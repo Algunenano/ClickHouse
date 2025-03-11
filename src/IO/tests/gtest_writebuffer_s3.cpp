@@ -42,14 +42,14 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsBool s3_check_objects_after_upload;
-    extern const SettingsUInt64 s3_max_inflight_parts_for_one_file;
-    extern const SettingsUInt64 s3_max_single_part_upload_size;
-    extern const SettingsUInt64 s3_max_upload_part_size;
-    extern const SettingsUInt64 s3_min_upload_part_size;
-    extern const SettingsUInt64 s3_strict_upload_part_size;
-    extern const SettingsUInt64 s3_upload_part_size_multiply_factor;
-    extern const SettingsUInt64 s3_upload_part_size_multiply_parts_count_threshold;
+    extern SettingsBool s3_check_objects_after_upload;
+    extern SettingsUInt64 s3_max_inflight_parts_for_one_file;
+    extern SettingsUInt64 s3_max_single_part_upload_size;
+    extern SettingsUInt64 s3_max_upload_part_size;
+    extern SettingsUInt64 s3_min_upload_part_size;
+    extern SettingsUInt64 s3_strict_upload_part_size;
+    extern SettingsUInt64 s3_upload_part_size_multiply_factor;
+    extern SettingsUInt64 s3_upload_part_size_multiply_parts_count_threshold;
 }
 
 namespace ErrorCodes
@@ -557,7 +557,7 @@ public:
 
     std::unique_ptr<WriteBufferFromS3> getWriteBuffer(String file_name = "file")
     {
-        S3::S3RequestSettings request_settings;
+        S3RequestSettings request_settings;
         request_settings.updateFromSettings(settings, /* if_changed */true, /* validate_settings */false);
 
         client->resetCounters();

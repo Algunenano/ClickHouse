@@ -15,9 +15,9 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsString errors_output_format;
-    extern const SettingsString input_format_record_errors_file_path;
-    extern const SettingsUInt64 max_block_size;
+    extern SettingsString errors_output_format;
+    extern SettingsString input_format_record_errors_file_path;
+    extern SettingsUInt64 max_block_size;
 }
 
 namespace ErrorCodes

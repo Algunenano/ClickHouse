@@ -21,7 +21,7 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsBool allow_experimental_nlp_functions;
+    extern SettingsBool allow_experimental_nlp_functions;
 }
 
 /* Determine language of Unicode UTF-8 text.

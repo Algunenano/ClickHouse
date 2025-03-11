@@ -12,7 +12,7 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsSetOperationMode union_default_mode;
+    extern SettingsSetOperationMode union_default_mode;
 }
 
 namespace ErrorCodes

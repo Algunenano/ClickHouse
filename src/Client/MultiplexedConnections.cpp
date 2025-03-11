@@ -14,13 +14,13 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsBool allow_experimental_analyzer;
-    extern const SettingsDialect dialect;
-    extern const SettingsUInt64 group_by_two_level_threshold;
-    extern const SettingsUInt64 group_by_two_level_threshold_bytes;
-    extern const SettingsUInt64 parallel_replicas_count;
-    extern const SettingsUInt64 parallel_replica_offset;
-    extern const SettingsSeconds receive_timeout;
+    extern SettingsBool allow_experimental_analyzer;
+    extern SettingsDialect dialect;
+    extern SettingsUInt64 group_by_two_level_threshold;
+    extern SettingsUInt64 group_by_two_level_threshold_bytes;
+    extern SettingsUInt64 parallel_replicas_count;
+    extern SettingsUInt64 parallel_replica_offset;
+    extern SettingsSeconds receive_timeout;
 }
 
 // NOLINTBEGIN(bugprone-undefined-memory-manipulation)

@@ -58,13 +58,13 @@ namespace DB
 
 namespace Setting
 {
-    extern const SettingsBool allow_experimental_analyzer;
-    extern const SettingsBool allow_experimental_live_view;
-    extern const SettingsSeconds live_view_heartbeat_interval;
-    extern const SettingsUInt64 max_live_view_insert_blocks_before_refresh;
-    extern const SettingsUInt64 min_insert_block_size_bytes;
-    extern const SettingsUInt64 min_insert_block_size_rows;
-    extern const SettingsBool use_concurrency_control;
+    extern SettingsBool allow_experimental_analyzer;
+    extern SettingsBool allow_experimental_live_view;
+    extern SettingsSeconds live_view_heartbeat_interval;
+    extern SettingsUInt64 max_live_view_insert_blocks_before_refresh;
+    extern SettingsUInt64 min_insert_block_size_bytes;
+    extern SettingsUInt64 min_insert_block_size_rows;
+    extern SettingsBool use_concurrency_control;
 }
 
 namespace ErrorCodes

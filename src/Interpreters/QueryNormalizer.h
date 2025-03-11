@@ -18,9 +18,9 @@ class ASTQueryParameter;
 
 namespace Setting
 {
-    extern const SettingsUInt64 max_ast_depth;
-    extern const SettingsUInt64 max_expanded_ast_elements;
-    extern const SettingsBool prefer_column_name_to_alias;
+    extern SettingsUInt64 max_ast_depth;
+    extern SettingsUInt64 max_expanded_ast_elements;
+    extern SettingsBool prefer_column_name_to_alias;
 }
 
 

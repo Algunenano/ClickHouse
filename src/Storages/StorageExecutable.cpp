@@ -34,20 +34,20 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsBool allow_experimental_analyzer;
-    extern const SettingsSeconds max_execution_time;
+    extern SettingsBool allow_experimental_analyzer;
+    extern SettingsSeconds max_execution_time;
 }
 
 namespace ExecutableSetting
 {
-    extern const ExecutableSettingsBool send_chunk_header;
-    extern const ExecutableSettingsUInt64 pool_size;
-    extern const ExecutableSettingsUInt64 max_command_execution_time;
-    extern const ExecutableSettingsUInt64 command_termination_timeout;
-    extern const ExecutableSettingsUInt64 command_read_timeout;
-    extern const ExecutableSettingsUInt64 command_write_timeout;
-    extern const ExecutableSettingsExternalCommandStderrReaction stderr_reaction;
-    extern const ExecutableSettingsBool check_exit_code;
+    extern ExecutableSettingsBool send_chunk_header;
+    extern ExecutableSettingsUInt64 pool_size;
+    extern ExecutableSettingsUInt64 max_command_execution_time;
+    extern ExecutableSettingsUInt64 command_termination_timeout;
+    extern ExecutableSettingsUInt64 command_read_timeout;
+    extern ExecutableSettingsUInt64 command_write_timeout;
+    extern ExecutableSettingsExternalCommandStderrReaction stderr_reaction;
+    extern ExecutableSettingsBool check_exit_code;
 }
 
 namespace ErrorCodes

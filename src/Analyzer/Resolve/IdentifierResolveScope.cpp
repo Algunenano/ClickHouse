@@ -9,8 +9,8 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsBool group_by_use_nulls;
-    extern const SettingsBool join_use_nulls;
+    extern SettingsBool group_by_use_nulls;
+    extern SettingsBool join_use_nulls;
 }
 
 namespace ErrorCodes

@@ -31,10 +31,10 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsBool allow_experimental_analyzer;
-    extern const SettingsBool async_query_sending_for_remote;
-    extern const SettingsBool async_socket_for_remote;
-    extern const SettingsBool skip_unavailable_shards;
+    extern SettingsBool allow_experimental_analyzer;
+    extern SettingsBool async_query_sending_for_remote;
+    extern SettingsBool async_socket_for_remote;
+    extern SettingsBool skip_unavailable_shards;
 }
 
 IStorageCluster::IStorageCluster(

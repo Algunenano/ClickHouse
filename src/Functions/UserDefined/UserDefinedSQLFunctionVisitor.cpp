@@ -20,7 +20,7 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsBool skip_redundant_aliases_in_udf;
+    extern SettingsBool skip_redundant_aliases_in_udf;
 }
 
 namespace ErrorCodes

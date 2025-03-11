@@ -14,9 +14,9 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsUInt64 input_format_max_rows_to_read_for_schema_inference;
-    extern const SettingsUInt64 input_format_max_bytes_to_read_for_schema_inference;
-    extern const SettingsSchemaInferenceMode schema_inference_mode;
+    extern SettingsUInt64 input_format_max_rows_to_read_for_schema_inference;
+    extern SettingsUInt64 input_format_max_bytes_to_read_for_schema_inference;
+    extern SettingsSchemaInferenceMode schema_inference_mode;
 }
 
 namespace ErrorCodes

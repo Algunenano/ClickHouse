@@ -56,9 +56,9 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsBool implicit_transaction;
-    extern const SettingsUInt64 readonly;
-    extern const SettingsBool throw_on_unsupported_query_inside_transaction;
+    extern SettingsBool implicit_transaction;
+    extern SettingsUInt64 readonly;
+    extern SettingsBool throw_on_unsupported_query_inside_transaction;
 }
 
 namespace ErrorCodes

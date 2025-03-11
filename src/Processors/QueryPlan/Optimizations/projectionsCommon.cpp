@@ -18,11 +18,11 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsBool aggregate_functions_null_for_empty;
-    extern const SettingsBool allow_experimental_query_deduplication;
-    extern const SettingsBool apply_mutations_on_fly;
-    extern const SettingsMaxThreads max_threads;
-    extern const SettingsUInt64 select_sequential_consistency;
+    extern SettingsBool aggregate_functions_null_for_empty;
+    extern SettingsBool allow_experimental_query_deduplication;
+    extern SettingsBool apply_mutations_on_fly;
+    extern SettingsMaxThreads max_threads;
+    extern SettingsUInt64 select_sequential_consistency;
 }
 
 namespace ErrorCodes

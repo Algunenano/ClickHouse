@@ -24,19 +24,19 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsBool enable_lightweight_delete;
-    extern const SettingsUInt64 lightweight_deletes_sync;
-    extern const SettingsSeconds lock_acquire_timeout;
+    extern SettingsBool enable_lightweight_delete;
+    extern SettingsUInt64 lightweight_deletes_sync;
+    extern SettingsSeconds lock_acquire_timeout;
 }
 
 namespace MergeTreeSetting
 {
-    extern const MergeTreeSettingsLightweightMutationProjectionMode lightweight_mutation_projection_mode;
+    extern MergeTreeSettingsLightweightMutationProjectionMode lightweight_mutation_projection_mode;
 }
 
 namespace ServerSetting
 {
-    extern const ServerSettingsBool disable_insertion_and_mutation;
+    extern ServerSettingsBool disable_insertion_and_mutation;
 }
 
 namespace ErrorCodes

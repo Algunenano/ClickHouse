@@ -50,11 +50,11 @@ namespace DB
 
 namespace Setting
 {
-    extern const SettingsBool async_query_sending_for_remote;
-    extern const SettingsBool async_socket_for_remote;
-    extern const SettingsUInt64 query_profiler_cpu_time_period_ns;
-    extern const SettingsUInt64 query_profiler_real_time_period_ns;
-    extern const SettingsBool use_hedged_requests;
+    extern SettingsBool async_query_sending_for_remote;
+    extern SettingsBool async_socket_for_remote;
+    extern SettingsUInt64 query_profiler_cpu_time_period_ns;
+    extern SettingsUInt64 query_profiler_real_time_period_ns;
+    extern SettingsBool use_hedged_requests;
 }
 
 /// Update some settings defaults to avoid some known issues.

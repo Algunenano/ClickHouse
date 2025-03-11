@@ -29,14 +29,17 @@ namespace ErrorCodes
     HIVE_RELATED_SETTINGS(M, ALIAS) \
     LIST_OF_ALL_FORMAT_SETTINGS(M, ALIAS)
 
-DECLARE_SETTINGS_TRAITS(HiveSettingsTraits, LIST_OF_HIVE_SETTINGS)
+DECLARE_SETTINGS_TRAITS(HiveSettingsTraits, LIST_OF_HIVE_SETTINGS, HIVE_SETTINGS_SUPPORTED_TYPES)
 IMPLEMENT_SETTINGS_TRAITS(HiveSettingsTraits, LIST_OF_HIVE_SETTINGS)
 
 struct HiveSettingsImpl : public BaseSettings<HiveSettingsTraits>
 {
 };
 
-#define INITIALIZE_SETTING_EXTERN(TYPE, NAME, DEFAULT, DESCRIPTION, FLAGS) HiveSettings##TYPE NAME = &HiveSettingsImpl ::NAME;
+#define INITIALIZE_SETTING_EXTERN(TYPE, NAME, DEFAULT, DESCRIPTION, FLAGS) \
+    HiveSettings##TYPE NAME = { &HiveSettingsImpl ::data_##TYPE , &HiveSettingsImpl :: position_##NAME };
+
+HIVE_SETTINGS_SUPPORTED_TYPES(HiveSettings, IMPLEMENT_SETTING_SUBSCRIPT_OPERATOR)
 
 namespace HiveSetting
 {
@@ -58,8 +61,6 @@ HiveSettings::HiveSettings(HiveSettings && settings) noexcept : impl(std::make_u
 }
 
 HiveSettings::~HiveSettings() = default;
-
-HIVE_SETTINGS_SUPPORTED_TYPES(HiveSettings, IMPLEMENT_SETTING_SUBSCRIPT_OPERATOR)
 
 void HiveSettings::loadFromConfig(const String & config_elem, const Poco::Util::AbstractConfiguration & config)
 {

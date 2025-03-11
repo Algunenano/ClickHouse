@@ -19,15 +19,15 @@ namespace DB
 
 namespace CoordinationSetting
 {
-    extern const CoordinationSettingsBool async_replication;
-    extern const CoordinationSettingsUInt64 commit_logs_cache_size_threshold;
-    extern const CoordinationSettingsBool compress_logs;
-    extern const CoordinationSettingsBool force_sync;
-    extern const CoordinationSettingsUInt64 latest_logs_cache_size_threshold;
-    extern const CoordinationSettingsUInt64 log_file_overallocate_size;
-    extern const CoordinationSettingsUInt64 max_flush_batch_size;
-    extern const CoordinationSettingsUInt64 max_log_file_size;
-    extern const CoordinationSettingsUInt64 rotate_log_storage_interval;
+    extern CoordinationSettingsBool async_replication;
+    extern CoordinationSettingsUInt64 commit_logs_cache_size_threshold;
+    extern CoordinationSettingsBool compress_logs;
+    extern CoordinationSettingsBool force_sync;
+    extern CoordinationSettingsUInt64 latest_logs_cache_size_threshold;
+    extern CoordinationSettingsUInt64 log_file_overallocate_size;
+    extern CoordinationSettingsUInt64 max_flush_batch_size;
+    extern CoordinationSettingsUInt64 max_log_file_size;
+    extern CoordinationSettingsUInt64 rotate_log_storage_interval;
 }
 
 namespace ErrorCodes

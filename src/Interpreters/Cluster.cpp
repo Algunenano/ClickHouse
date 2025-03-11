@@ -22,11 +22,11 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsUInt64 distributed_connections_pool_size;
-    extern const SettingsUInt64 distributed_replica_error_cap;
-    extern const SettingsSeconds distributed_replica_error_half_life;
-    extern const SettingsLoadBalancing load_balancing;
-    extern const SettingsBool prefer_localhost_replica;
+    extern SettingsUInt64 distributed_connections_pool_size;
+    extern SettingsUInt64 distributed_replica_error_cap;
+    extern SettingsSeconds distributed_replica_error_half_life;
+    extern SettingsLoadBalancing load_balancing;
+    extern SettingsBool prefer_localhost_replica;
 }
 
 namespace ErrorCodes

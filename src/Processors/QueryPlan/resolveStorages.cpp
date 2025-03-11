@@ -12,9 +12,9 @@ namespace DB
 
 namespace Setting
 {
-    extern const SettingsUInt64 max_query_size;
-    extern const SettingsUInt64 max_parser_depth;
-    extern const SettingsUInt64 max_parser_backtracks;
+    extern SettingsUInt64 max_query_size;
+    extern SettingsUInt64 max_parser_depth;
+    extern SettingsUInt64 max_parser_backtracks;
 }
 
 namespace ErrorCodes

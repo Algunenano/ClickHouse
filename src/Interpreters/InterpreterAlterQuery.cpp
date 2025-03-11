@@ -38,13 +38,13 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsBool allow_experimental_statistics;
-    extern const SettingsSeconds lock_acquire_timeout;
+    extern SettingsBool allow_experimental_statistics;
+    extern SettingsSeconds lock_acquire_timeout;
 }
 
 namespace ServerSetting
 {
-    extern const ServerSettingsBool disable_insertion_and_mutation;
+    extern ServerSettingsBool disable_insertion_and_mutation;
 }
 
 namespace ErrorCodes

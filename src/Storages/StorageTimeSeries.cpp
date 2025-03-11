@@ -23,7 +23,7 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsBool allow_experimental_time_series_table;
+    extern SettingsBool allow_experimental_time_series_table;
 }
 
 namespace ErrorCodes

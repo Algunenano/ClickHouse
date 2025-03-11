@@ -21,8 +21,8 @@ struct Settings;
 
 struct S3Settings
 {
-    S3::S3AuthSettings auth_settings;
-    S3::S3RequestSettings request_settings;
+    S3AuthSettings auth_settings;
+    S3RequestSettings request_settings;
 
     void loadFromConfig(
         const Poco::Util::AbstractConfiguration & config,

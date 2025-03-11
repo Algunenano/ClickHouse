@@ -27,7 +27,7 @@ namespace ErrorCodes
 
 namespace Setting
 {
-    extern const SettingsMaxThreads max_threads;
+    extern SettingsMaxThreads max_threads;
 }
 
 

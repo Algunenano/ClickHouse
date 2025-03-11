@@ -26,8 +26,8 @@ namespace DB
 
 namespace SetSetting
 {
-    extern const SetSettingsString disk;
-    extern const SetSettingsBool persistent;
+    extern SetSettingsString disk;
+    extern SetSettingsBool persistent;
 }
 
 namespace ErrorCodes

@@ -24,7 +24,7 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsBool splitby_max_substrings_includes_remaining_string;
+    extern SettingsBool splitby_max_substrings_includes_remaining_string;
 }
 
 namespace ErrorCodes

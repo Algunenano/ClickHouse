@@ -35,22 +35,22 @@ static constexpr size_t replication_slot_name_max_size = 64;
 
 namespace MaterializedPostgreSQLSetting
 {
-    extern const MaterializedPostgreSQLSettingsUInt64 materialized_postgresql_backoff_factor;
-    extern const MaterializedPostgreSQLSettingsUInt64 materialized_postgresql_backoff_max_ms;
-    extern const MaterializedPostgreSQLSettingsUInt64 materialized_postgresql_backoff_min_ms;
-    extern const MaterializedPostgreSQLSettingsUInt64 materialized_postgresql_max_block_size;
-    extern const MaterializedPostgreSQLSettingsString materialized_postgresql_replication_slot;
-    extern const MaterializedPostgreSQLSettingsString materialized_postgresql_schema;
-    extern const MaterializedPostgreSQLSettingsString materialized_postgresql_schema_list;
-    extern const MaterializedPostgreSQLSettingsString materialized_postgresql_snapshot;
-    extern const MaterializedPostgreSQLSettingsString materialized_postgresql_tables_list;
-    extern const MaterializedPostgreSQLSettingsBool materialized_postgresql_tables_list_with_schema;
-    extern const MaterializedPostgreSQLSettingsBool materialized_postgresql_use_unique_replication_consumer_identifier;
+    extern MaterializedPostgreSQLSettingsUInt64 materialized_postgresql_backoff_factor;
+    extern MaterializedPostgreSQLSettingsUInt64 materialized_postgresql_backoff_max_ms;
+    extern MaterializedPostgreSQLSettingsUInt64 materialized_postgresql_backoff_min_ms;
+    extern MaterializedPostgreSQLSettingsUInt64 materialized_postgresql_max_block_size;
+    extern MaterializedPostgreSQLSettingsString materialized_postgresql_replication_slot;
+    extern MaterializedPostgreSQLSettingsString materialized_postgresql_schema;
+    extern MaterializedPostgreSQLSettingsString materialized_postgresql_schema_list;
+    extern MaterializedPostgreSQLSettingsString materialized_postgresql_snapshot;
+    extern MaterializedPostgreSQLSettingsString materialized_postgresql_tables_list;
+    extern MaterializedPostgreSQLSettingsBool materialized_postgresql_tables_list_with_schema;
+    extern MaterializedPostgreSQLSettingsBool materialized_postgresql_use_unique_replication_consumer_identifier;
 }
 
 namespace Setting
 {
-    extern const SettingsFloat postgresql_fault_injection_probability;
+    extern SettingsFloat postgresql_fault_injection_probability;
 }
 
 namespace ErrorCodes

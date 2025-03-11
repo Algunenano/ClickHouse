@@ -16,15 +16,15 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsUInt64 database_replicated_initial_query_timeout_sec;
+    extern SettingsUInt64 database_replicated_initial_query_timeout_sec;
 }
 
 namespace DatabaseReplicatedSetting
 {
-    extern const DatabaseReplicatedSettingsBool check_consistency;
-    extern const DatabaseReplicatedSettingsUInt64 max_replication_lag_to_enqueue;
-    extern const DatabaseReplicatedSettingsUInt64 max_retries_before_automatic_recovery;
-    extern const DatabaseReplicatedSettingsUInt64 wait_entry_commited_timeout_sec;
+    extern DatabaseReplicatedSettingsBool check_consistency;
+    extern DatabaseReplicatedSettingsUInt64 max_replication_lag_to_enqueue;
+    extern DatabaseReplicatedSettingsUInt64 max_retries_before_automatic_recovery;
+    extern DatabaseReplicatedSettingsUInt64 wait_entry_commited_timeout_sec;
 }
 
 namespace ErrorCodes

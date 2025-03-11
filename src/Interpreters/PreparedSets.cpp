@@ -22,15 +22,15 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsUInt64 max_bytes_in_set;
-    extern const SettingsUInt64 max_bytes_to_transfer;
-    extern const SettingsUInt64 max_rows_in_set;
-    extern const SettingsUInt64 max_rows_to_transfer;
-    extern const SettingsOverflowMode set_overflow_mode;
-    extern const SettingsOverflowMode transfer_overflow_mode;
-    extern const SettingsBool transform_null_in;
-    extern const SettingsBool use_index_for_in_with_subqueries;
-    extern const SettingsUInt64 use_index_for_in_with_subqueries_max_values;
+    extern SettingsUInt64 max_bytes_in_set;
+    extern SettingsUInt64 max_bytes_to_transfer;
+    extern SettingsUInt64 max_rows_in_set;
+    extern SettingsUInt64 max_rows_to_transfer;
+    extern SettingsOverflowMode set_overflow_mode;
+    extern SettingsOverflowMode transfer_overflow_mode;
+    extern SettingsBool transform_null_in;
+    extern SettingsBool use_index_for_in_with_subqueries;
+    extern SettingsUInt64 use_index_for_in_with_subqueries_max_values;
 }
 
 namespace ErrorCodes

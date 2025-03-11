@@ -57,13 +57,13 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsBool external_table_functions_use_nulls;
-    extern const SettingsUInt64 glob_expansion_max_elements;
-    extern const SettingsUInt64 postgresql_connection_attempt_timeout;
-    extern const SettingsBool postgresql_connection_pool_auto_close_connection;
-    extern const SettingsUInt64 postgresql_connection_pool_retries;
-    extern const SettingsUInt64 postgresql_connection_pool_size;
-    extern const SettingsUInt64 postgresql_connection_pool_wait_timeout;
+    extern SettingsBool external_table_functions_use_nulls;
+    extern SettingsUInt64 glob_expansion_max_elements;
+    extern SettingsUInt64 postgresql_connection_attempt_timeout;
+    extern SettingsBool postgresql_connection_pool_auto_close_connection;
+    extern SettingsUInt64 postgresql_connection_pool_retries;
+    extern SettingsUInt64 postgresql_connection_pool_size;
+    extern SettingsUInt64 postgresql_connection_pool_wait_timeout;
 }
 
 namespace ErrorCodes

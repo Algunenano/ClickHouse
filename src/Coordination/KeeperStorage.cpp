@@ -50,7 +50,7 @@ namespace DB
 
 namespace CoordinationSetting
 {
-    extern const CoordinationSettingsUInt64 log_slow_cpu_threshold_ms;
+    extern CoordinationSettingsUInt64 log_slow_cpu_threshold_ms;
 }
 
 namespace ErrorCodes

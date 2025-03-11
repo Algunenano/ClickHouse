@@ -13,7 +13,7 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsMilliseconds rabbitmq_max_wait_ms;
+    extern SettingsMilliseconds rabbitmq_max_wait_ms;
 }
 
 static std::pair<Block, Block> getHeaders(const StorageSnapshotPtr & storage_snapshot, const Names & column_names)

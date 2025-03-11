@@ -98,20 +98,20 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsBool allow_settings_after_format_in_insert;
-    extern const SettingsBool async_insert;
-    extern const SettingsDialect dialect;
-    extern const SettingsUInt64 max_block_size;
-    extern const SettingsUInt64 max_insert_block_size;
-    extern const SettingsUInt64 max_parser_backtracks;
-    extern const SettingsUInt64 max_parser_depth;
-    extern const SettingsUInt64 max_query_size;
-    extern const SettingsUInt64 output_format_pretty_max_rows;
-    extern const SettingsUInt64 output_format_pretty_max_value_width;
-    extern const SettingsBool partial_result_on_first_cancel;
-    extern const SettingsBool throw_if_no_data_to_insert;
-    extern const SettingsBool implicit_select;
-    extern const SettingsBool apply_settings_from_server;
+    extern SettingsBool allow_settings_after_format_in_insert;
+    extern SettingsBool async_insert;
+    extern SettingsDialect dialect;
+    extern SettingsUInt64 max_block_size;
+    extern SettingsUInt64 max_insert_block_size;
+    extern SettingsUInt64 max_parser_backtracks;
+    extern SettingsUInt64 max_parser_depth;
+    extern SettingsUInt64 max_query_size;
+    extern SettingsUInt64 output_format_pretty_max_rows;
+    extern SettingsUInt64 output_format_pretty_max_value_width;
+    extern SettingsBool partial_result_on_first_cancel;
+    extern SettingsBool throw_if_no_data_to_insert;
+    extern SettingsBool implicit_select;
+    extern SettingsBool apply_settings_from_server;
 }
 
 namespace ErrorCodes

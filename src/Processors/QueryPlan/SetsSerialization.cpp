@@ -25,11 +25,11 @@ namespace ErrorCodes
 
 namespace Setting
 {
-    extern const SettingsBool transform_null_in;
-    extern const SettingsUInt64 use_index_for_in_with_subqueries_max_values;
-    extern const SettingsUInt64 max_query_size;
-    extern const SettingsUInt64 max_parser_depth;
-    extern const SettingsUInt64 max_parser_backtracks;
+    extern SettingsBool transform_null_in;
+    extern SettingsUInt64 use_index_for_in_with_subqueries_max_values;
+    extern SettingsUInt64 max_query_size;
+    extern SettingsUInt64 max_parser_depth;
+    extern SettingsUInt64 max_parser_backtracks;
 }
 
 enum class SetSerializationKind : UInt8

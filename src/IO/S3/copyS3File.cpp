@@ -50,16 +50,16 @@ namespace ErrorCodes
 
 namespace S3RequestSetting
 {
-    extern const S3RequestSettingsBool allow_native_copy;
-    extern const S3RequestSettingsBool check_objects_after_upload;
-    extern const S3RequestSettingsUInt64 max_part_number;
-    extern const S3RequestSettingsBool allow_multipart_copy;
-    extern const S3RequestSettingsUInt64 max_single_operation_copy_size;
-    extern const S3RequestSettingsUInt64 max_single_part_upload_size;
-    extern const S3RequestSettingsUInt64 max_unexpected_write_error_retries;
-    extern const S3RequestSettingsUInt64 max_upload_part_size;
-    extern const S3RequestSettingsUInt64 min_upload_part_size;
-    extern const S3RequestSettingsString storage_class_name;
+    extern S3RequestSettingsBool allow_native_copy;
+    extern S3RequestSettingsBool check_objects_after_upload;
+    extern S3RequestSettingsUInt64 max_part_number;
+    extern S3RequestSettingsBool allow_multipart_copy;
+    extern S3RequestSettingsUInt64 max_single_operation_copy_size;
+    extern S3RequestSettingsUInt64 max_single_part_upload_size;
+    extern S3RequestSettingsUInt64 max_unexpected_write_error_retries;
+    extern S3RequestSettingsUInt64 max_upload_part_size;
+    extern S3RequestSettingsUInt64 min_upload_part_size;
+    extern S3RequestSettingsString storage_class_name;
 }
 
 namespace
@@ -71,7 +71,7 @@ namespace
             const std::shared_ptr<const S3::Client> & client_ptr_,
             const String & dest_bucket_,
             const String & dest_key_,
-            const S3::S3RequestSettings & request_settings_,
+            const S3RequestSettings & request_settings_,
             const std::optional<std::map<String, String>> & object_metadata_,
             ThreadPoolCallbackRunnerUnsafe<void> schedule_,
             BlobStorageLogWriterPtr blob_storage_log_,
@@ -93,7 +93,7 @@ namespace
         std::shared_ptr<const S3::Client> client_ptr;
         const String & dest_bucket;
         const String & dest_key;
-        const S3::S3RequestSettings & request_settings;
+        const S3RequestSettings & request_settings;
         const std::optional<std::map<String, String>> & object_metadata;
         ThreadPoolCallbackRunnerUnsafe<void> schedule;
         BlobStorageLogWriterPtr blob_storage_log;
@@ -481,7 +481,7 @@ namespace
             const std::shared_ptr<const S3::Client> & client_ptr_,
             const String & dest_bucket_,
             const String & dest_key_,
-            const S3::S3RequestSettings & request_settings_,
+            const S3RequestSettings & request_settings_,
             const std::optional<std::map<String, String>> & object_metadata_,
             ThreadPoolCallbackRunnerUnsafe<void> schedule_,
             BlobStorageLogWriterPtr blob_storage_log_)
@@ -662,7 +662,7 @@ namespace
             size_t src_size_,
             const String & dest_bucket_,
             const String & dest_key_,
-            const S3::S3RequestSettings & request_settings_,
+            const S3RequestSettings & request_settings_,
             const ReadSettings & read_settings_,
             const std::optional<std::map<String, String>> & object_metadata_,
             ThreadPoolCallbackRunnerUnsafe<void> schedule_,
@@ -876,7 +876,7 @@ void copyDataToS3File(
     const std::shared_ptr<const S3::Client> & dest_s3_client,
     const String & dest_bucket,
     const String & dest_key,
-    const S3::S3RequestSettings & settings,
+    const S3RequestSettings & settings,
     BlobStorageLogWriterPtr blob_storage_log,
     ThreadPoolCallbackRunnerUnsafe<void> schedule,
     const std::optional<std::map<String, String>> & object_metadata)
@@ -905,7 +905,7 @@ void copyS3File(
     std::shared_ptr<const S3::Client> dest_s3_client,
     const String & dest_bucket,
     const String & dest_key,
-    const S3::S3RequestSettings & settings,
+    const S3RequestSettings & settings,
     const ReadSettings & read_settings,
     BlobStorageLogWriterPtr blob_storage_log,
     ThreadPoolCallbackRunnerUnsafe<void> schedule,

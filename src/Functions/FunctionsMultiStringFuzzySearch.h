@@ -20,10 +20,10 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsBool allow_hyperscan;
-    extern const SettingsUInt64 max_hyperscan_regexp_length;
-    extern const SettingsUInt64 max_hyperscan_regexp_total_length;
-    extern const SettingsBool reject_expensive_hyperscan_regexps;
+    extern SettingsBool allow_hyperscan;
+    extern SettingsUInt64 max_hyperscan_regexp_length;
+    extern SettingsUInt64 max_hyperscan_regexp_total_length;
+    extern SettingsBool reject_expensive_hyperscan_regexps;
 }
 
 namespace ErrorCodes

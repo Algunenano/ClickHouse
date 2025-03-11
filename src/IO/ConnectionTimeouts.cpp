@@ -8,26 +8,26 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsSeconds connect_timeout;
-    extern const SettingsSeconds send_timeout;
-    extern const SettingsSeconds receive_timeout;
-    extern const SettingsSeconds tcp_keep_alive_timeout;
-    extern const SettingsMilliseconds handshake_timeout_ms;
-    extern const SettingsMilliseconds hedged_connection_timeout_ms;
-    extern const SettingsMilliseconds receive_data_timeout_ms;
-    extern const SettingsMilliseconds connect_timeout_with_failover_ms;
-    extern const SettingsMilliseconds connect_timeout_with_failover_secure_ms;
-    extern const SettingsSeconds http_connection_timeout;
-    extern const SettingsSeconds http_send_timeout;
-    extern const SettingsSeconds http_receive_timeout;
+    extern SettingsSeconds connect_timeout;
+    extern SettingsSeconds send_timeout;
+    extern SettingsSeconds receive_timeout;
+    extern SettingsSeconds tcp_keep_alive_timeout;
+    extern SettingsMilliseconds handshake_timeout_ms;
+    extern SettingsMilliseconds hedged_connection_timeout_ms;
+    extern SettingsMilliseconds receive_data_timeout_ms;
+    extern SettingsMilliseconds connect_timeout_with_failover_ms;
+    extern SettingsMilliseconds connect_timeout_with_failover_secure_ms;
+    extern SettingsSeconds http_connection_timeout;
+    extern SettingsSeconds http_send_timeout;
+    extern SettingsSeconds http_receive_timeout;
 }
 
 namespace ServerSetting
 {
-    extern const ServerSettingsSeconds keep_alive_timeout;
-    extern const ServerSettingsSeconds replicated_fetches_http_connection_timeout;
-    extern const ServerSettingsSeconds replicated_fetches_http_receive_timeout;
-    extern const ServerSettingsSeconds replicated_fetches_http_send_timeout;
+    extern ServerSettingsSeconds keep_alive_timeout;
+    extern ServerSettingsSeconds replicated_fetches_http_connection_timeout;
+    extern ServerSettingsSeconds replicated_fetches_http_receive_timeout;
+    extern ServerSettingsSeconds replicated_fetches_http_send_timeout;
 }
 
 Poco::Timespan ConnectionTimeouts::saturate(Poco::Timespan timespan, Poco::Timespan limit)

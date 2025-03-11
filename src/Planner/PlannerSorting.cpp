@@ -17,8 +17,8 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsBool compile_sort_description;
-    extern const SettingsUInt64 min_count_to_compile_sort_description;
+    extern SettingsBool compile_sort_description;
+    extern SettingsUInt64 min_count_to_compile_sort_description;
 }
 
 namespace ErrorCodes

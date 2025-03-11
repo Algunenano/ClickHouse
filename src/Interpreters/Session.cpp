@@ -32,8 +32,8 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsUInt64 max_sessions_for_user;
-    extern const SettingsBool push_external_roles_in_interserver_queries;
+    extern SettingsUInt64 max_sessions_for_user;
+    extern SettingsBool push_external_roles_in_interserver_queries;
 }
 
 namespace ErrorCodes

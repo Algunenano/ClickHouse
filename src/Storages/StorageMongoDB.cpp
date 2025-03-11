@@ -50,8 +50,8 @@ namespace ErrorCodes
 
 namespace Setting
 {
-    extern const SettingsBool allow_experimental_analyzer;
-    extern const SettingsBool mongodb_throw_on_unsupported_query;
+    extern SettingsBool allow_experimental_analyzer;
+    extern SettingsBool mongodb_throw_on_unsupported_query;
 }
 
 StorageMongoDB::StorageMongoDB(

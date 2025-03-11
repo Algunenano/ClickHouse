@@ -24,7 +24,7 @@ namespace ErrorCodes
     SET_RELATED_SETTINGS(M, ALIAS) \
     LIST_OF_ALL_FORMAT_SETTINGS(M, ALIAS)
 
-DECLARE_SETTINGS_TRAITS(SetSettingsTraits, LIST_OF_SET_SETTINGS)
+DECLARE_SETTINGS_TRAITS(SetSettingsTraits, LIST_OF_SET_SETTINGS, SET_SETTINGS_SUPPORTED_TYPES)
 IMPLEMENT_SETTINGS_TRAITS(SetSettingsTraits, LIST_OF_SET_SETTINGS)
 
 
@@ -32,7 +32,10 @@ struct SetSettingsImpl : public BaseSettings<SetSettingsTraits>
 {
 };
 
-#define INITIALIZE_SETTING_EXTERN(TYPE, NAME, DEFAULT, DESCRIPTION, FLAGS) SetSettings##TYPE NAME = &SetSettingsImpl ::NAME;
+SET_SETTINGS_SUPPORTED_TYPES(SetSettings, IMPLEMENT_SETTING_SUBSCRIPT_OPERATOR)
+
+#define INITIALIZE_SETTING_EXTERN(TYPE, NAME, DEFAULT, DESCRIPTION, FLAGS) \
+    SetSettings##TYPE NAME = { &SetSettingsImpl ::data_##TYPE , &SetSettingsImpl :: position_##NAME };
 
 namespace SetSetting
 {
@@ -54,8 +57,6 @@ SetSettings::SetSettings(SetSettings && settings) noexcept : impl(std::make_uniq
 }
 
 SetSettings::~SetSettings() = default;
-
-SET_SETTINGS_SUPPORTED_TYPES(SetSettings, IMPLEMENT_SETTING_SUBSCRIPT_OPERATOR)
 
 void SetSettings::loadFromQuery(ASTStorage & storage_def)
 {

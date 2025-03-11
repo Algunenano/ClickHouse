@@ -15,7 +15,7 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsBool optimize_normalize_count_variants;
+    extern SettingsBool optimize_normalize_count_variants;
 }
 
 namespace

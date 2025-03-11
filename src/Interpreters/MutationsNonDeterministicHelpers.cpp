@@ -19,9 +19,9 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsBool mutations_execute_nondeterministic_on_initiator;
-    extern const SettingsBool mutations_execute_subqueries_on_initiator;
-    extern const SettingsUInt64 mutations_max_literal_size_to_replace;
+    extern SettingsBool mutations_execute_nondeterministic_on_initiator;
+    extern SettingsBool mutations_execute_subqueries_on_initiator;
+    extern SettingsUInt64 mutations_max_literal_size_to_replace;
 }
 
 namespace

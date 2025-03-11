@@ -13,7 +13,7 @@ namespace DB
 
 namespace MergeTreeSetting
 {
-    extern const MergeTreeSettingsBool allow_remote_fs_zero_copy_replication;
+    extern MergeTreeSettingsBool allow_remote_fs_zero_copy_replication;
 }
 
 namespace ErrorCodes

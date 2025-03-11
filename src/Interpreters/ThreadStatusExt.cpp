@@ -39,26 +39,26 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsBool calculate_text_stack_trace;
-    extern const SettingsBool enable_job_stack_trace;
-    extern const SettingsBool log_queries;
-    extern const SettingsMilliseconds log_queries_min_query_duration_ms;
-    extern const SettingsBool log_profile_events;
-    extern const SettingsUInt64 log_queries_cut_to_length;
-    extern const SettingsBool log_query_threads;
-    extern const SettingsUInt64 max_untracked_memory;
-    extern const SettingsUInt64 memory_overcommit_ratio_denominator;
-    extern const SettingsFloat memory_profiler_sample_probability;
-    extern const SettingsUInt64 memory_profiler_sample_min_allocation_size;
-    extern const SettingsUInt64 memory_profiler_sample_max_allocation_size;
-    extern const SettingsUInt64 memory_profiler_step;
-    extern const SettingsFloat memory_tracker_fault_probability;
-    extern const SettingsBool metrics_perf_events_enabled;
-    extern const SettingsString metrics_perf_events_list;
-    extern const SettingsInt64 os_thread_priority;
-    extern const SettingsUInt64 query_profiler_cpu_time_period_ns;
-    extern const SettingsUInt64 query_profiler_real_time_period_ns;
-    extern const SettingsBool enable_adaptive_memory_spill_scheduler;
+    extern SettingsBool calculate_text_stack_trace;
+    extern SettingsBool enable_job_stack_trace;
+    extern SettingsBool log_queries;
+    extern SettingsMilliseconds log_queries_min_query_duration_ms;
+    extern SettingsBool log_profile_events;
+    extern SettingsUInt64 log_queries_cut_to_length;
+    extern SettingsBool log_query_threads;
+    extern SettingsUInt64 max_untracked_memory;
+    extern SettingsUInt64 memory_overcommit_ratio_denominator;
+    extern SettingsFloat memory_profiler_sample_probability;
+    extern SettingsUInt64 memory_profiler_sample_min_allocation_size;
+    extern SettingsUInt64 memory_profiler_sample_max_allocation_size;
+    extern SettingsUInt64 memory_profiler_step;
+    extern SettingsFloat memory_tracker_fault_probability;
+    extern SettingsBool metrics_perf_events_enabled;
+    extern SettingsString metrics_perf_events_list;
+    extern SettingsInt64 os_thread_priority;
+    extern SettingsUInt64 query_profiler_cpu_time_period_ns;
+    extern SettingsUInt64 query_profiler_real_time_period_ns;
+    extern SettingsBool enable_adaptive_memory_spill_scheduler;
 }
 
 namespace ErrorCodes

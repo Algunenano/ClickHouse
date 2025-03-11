@@ -42,9 +42,9 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsBool allow_experimental_analyzer;
-    extern const SettingsBool allow_statistics_optimize;
-    extern const SettingsBool format_display_secrets_in_show_and_select;
+    extern SettingsBool allow_experimental_analyzer;
+    extern SettingsBool allow_statistics_optimize;
+    extern SettingsBool format_display_secrets_in_show_and_select;
 }
 
 namespace ErrorCodes

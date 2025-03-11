@@ -28,8 +28,8 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsBool parallel_replicas_allow_in_with_subquery;
-    extern const SettingsBool parallel_replicas_for_non_replicated_merge_tree;
+    extern SettingsBool parallel_replicas_allow_in_with_subquery;
+    extern SettingsBool parallel_replicas_for_non_replicated_merge_tree;
 }
 
 namespace ErrorCodes

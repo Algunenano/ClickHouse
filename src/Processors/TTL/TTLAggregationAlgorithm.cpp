@@ -7,19 +7,19 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsBool compile_aggregate_expressions;
-    extern const SettingsBool empty_result_for_aggregation_by_empty_set;
-    extern const SettingsBool enable_software_prefetch_in_aggregation;
-    extern const SettingsOverflowModeGroupBy group_by_overflow_mode;
-    extern const SettingsUInt64 max_block_size;
-    extern const SettingsUInt64 max_bytes_before_external_group_by;
-    extern const SettingsDouble max_bytes_ratio_before_external_group_by;
-    extern const SettingsUInt64 max_rows_to_group_by;
-    extern const SettingsMaxThreads max_threads;
-    extern const SettingsNonZeroUInt64 min_chunk_bytes_for_parallel_parsing;
-    extern const SettingsUInt64 min_count_to_compile_aggregate_expression;
-    extern const SettingsUInt64 min_free_disk_space_for_temporary_data;
-    extern const SettingsBool optimize_group_by_constant_keys;
+    extern SettingsBool compile_aggregate_expressions;
+    extern SettingsBool empty_result_for_aggregation_by_empty_set;
+    extern SettingsBool enable_software_prefetch_in_aggregation;
+    extern SettingsOverflowModeGroupBy group_by_overflow_mode;
+    extern SettingsUInt64 max_block_size;
+    extern SettingsUInt64 max_bytes_before_external_group_by;
+    extern SettingsDouble max_bytes_ratio_before_external_group_by;
+    extern SettingsUInt64 max_rows_to_group_by;
+    extern SettingsMaxThreads max_threads;
+    extern SettingsNonZeroUInt64 min_chunk_bytes_for_parallel_parsing;
+    extern SettingsUInt64 min_count_to_compile_aggregate_expression;
+    extern SettingsUInt64 min_free_disk_space_for_temporary_data;
+    extern SettingsBool optimize_group_by_constant_keys;
 }
 
 TTLAggregationAlgorithm::TTLAggregationAlgorithm(

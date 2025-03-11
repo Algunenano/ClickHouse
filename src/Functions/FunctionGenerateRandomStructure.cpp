@@ -18,7 +18,7 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsBool allow_suspicious_low_cardinality_types;
+    extern SettingsBool allow_suspicious_low_cardinality_types;
 }
 
 namespace ErrorCodes

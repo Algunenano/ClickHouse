@@ -42,25 +42,25 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsBool allow_experimental_join_right_table_sorting;
-    extern const SettingsBool allow_experimental_analyzer;
-    extern const SettingsUInt64 cross_join_min_bytes_to_compress;
-    extern const SettingsUInt64 cross_join_min_rows_to_compress;
-    extern const SettingsUInt64 default_max_bytes_in_join;
-    extern const SettingsJoinAlgorithm join_algorithm;
-    extern const SettingsUInt64 join_on_disk_max_files_to_merge;
-    extern const SettingsUInt64 join_output_by_rowlist_perkey_rows_threshold;
-    extern const SettingsOverflowMode join_overflow_mode;
-    extern const SettingsUInt64 join_to_sort_maximum_table_rows;
-    extern const SettingsUInt64 join_to_sort_minimum_perkey_rows;
-    extern const SettingsBool join_use_nulls;
-    extern const SettingsUInt64 max_bytes_in_join;
-    extern const SettingsUInt64 max_joined_block_size_rows;
-    extern const SettingsUInt64 max_memory_usage;
-    extern const SettingsUInt64 max_rows_in_join;
-    extern const SettingsUInt64 partial_merge_join_left_table_buffer_bytes;
-    extern const SettingsUInt64 partial_merge_join_rows_in_right_blocks;
-    extern const SettingsString temporary_files_codec;
+    extern SettingsBool allow_experimental_join_right_table_sorting;
+    extern SettingsBool allow_experimental_analyzer;
+    extern SettingsUInt64 cross_join_min_bytes_to_compress;
+    extern SettingsUInt64 cross_join_min_rows_to_compress;
+    extern SettingsUInt64 default_max_bytes_in_join;
+    extern SettingsJoinAlgorithm join_algorithm;
+    extern SettingsUInt64 join_on_disk_max_files_to_merge;
+    extern SettingsUInt64 join_output_by_rowlist_perkey_rows_threshold;
+    extern SettingsOverflowMode join_overflow_mode;
+    extern SettingsUInt64 join_to_sort_maximum_table_rows;
+    extern SettingsUInt64 join_to_sort_minimum_perkey_rows;
+    extern SettingsBool join_use_nulls;
+    extern SettingsUInt64 max_bytes_in_join;
+    extern SettingsUInt64 max_joined_block_size_rows;
+    extern SettingsUInt64 max_memory_usage;
+    extern SettingsUInt64 max_rows_in_join;
+    extern SettingsUInt64 partial_merge_join_left_table_buffer_bytes;
+    extern SettingsUInt64 partial_merge_join_rows_in_right_blocks;
+    extern SettingsString temporary_files_codec;
 }
 
 namespace ErrorCodes

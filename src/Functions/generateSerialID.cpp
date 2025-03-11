@@ -26,12 +26,12 @@ namespace ErrorCodes
 
 namespace ServerSetting
 {
-    extern const ServerSettingsString series_keeper_path;
+    extern ServerSettingsString series_keeper_path;
 }
 
 namespace Setting
 {
-    extern const SettingsUInt64 max_autoincrement_series;
+    extern SettingsUInt64 max_autoincrement_series;
 }
 
 

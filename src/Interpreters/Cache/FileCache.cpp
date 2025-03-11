@@ -55,26 +55,26 @@ namespace ErrorCodes
 
 namespace FileCacheSetting
 {
-    extern const FileCacheSettingsString path;
-    extern const FileCacheSettingsUInt64 max_size;
-    extern const FileCacheSettingsUInt64 max_elements;
-    extern const FileCacheSettingsUInt64 max_file_segment_size;
-    extern const FileCacheSettingsUInt64 boundary_alignment;
-    extern const FileCacheSettingsString cache_policy;
-    extern const FileCacheSettingsDouble slru_size_ratio;
-    extern const FileCacheSettingsUInt64 load_metadata_threads;
-    extern const FileCacheSettingsBool load_metadata_asynchronously;
-    extern const FileCacheSettingsUInt64 background_download_threads;
-    extern const FileCacheSettingsUInt64 background_download_queue_size_limit;
-    extern const FileCacheSettingsUInt64 background_download_max_file_segment_size;
-    extern const FileCacheSettingsDouble keep_free_space_size_ratio;
-    extern const FileCacheSettingsDouble keep_free_space_elements_ratio;
-    extern const FileCacheSettingsUInt64 keep_free_space_remove_batch;
-    extern const FileCacheSettingsBool enable_bypass_cache_with_threshold;
-    extern const FileCacheSettingsUInt64 bypass_cache_threshold;
-    extern const FileCacheSettingsBool write_cache_per_user_id_directory;
-    extern const FileCacheSettingsUInt64 cache_hits_threshold;
-    extern const FileCacheSettingsBool enable_filesystem_query_cache_limit;
+    extern FileCacheSettingsString path;
+    extern FileCacheSettingsUInt64 max_size;
+    extern FileCacheSettingsUInt64 max_elements;
+    extern FileCacheSettingsUInt64 max_file_segment_size;
+    extern FileCacheSettingsUInt64 boundary_alignment;
+    extern FileCacheSettingsString cache_policy;
+    extern FileCacheSettingsDouble slru_size_ratio;
+    extern FileCacheSettingsUInt64 load_metadata_threads;
+    extern FileCacheSettingsBool load_metadata_asynchronously;
+    extern FileCacheSettingsUInt64 background_download_threads;
+    extern FileCacheSettingsUInt64 background_download_queue_size_limit;
+    extern FileCacheSettingsUInt64 background_download_max_file_segment_size;
+    extern FileCacheSettingsDouble keep_free_space_size_ratio;
+    extern FileCacheSettingsDouble keep_free_space_elements_ratio;
+    extern FileCacheSettingsUInt64 keep_free_space_remove_batch;
+    extern FileCacheSettingsBool enable_bypass_cache_with_threshold;
+    extern FileCacheSettingsUInt64 bypass_cache_threshold;
+    extern FileCacheSettingsBool write_cache_per_user_id_directory;
+    extern FileCacheSettingsUInt64 cache_hits_threshold;
+    extern FileCacheSettingsBool enable_filesystem_query_cache_limit;
 }
 
 namespace

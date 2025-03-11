@@ -23,7 +23,7 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsUInt64 cross_to_inner_join_rewrite;
+    extern SettingsUInt64 cross_to_inner_join_rewrite;
 }
 
 namespace ErrorCodes

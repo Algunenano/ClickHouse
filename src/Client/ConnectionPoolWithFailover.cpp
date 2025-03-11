@@ -18,14 +18,14 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsUInt64 connections_with_failover_max_tries;
-    extern const SettingsBool distributed_insert_skip_read_only_replicas;
-    extern const SettingsUInt64 distributed_replica_max_ignored_errors;
-    extern const SettingsBool fallback_to_stale_replicas_for_distributed_queries;
-    extern const SettingsLoadBalancing load_balancing;
-    extern const SettingsUInt64 load_balancing_first_offset;
-    extern const SettingsNonZeroUInt64 max_parallel_replicas;
-    extern const SettingsBool skip_unavailable_shards;
+    extern SettingsUInt64 connections_with_failover_max_tries;
+    extern SettingsBool distributed_insert_skip_read_only_replicas;
+    extern SettingsUInt64 distributed_replica_max_ignored_errors;
+    extern SettingsBool fallback_to_stale_replicas_for_distributed_queries;
+    extern SettingsLoadBalancing load_balancing;
+    extern SettingsUInt64 load_balancing_first_offset;
+    extern SettingsNonZeroUInt64 max_parallel_replicas;
+    extern SettingsBool skip_unavailable_shards;
 }
 
 namespace ErrorCodes

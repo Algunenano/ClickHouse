@@ -33,12 +33,12 @@ namespace ErrorCodes
 
 namespace MergeTreeSetting
 {
-    extern const MergeTreeSettingsInt64 merge_with_ttl_timeout;
-    extern const MergeTreeSettingsInt64 merge_with_recompression_ttl_timeout;
-    extern const MergeTreeSettingsBool min_age_to_force_merge_on_partition_only;
-    extern const MergeTreeSettingsUInt64 min_age_to_force_merge_seconds;
-    extern const MergeTreeSettingsBool enable_max_bytes_limit_for_min_age_to_force_merge;
-    extern const MergeTreeSettingsUInt64 number_of_free_entries_in_pool_to_execute_optimize_entire_partition;
+    extern MergeTreeSettingsInt64 merge_with_ttl_timeout;
+    extern MergeTreeSettingsInt64 merge_with_recompression_ttl_timeout;
+    extern MergeTreeSettingsBool min_age_to_force_merge_on_partition_only;
+    extern MergeTreeSettingsUInt64 min_age_to_force_merge_seconds;
+    extern MergeTreeSettingsBool enable_max_bytes_limit_for_min_age_to_force_merge;
+    extern MergeTreeSettingsUInt64 number_of_free_entries_in_pool_to_execute_optimize_entire_partition;
 }
 
 namespace

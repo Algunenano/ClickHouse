@@ -49,17 +49,17 @@ namespace DB
 
 namespace S3RequestSetting
 {
-    extern const S3RequestSettingsBool check_objects_after_upload;
-    extern const S3RequestSettingsUInt64 max_inflight_parts_for_one_file;
-    extern const S3RequestSettingsUInt64 max_part_number;
-    extern const S3RequestSettingsUInt64 max_single_part_upload_size;
-    extern const S3RequestSettingsUInt64 max_unexpected_write_error_retries;
-    extern const S3RequestSettingsUInt64 max_upload_part_size;
-    extern const S3RequestSettingsUInt64 min_upload_part_size;
-    extern const S3RequestSettingsString storage_class_name;
-    extern const S3RequestSettingsUInt64 strict_upload_part_size;
-    extern const S3RequestSettingsUInt64 upload_part_size_multiply_factor;
-    extern const S3RequestSettingsUInt64 upload_part_size_multiply_parts_count_threshold;
+    extern S3RequestSettingsBool check_objects_after_upload;
+    extern S3RequestSettingsUInt64 max_inflight_parts_for_one_file;
+    extern S3RequestSettingsUInt64 max_part_number;
+    extern S3RequestSettingsUInt64 max_single_part_upload_size;
+    extern S3RequestSettingsUInt64 max_unexpected_write_error_retries;
+    extern S3RequestSettingsUInt64 max_upload_part_size;
+    extern S3RequestSettingsUInt64 min_upload_part_size;
+    extern S3RequestSettingsString storage_class_name;
+    extern S3RequestSettingsUInt64 strict_upload_part_size;
+    extern S3RequestSettingsUInt64 upload_part_size_multiply_factor;
+    extern S3RequestSettingsUInt64 upload_part_size_multiply_parts_count_threshold;
 }
 
 namespace ErrorCodes
@@ -87,7 +87,7 @@ struct WriteBufferFromS3::PartData
     }
 };
 
-BufferAllocationPolicyPtr createBufferAllocationPolicy(const S3::S3RequestSettings & settings)
+BufferAllocationPolicyPtr createBufferAllocationPolicy(const S3RequestSettings & settings)
 {
     BufferAllocationPolicy::Settings allocation_settings;
     allocation_settings.strict_size = settings[S3RequestSetting::strict_upload_part_size];
@@ -106,7 +106,7 @@ WriteBufferFromS3::WriteBufferFromS3(
     const String & bucket_,
     const String & key_,
     size_t buf_size_,
-    const S3::S3RequestSettings & request_settings_,
+    const S3RequestSettings & request_settings_,
     BlobStorageLogWriterPtr blob_log_,
     std::optional<std::map<String, String>> object_metadata_,
     ThreadPoolCallbackRunnerUnsafe<void> schedule_,

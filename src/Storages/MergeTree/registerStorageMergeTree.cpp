@@ -36,29 +36,29 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsBool allow_deprecated_syntax_for_merge_tree;
-    extern const SettingsBool allow_suspicious_primary_key;
-    extern const SettingsBool allow_suspicious_ttl_expressions;
-    extern const SettingsBool create_table_empty_primary_key_by_default;
-    extern const SettingsUInt64 database_replicated_allow_replicated_engine_arguments;
-    extern const SettingsUInt64 keeper_max_retries;
-    extern const SettingsUInt64 keeper_retry_initial_backoff_ms;
-    extern const SettingsUInt64 keeper_retry_max_backoff_ms;
+    extern SettingsBool allow_deprecated_syntax_for_merge_tree;
+    extern SettingsBool allow_suspicious_primary_key;
+    extern SettingsBool allow_suspicious_ttl_expressions;
+    extern SettingsBool create_table_empty_primary_key_by_default;
+    extern SettingsUInt64 database_replicated_allow_replicated_engine_arguments;
+    extern SettingsUInt64 keeper_max_retries;
+    extern SettingsUInt64 keeper_retry_initial_backoff_ms;
+    extern SettingsUInt64 keeper_retry_max_backoff_ms;
 }
 
 namespace MergeTreeSetting
 {
-    extern const MergeTreeSettingsBool allow_floating_point_partition_key;
-    extern const MergeTreeSettingsDeduplicateMergeProjectionMode deduplicate_merge_projection_mode;
-    extern const MergeTreeSettingsUInt64 index_granularity;
-    extern const MergeTreeSettingsBool add_minmax_index_for_numeric_columns;
-    extern const MergeTreeSettingsBool add_minmax_index_for_string_columns;
+    extern MergeTreeSettingsBool allow_floating_point_partition_key;
+    extern MergeTreeSettingsDeduplicateMergeProjectionMode deduplicate_merge_projection_mode;
+    extern MergeTreeSettingsUInt64 index_granularity;
+    extern MergeTreeSettingsBool add_minmax_index_for_numeric_columns;
+    extern MergeTreeSettingsBool add_minmax_index_for_string_columns;
 }
 
 namespace ServerSetting
 {
-    extern const ServerSettingsString default_replica_name;
-    extern const ServerSettingsString default_replica_path;
+    extern ServerSettingsString default_replica_name;
+    extern ServerSettingsString default_replica_path;
 }
 
 namespace ErrorCodes

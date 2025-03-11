@@ -53,10 +53,10 @@ namespace DB
 
 namespace Setting
 {
-    extern const SettingsUInt64 max_parser_backtracks;
-    extern const SettingsUInt64 max_parser_depth;
-    extern const SettingsSeconds lock_acquire_timeout;
-    extern const SettingsSetOperationMode union_default_mode;
+    extern SettingsUInt64 max_parser_backtracks;
+    extern SettingsUInt64 max_parser_depth;
+    extern SettingsSeconds lock_acquire_timeout;
+    extern SettingsSetOperationMode union_default_mode;
 }
 
 namespace ErrorCodes

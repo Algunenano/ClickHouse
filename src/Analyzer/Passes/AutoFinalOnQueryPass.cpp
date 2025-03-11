@@ -14,7 +14,7 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsBool final;
+    extern SettingsBool final;
 }
 
 namespace

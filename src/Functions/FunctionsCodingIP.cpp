@@ -38,7 +38,7 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsBool cast_ipv4_ipv6_default_on_conversion_error;
+    extern SettingsBool cast_ipv4_ipv6_default_on_conversion_error;
 }
 
 namespace ErrorCodes

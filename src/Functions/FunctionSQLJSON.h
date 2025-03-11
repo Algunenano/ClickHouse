@@ -31,11 +31,11 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsBool allow_simdjson;
-    extern const SettingsBool function_json_value_return_type_allow_complex;
-    extern const SettingsBool function_json_value_return_type_allow_nullable;
-    extern const SettingsUInt64 max_parser_backtracks;
-    extern const SettingsUInt64 max_parser_depth;
+    extern SettingsBool allow_simdjson;
+    extern SettingsBool function_json_value_return_type_allow_complex;
+    extern SettingsBool function_json_value_return_type_allow_nullable;
+    extern SettingsUInt64 max_parser_backtracks;
+    extern SettingsUInt64 max_parser_depth;
 }
 
 namespace ErrorCodes

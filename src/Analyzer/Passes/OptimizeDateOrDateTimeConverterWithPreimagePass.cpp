@@ -16,7 +16,7 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsBool optimize_time_filter_with_preimage;
+    extern SettingsBool optimize_time_filter_with_preimage;
 }
 
 namespace ErrorCodes

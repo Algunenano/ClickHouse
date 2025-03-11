@@ -39,9 +39,9 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsBool allow_experimental_object_type;
-    extern const SettingsBool use_json_alias_for_old_object_type;
-    extern const SettingsBool allow_simdjson;
+    extern SettingsBool allow_experimental_object_type;
+    extern SettingsBool use_json_alias_for_old_object_type;
+    extern SettingsBool allow_simdjson;
 }
 
 namespace ErrorCodes

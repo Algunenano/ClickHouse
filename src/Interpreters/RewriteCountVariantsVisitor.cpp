@@ -14,7 +14,7 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsBool aggregate_functions_null_for_empty;
+    extern SettingsBool aggregate_functions_null_for_empty;
 }
 
 void RewriteCountVariantsVisitor::visit(ASTPtr & node)

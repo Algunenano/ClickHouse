@@ -9,7 +9,7 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsTransactionsWaitCSNMode wait_changes_become_visible_after_commit_mode;
+    extern SettingsTransactionsWaitCSNMode wait_changes_become_visible_after_commit_mode;
 }
 
 namespace ErrorCodes

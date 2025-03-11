@@ -345,18 +345,13 @@ namespace ErrorCodes
 
 // clang-format on
 
-DECLARE_SETTINGS_TRAITS(MergeTreeSettingsTraits, LIST_OF_MERGE_TREE_SETTINGS)
+DECLARE_SETTINGS_TRAITS(MergeTreeSettingsTraits, LIST_OF_MERGE_TREE_SETTINGS, MERGETREE_SETTINGS_SUPPORTED_TYPES)
 
 /** Settings for the MergeTree family of engines.
   * Could be loaded from config or from a CREATE TABLE query (SETTINGS clause).
   */
 struct MergeTreeSettingsImpl : public BaseSettings<MergeTreeSettingsTraits>
 {
-    /// NOTE: will rewrite the AST to add immutable settings.
-    void loadFromQuery(ASTStorage & storage_def, ContextPtr context, bool is_attach);
-
-    /// Check that the values are sane taking also query-level settings into account.
-    void sanityCheck(size_t background_pool_tasks, bool allow_experimental, bool allow_beta) const;
 };
 
 static void validateTableDisk(const DiskPtr & disk)
@@ -371,225 +366,6 @@ static void validateTableDisk(const DiskPtr & disk)
 }
 
 IMPLEMENT_SETTINGS_TRAITS(MergeTreeSettingsTraits, LIST_OF_MERGE_TREE_SETTINGS)
-
-void MergeTreeSettingsImpl::loadFromQuery(ASTStorage & storage_def, ContextPtr context, bool is_attach)
-{
-    if (storage_def.settings)
-    {
-        try
-        {
-            bool found_disk_setting = false;
-            bool found_storage_policy_setting = false;
-            bool table_disk = false;
-            DiskPtr disk;
-
-            auto changes = storage_def.settings->changes;
-            for (auto & [name, value] : changes)
-            {
-                CustomType custom;
-                if (name == "disk")
-                {
-                    ASTPtr value_as_custom_ast = nullptr;
-                    if (value.tryGet<CustomType>(custom) && 0 == strcmp(custom.getTypeName(), "AST"))
-                        value_as_custom_ast = dynamic_cast<const FieldFromASTImpl &>(custom.getImpl()).ast;
-
-                    if (value_as_custom_ast && isDiskFunction(value_as_custom_ast))
-                    {
-                        auto disk_name = DiskFromAST::createCustomDisk(value_as_custom_ast, context, is_attach);
-                        LOG_DEBUG(getLogger("MergeTreeSettings"), "Created custom disk {}", disk_name);
-                        value = disk_name;
-                    }
-                    else
-                    {
-                        DiskFromAST::ensureDiskIsNotCustom(value.safeGet<String>(), context);
-                    }
-                    disk = context->getDisk(value.safeGet<String>());
-
-                    if (has("storage_policy"))
-                        resetToDefault("storage_policy");
-
-                    found_disk_setting = true;
-                }
-                else if (name == "storage_policy")
-                    found_storage_policy_setting = true;
-                else if (name == "table_disk")
-                    table_disk = value.safeGet<bool>();
-
-                if (!is_attach && found_disk_setting && found_storage_policy_setting)
-                {
-                    throw Exception(
-                        ErrorCodes::BAD_ARGUMENTS,
-                        "MergeTree settings `storage_policy` and `disk` cannot be specified at the same time");
-                }
-
-            }
-
-            if (table_disk)
-                validateTableDisk(disk);
-
-            applyChanges(changes);
-        }
-        catch (Exception & e)
-        {
-            if (e.code() == ErrorCodes::UNKNOWN_SETTING)
-                e.addMessage("for storage " + storage_def.engine->name);
-            throw;
-        }
-    }
-    else
-    {
-        auto settings_ast = std::make_shared<ASTSetQuery>();
-        settings_ast->is_standalone = false;
-        storage_def.set(storage_def.settings, settings_ast);
-    }
-
-    SettingsChanges & changes = storage_def.settings->changes;
-
-#define ADD_IF_ABSENT(NAME)                                                                                   \
-    if (std::find_if(changes.begin(), changes.end(),                                                          \
-                  [](const SettingChange & c) { return c.name == #NAME; })                                    \
-            == changes.end())                                                                                 \
-        changes.push_back(SettingChange{#NAME, (NAME).value});
-
-    APPLY_FOR_IMMUTABLE_MERGE_TREE_SETTINGS(ADD_IF_ABSENT)
-#undef ADD_IF_ABSENT
-}
-
-void MergeTreeSettingsImpl::sanityCheck(size_t background_pool_tasks, bool allow_experimental, bool allow_beta) const
-{
-    if (!allow_experimental || !allow_beta)
-    {
-        for (const auto & setting : all())
-        {
-            if (!setting.isValueChanged())
-                continue;
-
-            auto tier = setting.getTier();
-            if (!allow_experimental && tier == EXPERIMENTAL)
-            {
-                throw Exception(
-                    ErrorCodes::READONLY,
-                    "Cannot modify setting '{}'. Changes to EXPERIMENTAL settings are disabled in the server config "
-                    "('allow_feature_tier')",
-                    setting.getName());
-            }
-            if (!allow_beta && tier == BETA)
-            {
-                throw Exception(
-                    ErrorCodes::READONLY,
-                    "Cannot modify setting '{}'. Changes to BETA settings are disabled in the server config ('allow_feature_tier')",
-                    setting.getName());
-            }
-        }
-    }
-
-
-    if (number_of_free_entries_in_pool_to_execute_mutation > background_pool_tasks)
-    {
-        throw Exception(ErrorCodes::BAD_ARGUMENTS, "The value of 'number_of_free_entries_in_pool_to_execute_mutation' setting"
-            " ({}) (default values are defined in <merge_tree> section of config.xml"
-            " or the value can be specified per table in SETTINGS section of CREATE TABLE query)"
-            " is greater than the value of 'background_pool_size'*'background_merges_mutations_concurrency_ratio'"
-            " ({}) (the value is defined in users.xml for default profile)."
-            " This indicates incorrect configuration because mutations cannot work with these settings.",
-            number_of_free_entries_in_pool_to_execute_mutation.value,
-            background_pool_tasks);
-    }
-
-    if (number_of_free_entries_in_pool_to_lower_max_size_of_merge > background_pool_tasks)
-    {
-        throw Exception(ErrorCodes::BAD_ARGUMENTS, "The value of 'number_of_free_entries_in_pool_to_lower_max_size_of_merge' setting"
-            " ({}) (default values are defined in <merge_tree> section of config.xml"
-            " or the value can be specified per table in SETTINGS section of CREATE TABLE query)"
-            " is greater than the value of 'background_pool_size'*'background_merges_mutations_concurrency_ratio'"
-            " ({}) (the value is defined in users.xml for default profile)."
-            " This indicates incorrect configuration because the maximum size of merge will be always lowered.",
-            number_of_free_entries_in_pool_to_lower_max_size_of_merge.value,
-            background_pool_tasks);
-    }
-
-    if (number_of_free_entries_in_pool_to_execute_optimize_entire_partition > background_pool_tasks)
-    {
-        throw Exception(ErrorCodes::BAD_ARGUMENTS, "The value of 'number_of_free_entries_in_pool_to_execute_optimize_entire_partition' setting"
-            " ({}) (default values are defined in <merge_tree> section of config.xml"
-            " or the value can be specified per table in SETTINGS section of CREATE TABLE query)"
-            " is greater than the value of 'background_pool_size'*'background_merges_mutations_concurrency_ratio'"
-            " ({}) (the value is defined in users.xml for default profile)."
-            " This indicates incorrect configuration because the maximum size of merge will be always lowered.",
-            number_of_free_entries_in_pool_to_execute_optimize_entire_partition.value,
-            background_pool_tasks);
-    }
-
-    // Zero index_granularity is nonsensical.
-    if (index_granularity < 1)
-    {
-        throw Exception(
-            ErrorCodes::BAD_ARGUMENTS,
-            "index_granularity: value {} makes no sense",
-            index_granularity.value);
-    }
-
-    // The min_index_granularity_bytes value is 1024 b and index_granularity_bytes is 10 mb by default.
-    // If index_granularity_bytes is not disabled i.e > 0 b, then always ensure that it's greater than
-    // min_index_granularity_bytes. This is mainly a safeguard against accidents whereby a really low
-    // index_granularity_bytes SETTING of 1b can create really large parts with large marks.
-    if (index_granularity_bytes > 0 && index_granularity_bytes < min_index_granularity_bytes)
-    {
-        throw Exception(
-            ErrorCodes::BAD_ARGUMENTS,
-            "index_granularity_bytes: {} is lower than specified min_index_granularity_bytes: {}",
-            index_granularity_bytes.value,
-            min_index_granularity_bytes.value);
-    }
-
-    // If min_bytes_to_rebalance_partition_over_jbod is not disabled i.e > 0 b, then always ensure that
-    // it's not less than min_bytes_to_rebalance_partition_over_jbod. This is a safeguard to avoid tiny
-    // parts to participate JBOD balancer which will slow down the merge process.
-    if (min_bytes_to_rebalance_partition_over_jbod > 0
-        && min_bytes_to_rebalance_partition_over_jbod < max_bytes_to_merge_at_max_space_in_pool / 1024)
-    {
-        throw Exception(
-            ErrorCodes::BAD_ARGUMENTS,
-            "min_bytes_to_rebalance_partition_over_jbod: {} is lower than specified max_bytes_to_merge_at_max_space_in_pool / 1024: {}",
-            min_bytes_to_rebalance_partition_over_jbod.value,
-            max_bytes_to_merge_at_max_space_in_pool / 1024);
-    }
-
-    if (max_cleanup_delay_period < cleanup_delay_period)
-    {
-        throw Exception(
-            ErrorCodes::BAD_ARGUMENTS,
-            "The value of max_cleanup_delay_period setting ({}) must be greater than the value of cleanup_delay_period setting ({})",
-            max_cleanup_delay_period.value, cleanup_delay_period.value);
-    }
-
-    if (max_merge_selecting_sleep_ms < merge_selecting_sleep_ms)
-    {
-        throw Exception(
-            ErrorCodes::BAD_ARGUMENTS,
-            "The value of max_merge_selecting_sleep_ms setting ({}) must be greater than the value of merge_selecting_sleep_ms setting ({})",
-            max_merge_selecting_sleep_ms.value, merge_selecting_sleep_ms.value);
-    }
-
-    if (merge_selecting_sleep_slowdown_factor < 1.f)
-    {
-        throw Exception(
-            ErrorCodes::BAD_ARGUMENTS,
-            "The value of merge_selecting_sleep_slowdown_factor setting ({}) cannot be less than 1.0",
-            merge_selecting_sleep_slowdown_factor.value);
-    }
-
-    if (zero_copy_merge_mutation_min_parts_size_sleep_before_lock != 0
-        && zero_copy_merge_mutation_min_parts_size_sleep_before_lock < zero_copy_merge_mutation_min_parts_size_sleep_no_scale_before_lock)
-    {
-        throw Exception(
-                ErrorCodes::BAD_ARGUMENTS,
-                "The value of zero_copy_merge_mutation_min_parts_size_sleep_before_lock setting ({}) cannot be less than"
-                " the value of zero_copy_merge_mutation_min_parts_size_sleep_no_scale_before_lock ({})",
-                zero_copy_merge_mutation_min_parts_size_sleep_before_lock.value,
-                zero_copy_merge_mutation_min_parts_size_sleep_no_scale_before_lock.value);
-    }
-}
 
 void MergeTreeColumnSettings::validate(const SettingsChanges & changes)
 {
@@ -612,11 +388,14 @@ void MergeTreeColumnSettings::validate(const SettingsChanges & changes)
     }
 }
 
-#define INITIALIZE_SETTING_EXTERN(TYPE, NAME, DEFAULT, DESCRIPTION, FLAGS) MergeTreeSettings##TYPE NAME = &MergeTreeSettingsImpl ::NAME;
+MERGETREE_SETTINGS_SUPPORTED_TYPES(MergeTreeSettings, IMPLEMENT_SETTING_SUBSCRIPT_OPERATOR)
+
+#define INITIALIZE_SETTING_EXTERN(TYPE, NAME, DEFAULT, DESCRIPTION, FLAGS) \
+    MergeTreeSettings##TYPE NAME = { &MergeTreeSettingsImpl ::data_##TYPE , &MergeTreeSettingsImpl :: position_##NAME };
 
 namespace MergeTreeSetting
 {
-    LIST_OF_MERGE_TREE_SETTINGS(INITIALIZE_SETTING_EXTERN, SKIP_ALIAS)  /// NOLINT(misc-use-internal-linkage)
+    LIST_OF_MERGE_TREE_SETTINGS(INITIALIZE_SETTING_EXTERN, SKIP_ALIAS)
 }
 
 #undef INITIALIZE_SETTING_EXTERN
@@ -635,8 +414,6 @@ MergeTreeSettings::MergeTreeSettings(MergeTreeSettings && settings) noexcept
 }
 
 MergeTreeSettings::~MergeTreeSettings() = default;
-
-MERGETREE_SETTINGS_SUPPORTED_TYPES(MergeTreeSettings, IMPLEMENT_SETTING_SUBSCRIPT_OPERATOR)
 
 bool MergeTreeSettings::has(std::string_view name) const
 {
@@ -711,7 +488,85 @@ std::vector<std::string_view> MergeTreeSettings::getAllRegisteredNames() const
 
 void MergeTreeSettings::loadFromQuery(ASTStorage & storage_def, ContextPtr context, bool is_attach)
 {
-    impl->loadFromQuery(storage_def, context, is_attach);
+    if (storage_def.settings)
+    {
+        try
+        {
+            bool found_disk_setting = false;
+            bool found_storage_policy_setting = false;
+            bool table_disk = false;
+            DiskPtr disk;
+
+            auto changes = storage_def.settings->changes;
+            for (auto & [name, value] : changes)
+            {
+                CustomType custom;
+                if (name == "disk")
+                {
+                    ASTPtr value_as_custom_ast = nullptr;
+                    if (value.tryGet<CustomType>(custom) && 0 == strcmp(custom.getTypeName(), "AST"))
+                        value_as_custom_ast = dynamic_cast<const FieldFromASTImpl &>(custom.getImpl()).ast;
+
+                    if (value_as_custom_ast && isDiskFunction(value_as_custom_ast))
+                    {
+                        auto disk_name = DiskFromAST::createCustomDisk(value_as_custom_ast, context, is_attach);
+                        LOG_DEBUG(getLogger("MergeTreeSettings"), "Created custom disk {}", disk_name);
+                        value = disk_name;
+                    }
+                    else
+                    {
+                        DiskFromAST::ensureDiskIsNotCustom(value.safeGet<String>(), context);
+                    }
+                    disk = context->getDisk(value.safeGet<String>());
+
+                    if (has("storage_policy"))
+                        impl->resetToDefault("storage_policy");
+
+                    found_disk_setting = true;
+                }
+                else if (name == "storage_policy")
+                    found_storage_policy_setting = true;
+                else if (name == "table_disk")
+                    table_disk = value.safeGet<bool>();
+
+                if (!is_attach && found_disk_setting && found_storage_policy_setting)
+                {
+                    throw Exception(
+                        ErrorCodes::BAD_ARGUMENTS,
+                        "MergeTree settings `storage_policy` and `disk` cannot be specified at the same time");
+                }
+
+            }
+
+            if (table_disk)
+                validateTableDisk(disk);
+
+            applyChanges(changes);
+        }
+        catch (Exception & e)
+        {
+            if (e.code() == ErrorCodes::UNKNOWN_SETTING)
+                e.addMessage("for storage " + storage_def.engine->name);
+            throw;
+        }
+    }
+    else
+    {
+        auto settings_ast = std::make_shared<ASTSetQuery>();
+        settings_ast->is_standalone = false;
+        storage_def.set(storage_def.settings, settings_ast);
+    }
+
+    SettingsChanges & changes = storage_def.settings->changes;
+
+#define ADD_IF_ABSENT(NAME)                                                                                   \
+    if (std::find_if(changes.begin(), changes.end(),                                                          \
+                  [](const SettingChange & c) { return c.name == #NAME; })                                    \
+            == changes.end())                                                                                 \
+        changes.push_back(SettingChange{#NAME, (*this)[MergeTreeSetting::NAME].value});
+
+    APPLY_FOR_IMMUTABLE_MERGE_TREE_SETTINGS(ADD_IF_ABSENT)
+#undef ADD_IF_ABSENT
 }
 
 void MergeTreeSettings::loadFromConfig(const String & config_elem, const Poco::Util::AbstractConfiguration & config)
@@ -738,13 +593,144 @@ void MergeTreeSettings::loadFromConfig(const String & config_elem, const Poco::U
 bool MergeTreeSettings::needSyncPart(size_t input_rows, size_t input_bytes) const
 {
     return (
-        (impl->min_rows_to_fsync_after_merge && input_rows >= impl->min_rows_to_fsync_after_merge)
-        || (impl->min_compressed_bytes_to_fsync_after_merge && input_bytes >= impl->min_compressed_bytes_to_fsync_after_merge));
+        ((*this)[MergeTreeSetting::min_rows_to_fsync_after_merge] && input_rows >= (*this)[MergeTreeSetting::min_rows_to_fsync_after_merge])
+        || ((*this)[MergeTreeSetting::min_compressed_bytes_to_fsync_after_merge] && input_bytes >= (*this)[MergeTreeSetting::min_compressed_bytes_to_fsync_after_merge]));
 }
 
 void MergeTreeSettings::sanityCheck(size_t background_pool_tasks, bool allow_experimental, bool allow_beta) const
 {
-    impl->sanityCheck(background_pool_tasks, allow_experimental, allow_beta);
+    if (!allow_experimental || !allow_beta)
+    {
+        for (const auto & setting : impl->all())
+        {
+            if (!setting.isValueChanged())
+                continue;
+
+            auto tier = setting.getTier();
+            if (!allow_experimental && tier == EXPERIMENTAL)
+            {
+                throw Exception(
+                    ErrorCodes::READONLY,
+                    "Cannot modify setting '{}'. Changes to EXPERIMENTAL settings are disabled in the server config "
+                    "('allow_feature_tier')",
+                    setting.getName());
+            }
+            if (!allow_beta && tier == BETA)
+            {
+                throw Exception(
+                    ErrorCodes::READONLY,
+                    "Cannot modify setting '{}'. Changes to BETA settings are disabled in the server config ('allow_feature_tier')",
+                    setting.getName());
+            }
+        }
+    }
+
+
+    if ((*this)[MergeTreeSetting::number_of_free_entries_in_pool_to_execute_mutation] > background_pool_tasks)
+    {
+        throw Exception(ErrorCodes::BAD_ARGUMENTS, "The value of 'number_of_free_entries_in_pool_to_execute_mutation' setting"
+            " ({}) (default values are defined in <merge_tree> section of config.xml"
+            " or the value can be specified per table in SETTINGS section of CREATE TABLE query)"
+            " is greater than the value of 'background_pool_size'*'background_merges_mutations_concurrency_ratio'"
+            " ({}) (the value is defined in users.xml for default profile)."
+            " This indicates incorrect configuration because mutations cannot work with these settings.",
+            (*this)[MergeTreeSetting::number_of_free_entries_in_pool_to_execute_mutation].value,
+            background_pool_tasks);
+    }
+
+    if ((*this)[MergeTreeSetting::number_of_free_entries_in_pool_to_lower_max_size_of_merge] > background_pool_tasks)
+    {
+        throw Exception(ErrorCodes::BAD_ARGUMENTS, "The value of 'number_of_free_entries_in_pool_to_lower_max_size_of_merge' setting"
+            " ({}) (default values are defined in <merge_tree> section of config.xml"
+            " or the value can be specified per table in SETTINGS section of CREATE TABLE query)"
+            " is greater than the value of 'background_pool_size'*'background_merges_mutations_concurrency_ratio'"
+            " ({}) (the value is defined in users.xml for default profile)."
+            " This indicates incorrect configuration because the maximum size of merge will be always lowered.",
+            (*this)[MergeTreeSetting::number_of_free_entries_in_pool_to_lower_max_size_of_merge].value,
+            background_pool_tasks);
+    }
+
+    if ((*this)[MergeTreeSetting::number_of_free_entries_in_pool_to_execute_optimize_entire_partition] > background_pool_tasks)
+    {
+        throw Exception(ErrorCodes::BAD_ARGUMENTS, "The value of 'number_of_free_entries_in_pool_to_execute_optimize_entire_partition' setting"
+            " ({}) (default values are defined in <merge_tree> section of config.xml"
+            " or the value can be specified per table in SETTINGS section of CREATE TABLE query)"
+            " is greater than the value of 'background_pool_size'*'background_merges_mutations_concurrency_ratio'"
+            " ({}) (the value is defined in users.xml for default profile)."
+            " This indicates incorrect configuration because the maximum size of merge will be always lowered.",
+            (*this)[MergeTreeSetting::number_of_free_entries_in_pool_to_execute_optimize_entire_partition].value,
+            background_pool_tasks);
+    }
+
+    // Zero index_granularity is nonsensical.
+    if ((*this)[MergeTreeSetting::index_granularity] < 1)
+    {
+        throw Exception(
+            ErrorCodes::BAD_ARGUMENTS,
+            "index_granularity: value {} makes no sense",
+            (*this)[MergeTreeSetting::index_granularity].value);
+    }
+
+    // The min_index_granularity_bytes value is 1024 b and index_granularity_bytes is 10 mb by default.
+    // If index_granularity_bytes is not disabled i.e > 0 b, then always ensure that it's greater than
+    // min_index_granularity_bytes. This is mainly a safeguard against accidents whereby a really low
+    // index_granularity_bytes SETTING of 1b can create really large parts with large marks.
+    if ((*this)[MergeTreeSetting::index_granularity_bytes] > 0 && (*this)[MergeTreeSetting::index_granularity_bytes] < (*this)[MergeTreeSetting::min_index_granularity_bytes])
+    {
+        throw Exception(
+            ErrorCodes::BAD_ARGUMENTS,
+            "index_granularity_bytes: {} is lower than specified min_index_granularity_bytes: {}",
+            (*this)[MergeTreeSetting::index_granularity_bytes].value,
+            (*this)[MergeTreeSetting::min_index_granularity_bytes].value);
+    }
+
+    // If min_bytes_to_rebalance_partition_over_jbod is not disabled i.e > 0 b, then always ensure that
+    // it's not less than min_bytes_to_rebalance_partition_over_jbod. This is a safeguard to avoid tiny
+    // parts to participate JBOD balancer which will slow down the merge process.
+    if ((*this)[MergeTreeSetting::min_bytes_to_rebalance_partition_over_jbod] > 0
+        && (*this)[MergeTreeSetting::min_bytes_to_rebalance_partition_over_jbod] < (*this)[MergeTreeSetting::max_bytes_to_merge_at_max_space_in_pool] / 1024)
+    {
+        throw Exception(
+            ErrorCodes::BAD_ARGUMENTS,
+            "min_bytes_to_rebalance_partition_over_jbod: {} is lower than specified max_bytes_to_merge_at_max_space_in_pool / 1024: {}",
+            (*this)[MergeTreeSetting::min_bytes_to_rebalance_partition_over_jbod].value,
+            (*this)[MergeTreeSetting::max_bytes_to_merge_at_max_space_in_pool] / 1024);
+    }
+
+    if ((*this)[MergeTreeSetting::max_cleanup_delay_period] < (*this)[MergeTreeSetting::cleanup_delay_period])
+    {
+        throw Exception(
+            ErrorCodes::BAD_ARGUMENTS,
+            "The value of max_cleanup_delay_period setting ({}) must be greater than the value of cleanup_delay_period setting ({})",
+            (*this)[MergeTreeSetting::max_cleanup_delay_period].value, (*this)[MergeTreeSetting::cleanup_delay_period].value);
+    }
+
+    if ((*this)[MergeTreeSetting::max_merge_selecting_sleep_ms] < (*this)[MergeTreeSetting::merge_selecting_sleep_ms])
+    {
+        throw Exception(
+            ErrorCodes::BAD_ARGUMENTS,
+            "The value of max_merge_selecting_sleep_ms setting ({}) must be greater than the value of merge_selecting_sleep_ms setting ({})",
+            (*this)[MergeTreeSetting::max_merge_selecting_sleep_ms].value, (*this)[MergeTreeSetting::merge_selecting_sleep_ms].value);
+    }
+
+    if ((*this)[MergeTreeSetting::merge_selecting_sleep_slowdown_factor] < 1.f)
+    {
+        throw Exception(
+            ErrorCodes::BAD_ARGUMENTS,
+            "The value of merge_selecting_sleep_slowdown_factor setting ({}) cannot be less than 1.0",
+            (*this)[MergeTreeSetting::merge_selecting_sleep_slowdown_factor].value);
+    }
+
+    if ((*this)[MergeTreeSetting::zero_copy_merge_mutation_min_parts_size_sleep_before_lock] != 0
+        && (*this)[MergeTreeSetting::zero_copy_merge_mutation_min_parts_size_sleep_before_lock] < (*this)[MergeTreeSetting::zero_copy_merge_mutation_min_parts_size_sleep_no_scale_before_lock])
+    {
+        throw Exception(
+                ErrorCodes::BAD_ARGUMENTS,
+                "The value of zero_copy_merge_mutation_min_parts_size_sleep_before_lock setting ({}) cannot be less than"
+                " the value of zero_copy_merge_mutation_min_parts_size_sleep_no_scale_before_lock ({})",
+                (*this)[MergeTreeSetting::zero_copy_merge_mutation_min_parts_size_sleep_before_lock].value,
+                (*this)[MergeTreeSetting::zero_copy_merge_mutation_min_parts_size_sleep_no_scale_before_lock].value);
+    }
 }
 
 void MergeTreeSettings::dumpToSystemMergeTreeSettingsColumns(MutableColumnsAndConstraints & params) const

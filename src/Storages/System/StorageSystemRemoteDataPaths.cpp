@@ -23,7 +23,7 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsBool traverse_shadow_remote_data_paths;
+    extern SettingsBool traverse_shadow_remote_data_paths;
 }
 
 namespace ErrorCodes

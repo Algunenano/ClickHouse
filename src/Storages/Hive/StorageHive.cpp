@@ -61,12 +61,12 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsBool input_format_parquet_case_insensitive_column_matching;
-    extern const SettingsBool input_format_orc_case_insensitive_column_matching;
-    extern const SettingsUInt64 max_block_size;
-    extern const SettingsInt64 max_partitions_to_read;
-    extern const SettingsMaxThreads max_threads;
-    extern const SettingsBool use_local_cache_for_remote_storage;
+    extern SettingsBool input_format_parquet_case_insensitive_column_matching;
+    extern SettingsBool input_format_orc_case_insensitive_column_matching;
+    extern SettingsUInt64 max_block_size;
+    extern SettingsInt64 max_partitions_to_read;
+    extern SettingsMaxThreads max_threads;
+    extern SettingsBool use_local_cache_for_remote_storage;
 }
 
 namespace ErrorCodes

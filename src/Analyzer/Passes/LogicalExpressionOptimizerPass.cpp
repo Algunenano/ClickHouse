@@ -16,10 +16,10 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsUInt64 optimize_min_equality_disjunction_chain_length;
-    extern const SettingsUInt64 optimize_min_inequality_conjunction_chain_length;
-    extern const SettingsBool optimize_extract_common_expressions;
-    extern const SettingsBool optimize_and_compare_chain;
+    extern SettingsUInt64 optimize_min_equality_disjunction_chain_length;
+    extern SettingsUInt64 optimize_min_inequality_conjunction_chain_length;
+    extern SettingsBool optimize_extract_common_expressions;
+    extern SettingsBool optimize_and_compare_chain;
 }
 
 namespace ErrorCodes

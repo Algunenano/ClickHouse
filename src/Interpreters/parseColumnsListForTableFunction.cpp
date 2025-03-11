@@ -16,17 +16,17 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsBool allow_experimental_dynamic_type;
-    extern const SettingsBool allow_experimental_json_type;
-    extern const SettingsBool allow_experimental_object_type;
-    extern const SettingsBool allow_experimental_variant_type;
-    extern const SettingsBool allow_suspicious_fixed_string_types;
-    extern const SettingsBool allow_suspicious_low_cardinality_types;
-    extern const SettingsBool allow_suspicious_variant_types;
-    extern const SettingsUInt64 max_parser_backtracks;
-    extern const SettingsUInt64 max_parser_depth;
-    extern const SettingsUInt64 max_query_size;
-    extern const SettingsBool validate_experimental_and_suspicious_types_inside_nested_types;
+    extern SettingsBool allow_experimental_dynamic_type;
+    extern SettingsBool allow_experimental_json_type;
+    extern SettingsBool allow_experimental_object_type;
+    extern SettingsBool allow_experimental_variant_type;
+    extern SettingsBool allow_suspicious_fixed_string_types;
+    extern SettingsBool allow_suspicious_low_cardinality_types;
+    extern SettingsBool allow_suspicious_variant_types;
+    extern SettingsUInt64 max_parser_backtracks;
+    extern SettingsUInt64 max_parser_depth;
+    extern SettingsUInt64 max_query_size;
+    extern SettingsBool validate_experimental_and_suspicious_types_inside_nested_types;
 }
 
 namespace ErrorCodes

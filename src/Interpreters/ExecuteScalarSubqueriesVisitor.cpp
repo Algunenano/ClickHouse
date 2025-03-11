@@ -35,10 +35,10 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsBool enable_scalar_subquery_optimization;
-    extern const SettingsBool extremes;
-    extern const SettingsUInt64 max_result_rows;
-    extern const SettingsBool use_concurrency_control;
+    extern SettingsBool enable_scalar_subquery_optimization;
+    extern SettingsBool extremes;
+    extern SettingsUInt64 max_result_rows;
+    extern SettingsBool use_concurrency_control;
 }
 
 namespace ErrorCodes

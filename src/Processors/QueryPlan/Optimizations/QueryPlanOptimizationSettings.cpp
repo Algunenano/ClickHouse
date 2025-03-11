@@ -7,44 +7,44 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsBool allow_aggregate_partitions_independently;
-    extern const SettingsBool force_optimize_projection;
-    extern const SettingsBool optimize_aggregation_in_order;
-    extern const SettingsBool optimize_distinct_in_order;
-    extern const SettingsBool optimize_read_in_order;
-    extern const SettingsBool optimize_sorting_by_input_stream_properties;
-    extern const SettingsBool optimize_use_implicit_projections;
-    extern const SettingsBool optimize_use_projections;
-    extern const SettingsBool query_plan_aggregation_in_order;
-    extern const SettingsBool query_plan_convert_outer_join_to_inner_join;
-    extern const SettingsBool query_plan_enable_optimizations;
-    extern const SettingsBool query_plan_execute_functions_after_sorting;
-    extern const SettingsBool query_plan_filter_push_down;
-    extern const SettingsBool query_plan_lift_up_array_join;
-    extern const SettingsBool query_plan_lift_up_union;
-    extern const SettingsBool query_plan_merge_expressions;
-    extern const SettingsBool query_plan_merge_filters;
-    extern const SettingsBool query_plan_optimize_prewhere;
-    extern const SettingsBool query_plan_push_down_limit;
-    extern const SettingsBool query_plan_read_in_order;
-    extern const SettingsBool query_plan_remove_redundant_distinct;
-    extern const SettingsBool query_plan_remove_redundant_sorting;
-    extern const SettingsBool query_plan_reuse_storage_ordering_for_window_functions;
-    extern const SettingsBoolAuto query_plan_join_swap_table;
-    extern const SettingsBool query_plan_split_filter;
-    extern const SettingsBool query_plan_try_use_vector_search;
-    extern const SettingsString force_optimize_projection_name;
-    extern const SettingsUInt64 max_limit_for_ann_queries;
-    extern const SettingsSeconds lock_acquire_timeout;
-    extern const SettingsMaxThreads max_threads;
-    extern const SettingsUInt64 query_plan_max_optimizations_to_apply;
-    extern const SettingsBool use_query_condition_cache;
-    extern const SettingsBool allow_experimental_analyzer;
+    extern SettingsBool allow_aggregate_partitions_independently;
+    extern SettingsBool force_optimize_projection;
+    extern SettingsBool optimize_aggregation_in_order;
+    extern SettingsBool optimize_distinct_in_order;
+    extern SettingsBool optimize_read_in_order;
+    extern SettingsBool optimize_sorting_by_input_stream_properties;
+    extern SettingsBool optimize_use_implicit_projections;
+    extern SettingsBool optimize_use_projections;
+    extern SettingsBool query_plan_aggregation_in_order;
+    extern SettingsBool query_plan_convert_outer_join_to_inner_join;
+    extern SettingsBool query_plan_enable_optimizations;
+    extern SettingsBool query_plan_execute_functions_after_sorting;
+    extern SettingsBool query_plan_filter_push_down;
+    extern SettingsBool query_plan_lift_up_array_join;
+    extern SettingsBool query_plan_lift_up_union;
+    extern SettingsBool query_plan_merge_expressions;
+    extern SettingsBool query_plan_merge_filters;
+    extern SettingsBool query_plan_optimize_prewhere;
+    extern SettingsBool query_plan_push_down_limit;
+    extern SettingsBool query_plan_read_in_order;
+    extern SettingsBool query_plan_remove_redundant_distinct;
+    extern SettingsBool query_plan_remove_redundant_sorting;
+    extern SettingsBool query_plan_reuse_storage_ordering_for_window_functions;
+    extern SettingsBoolAuto query_plan_join_swap_table;
+    extern SettingsBool query_plan_split_filter;
+    extern SettingsBool query_plan_try_use_vector_search;
+    extern SettingsString force_optimize_projection_name;
+    extern SettingsUInt64 max_limit_for_ann_queries;
+    extern SettingsSeconds lock_acquire_timeout;
+    extern SettingsMaxThreads max_threads;
+    extern SettingsUInt64 query_plan_max_optimizations_to_apply;
+    extern SettingsBool use_query_condition_cache;
+    extern SettingsBool allow_experimental_analyzer;
 }
 
 namespace ServerSetting
 {
-    extern const ServerSettingsUInt64 max_entries_for_hash_table_stats;
+    extern ServerSettingsUInt64 max_entries_for_hash_table_stats;
 }
 
 QueryPlanOptimizationSettings::QueryPlanOptimizationSettings(

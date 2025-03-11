@@ -19,7 +19,7 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsBool optimize_rewrite_aggregate_function_with_if;
+    extern SettingsBool optimize_rewrite_aggregate_function_with_if;
 }
 
 namespace

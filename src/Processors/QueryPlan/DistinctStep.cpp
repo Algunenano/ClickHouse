@@ -15,9 +15,9 @@ namespace DB
 
 namespace QueryPlanSerializationSetting
 {
-    extern const QueryPlanSerializationSettingsOverflowMode distinct_overflow_mode;
-    extern const QueryPlanSerializationSettingsUInt64 max_bytes_in_distinct;
-    extern const QueryPlanSerializationSettingsUInt64 max_rows_in_distinct;
+    extern QueryPlanSerializationSettingsOverflowMode distinct_overflow_mode;
+    extern QueryPlanSerializationSettingsUInt64 max_bytes_in_distinct;
+    extern QueryPlanSerializationSettingsUInt64 max_rows_in_distinct;
 }
 
 namespace ErrorCodes

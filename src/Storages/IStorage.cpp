@@ -23,7 +23,7 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsBool parallelize_output_from_storages;
+    extern SettingsBool parallelize_output_from_storages;
 }
 
 namespace ErrorCodes

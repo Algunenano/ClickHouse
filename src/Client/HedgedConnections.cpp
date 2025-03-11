@@ -16,18 +16,18 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsBool allow_changing_replica_until_first_data_packet;
-    extern const SettingsBool allow_experimental_analyzer;
-    extern const SettingsUInt64 allow_experimental_parallel_reading_from_replicas;
-    extern const SettingsUInt64 connections_with_failover_max_tries;
-    extern const SettingsDialect dialect;
-    extern const SettingsBool fallback_to_stale_replicas_for_distributed_queries;
-    extern const SettingsUInt64 group_by_two_level_threshold;
-    extern const SettingsUInt64 group_by_two_level_threshold_bytes;
-    extern const SettingsNonZeroUInt64 max_parallel_replicas;
-    extern const SettingsUInt64 parallel_replicas_count;
-    extern const SettingsUInt64 parallel_replica_offset;
-    extern const SettingsBool skip_unavailable_shards;
+    extern SettingsBool allow_changing_replica_until_first_data_packet;
+    extern SettingsBool allow_experimental_analyzer;
+    extern SettingsUInt64 allow_experimental_parallel_reading_from_replicas;
+    extern SettingsUInt64 connections_with_failover_max_tries;
+    extern SettingsDialect dialect;
+    extern SettingsBool fallback_to_stale_replicas_for_distributed_queries;
+    extern SettingsUInt64 group_by_two_level_threshold;
+    extern SettingsUInt64 group_by_two_level_threshold_bytes;
+    extern SettingsNonZeroUInt64 max_parallel_replicas;
+    extern SettingsUInt64 parallel_replicas_count;
+    extern SettingsUInt64 parallel_replica_offset;
+    extern SettingsBool skip_unavailable_shards;
 }
 
 namespace ErrorCodes

@@ -32,7 +32,7 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsString preferred_optimize_projection_name;
+    extern SettingsString preferred_optimize_projection_name;
 }
 }
 

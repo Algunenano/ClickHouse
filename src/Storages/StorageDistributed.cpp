@@ -144,44 +144,44 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsBool allow_experimental_analyzer;
-    extern const SettingsBool allow_nondeterministic_optimize_skip_unused_shards;
-    extern const SettingsBool async_socket_for_remote;
-    extern const SettingsBool async_query_sending_for_remote;
-    extern const SettingsBool distributed_background_insert_batch;
-    extern const SettingsUInt64 distributed_background_insert_timeout;
-    extern const SettingsMilliseconds distributed_background_insert_sleep_time_ms;
-    extern const SettingsMilliseconds distributed_background_insert_max_sleep_time_ms;
-    extern const SettingsBool distributed_background_insert_split_batch_on_failure;
-    extern const SettingsUInt64 distributed_group_by_no_merge;
-    extern const SettingsBool distributed_foreground_insert;
-    extern const SettingsUInt64 distributed_push_down_limit;
-    extern const SettingsBool extremes;
-    extern const SettingsUInt64 force_optimize_skip_unused_shards;
-    extern const SettingsBool insert_allow_materialized_columns;
-    extern const SettingsBool insert_distributed_one_random_shard;
-    extern const SettingsUInt64 insert_shard_id;
-    extern const SettingsSeconds lock_acquire_timeout;
-    extern const SettingsUInt64 max_distributed_depth;
-    extern const SettingsNonZeroUInt64 max_parallel_replicas;
-    extern const SettingsBool optimize_distributed_group_by_sharding_key;
-    extern const SettingsBool optimize_skip_unused_shards;
-    extern const SettingsUInt64 optimize_skip_unused_shards_limit;
-    extern const SettingsUInt64 parallel_distributed_insert_select;
-    extern const SettingsBool prefer_localhost_replica;
-    extern const SettingsUInt64 allow_experimental_parallel_reading_from_replicas;
+    extern SettingsBool allow_experimental_analyzer;
+    extern SettingsBool allow_nondeterministic_optimize_skip_unused_shards;
+    extern SettingsBool async_socket_for_remote;
+    extern SettingsBool async_query_sending_for_remote;
+    extern SettingsBool distributed_background_insert_batch;
+    extern SettingsUInt64 distributed_background_insert_timeout;
+    extern SettingsMilliseconds distributed_background_insert_sleep_time_ms;
+    extern SettingsMilliseconds distributed_background_insert_max_sleep_time_ms;
+    extern SettingsBool distributed_background_insert_split_batch_on_failure;
+    extern SettingsUInt64 distributed_group_by_no_merge;
+    extern SettingsBool distributed_foreground_insert;
+    extern SettingsUInt64 distributed_push_down_limit;
+    extern SettingsBool extremes;
+    extern SettingsUInt64 force_optimize_skip_unused_shards;
+    extern SettingsBool insert_allow_materialized_columns;
+    extern SettingsBool insert_distributed_one_random_shard;
+    extern SettingsUInt64 insert_shard_id;
+    extern SettingsSeconds lock_acquire_timeout;
+    extern SettingsUInt64 max_distributed_depth;
+    extern SettingsNonZeroUInt64 max_parallel_replicas;
+    extern SettingsBool optimize_distributed_group_by_sharding_key;
+    extern SettingsBool optimize_skip_unused_shards;
+    extern SettingsUInt64 optimize_skip_unused_shards_limit;
+    extern SettingsUInt64 parallel_distributed_insert_select;
+    extern SettingsBool prefer_localhost_replica;
+    extern SettingsUInt64 allow_experimental_parallel_reading_from_replicas;
 }
 
 namespace DistributedSetting
 {
-    extern const DistributedSettingsUInt64 background_insert_batch;
-    extern const DistributedSettingsMilliseconds background_insert_max_sleep_time_ms;
-    extern const DistributedSettingsMilliseconds background_insert_sleep_time_ms;
-    extern const DistributedSettingsUInt64 background_insert_split_batch_on_failure;
-    extern const DistributedSettingsUInt64 bytes_to_delay_insert;
-    extern const DistributedSettingsUInt64 bytes_to_throw_insert;
-    extern const DistributedSettingsBool flush_on_detach;
-    extern const DistributedSettingsUInt64 max_delay_to_insert;
+    extern DistributedSettingsUInt64 background_insert_batch;
+    extern DistributedSettingsMilliseconds background_insert_max_sleep_time_ms;
+    extern DistributedSettingsMilliseconds background_insert_sleep_time_ms;
+    extern DistributedSettingsUInt64 background_insert_split_batch_on_failure;
+    extern DistributedSettingsUInt64 bytes_to_delay_insert;
+    extern DistributedSettingsUInt64 bytes_to_throw_insert;
+    extern DistributedSettingsBool flush_on_detach;
+    extern DistributedSettingsUInt64 max_delay_to_insert;
 }
 
 namespace ErrorCodes

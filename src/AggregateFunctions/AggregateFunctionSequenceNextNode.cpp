@@ -27,7 +27,7 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsBool allow_experimental_funnel_functions;
+    extern SettingsBool allow_experimental_funnel_functions;
 }
 
 constexpr size_t max_events_size = 64;

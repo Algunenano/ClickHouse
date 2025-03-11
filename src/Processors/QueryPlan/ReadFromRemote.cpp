@@ -48,17 +48,17 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsBool async_query_sending_for_remote;
-    extern const SettingsBool async_socket_for_remote;
-    extern const SettingsString cluster_for_parallel_replicas;
-    extern const SettingsBool extremes;
-    extern const SettingsSeconds max_execution_time;
-    extern const SettingsNonZeroUInt64 max_parallel_replicas;
-    extern const SettingsUInt64 parallel_replicas_mark_segment_size;
-    extern const SettingsBool allow_push_predicate_when_subquery_contains_with;
-    extern const SettingsBool enable_optimize_predicate_expression_to_final_subquery;
-    extern const SettingsBool allow_push_predicate_ast_for_distributed_subqueries;
-    extern const SettingsUInt64 max_replica_delay_for_distributed_queries;
+    extern SettingsBool async_query_sending_for_remote;
+    extern SettingsBool async_socket_for_remote;
+    extern SettingsString cluster_for_parallel_replicas;
+    extern SettingsBool extremes;
+    extern SettingsSeconds max_execution_time;
+    extern SettingsNonZeroUInt64 max_parallel_replicas;
+    extern SettingsUInt64 parallel_replicas_mark_segment_size;
+    extern SettingsBool allow_push_predicate_when_subquery_contains_with;
+    extern SettingsBool enable_optimize_predicate_expression_to_final_subquery;
+    extern SettingsBool allow_push_predicate_ast_for_distributed_subqueries;
+    extern SettingsUInt64 max_replica_delay_for_distributed_queries;
 }
 
 namespace ErrorCodes

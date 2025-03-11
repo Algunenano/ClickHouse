@@ -22,7 +22,7 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsBool h3togeo_lon_lat_result_order;
+    extern SettingsBool h3togeo_lon_lat_result_order;
 }
 
 namespace ErrorCodes

@@ -14,7 +14,7 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsBool allow_custom_error_code_in_throwif;
+    extern SettingsBool allow_custom_error_code_in_throwif;
 }
 
 namespace ErrorCodes

@@ -20,7 +20,7 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsBool function_locate_has_mysql_compatible_argument_order;
+    extern SettingsBool function_locate_has_mysql_compatible_argument_order;
 }
 
 /** Search and replace functions in strings:

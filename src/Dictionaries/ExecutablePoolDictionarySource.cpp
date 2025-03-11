@@ -25,10 +25,10 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsSeconds max_execution_time;
+    extern SettingsSeconds max_execution_time;
 
     /// Cloud only
-    extern const SettingsBool cloud_mode;
+    extern SettingsBool cloud_mode;
 }
 
 namespace ErrorCodes

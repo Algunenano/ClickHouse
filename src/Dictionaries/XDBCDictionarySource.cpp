@@ -25,11 +25,11 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsSeconds http_receive_timeout;
-    extern const SettingsBool odbc_bridge_use_connection_pooling;
+    extern SettingsSeconds http_receive_timeout;
+    extern SettingsBool odbc_bridge_use_connection_pooling;
 
     /// Cloud only
-    extern const SettingsBool cloud_mode;
+    extern SettingsBool cloud_mode;
 }
 
 namespace ErrorCodes

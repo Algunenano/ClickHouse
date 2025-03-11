@@ -48,12 +48,12 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsUInt64 max_download_buffer_size;
-    extern const SettingsMaxThreads max_threads;
-    extern const SettingsBool use_cache_for_count_from_files;
-    extern const SettingsString filesystem_cache_name;
-    extern const SettingsUInt64 filesystem_cache_boundary_alignment;
-    extern const SettingsBool use_iceberg_partition_pruning;
+    extern SettingsUInt64 max_download_buffer_size;
+    extern SettingsMaxThreads max_threads;
+    extern SettingsBool use_cache_for_count_from_files;
+    extern SettingsString filesystem_cache_name;
+    extern SettingsUInt64 filesystem_cache_boundary_alignment;
+    extern SettingsBool use_iceberg_partition_pruning;
 }
 
 namespace ErrorCodes

@@ -25,7 +25,7 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsUInt64 max_recursive_cte_evaluation_depth;
+    extern SettingsUInt64 max_recursive_cte_evaluation_depth;
 }
 
 namespace ErrorCodes

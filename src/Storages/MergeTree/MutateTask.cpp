@@ -62,24 +62,24 @@ namespace DB
 
 namespace Setting
 {
-    extern const SettingsUInt64 min_insert_block_size_bytes;
-    extern const SettingsUInt64 min_insert_block_size_rows;
+    extern SettingsUInt64 min_insert_block_size_bytes;
+    extern SettingsUInt64 min_insert_block_size_rows;
 }
 
 namespace MergeTreeSetting
 {
-    extern const MergeTreeSettingsBool allow_remote_fs_zero_copy_replication;
-    extern const MergeTreeSettingsBool always_use_copy_instead_of_hardlinks;
-    extern const MergeTreeSettingsMilliseconds background_task_preferred_step_execution_time_ms;
-    extern const MergeTreeSettingsBool exclude_deleted_rows_for_part_size_in_merge;
-    extern const MergeTreeSettingsLightweightMutationProjectionMode lightweight_mutation_projection_mode;
-    extern const MergeTreeSettingsBool materialize_ttl_recalculate_only;
-    extern const MergeTreeSettingsUInt64 max_file_name_length;
-    extern const MergeTreeSettingsFloat ratio_of_defaults_for_sparse_serialization;
-    extern const MergeTreeSettingsBool replace_long_file_name_to_hash;
-    extern const MergeTreeSettingsBool ttl_only_drop_parts;
-    extern const MergeTreeSettingsBool enable_index_granularity_compression;
-    extern const MergeTreeSettingsBool columns_and_secondary_indices_sizes_lazy_calculation;
+    extern MergeTreeSettingsBool allow_remote_fs_zero_copy_replication;
+    extern MergeTreeSettingsBool always_use_copy_instead_of_hardlinks;
+    extern MergeTreeSettingsMilliseconds background_task_preferred_step_execution_time_ms;
+    extern MergeTreeSettingsBool exclude_deleted_rows_for_part_size_in_merge;
+    extern MergeTreeSettingsLightweightMutationProjectionMode lightweight_mutation_projection_mode;
+    extern MergeTreeSettingsBool materialize_ttl_recalculate_only;
+    extern MergeTreeSettingsUInt64 max_file_name_length;
+    extern MergeTreeSettingsFloat ratio_of_defaults_for_sparse_serialization;
+    extern MergeTreeSettingsBool replace_long_file_name_to_hash;
+    extern MergeTreeSettingsBool ttl_only_drop_parts;
+    extern MergeTreeSettingsBool enable_index_granularity_compression;
+    extern MergeTreeSettingsBool columns_and_secondary_indices_sizes_lazy_calculation;
 }
 
 namespace ErrorCodes

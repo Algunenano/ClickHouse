@@ -44,18 +44,18 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsBool allow_experimental_analyzer;
-    extern const SettingsSeconds lock_acquire_timeout;
+    extern SettingsBool allow_experimental_analyzer;
+    extern SettingsSeconds lock_acquire_timeout;
 }
 
 namespace ServerSetting
 {
-    extern const ServerSettingsUInt64 max_materialized_views_count_for_table;
+    extern ServerSettingsUInt64 max_materialized_views_count_for_table;
 }
 
 namespace RefreshSetting
 {
-    extern const RefreshSettingsBool all_replicas;
+    extern RefreshSettingsBool all_replicas;
 }
 
 namespace ErrorCodes

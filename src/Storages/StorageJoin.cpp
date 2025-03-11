@@ -34,13 +34,13 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsBool any_join_distinct_right_table_keys;
-    extern const SettingsBool join_any_take_last_row;
-    extern const SettingsOverflowMode join_overflow_mode;
-    extern const SettingsBool join_use_nulls;
-    extern const SettingsSeconds lock_acquire_timeout;
-    extern const SettingsUInt64 max_rows_in_join;
-    extern const SettingsUInt64 max_bytes_in_join;
+    extern SettingsBool any_join_distinct_right_table_keys;
+    extern SettingsBool join_any_take_last_row;
+    extern SettingsOverflowMode join_overflow_mode;
+    extern SettingsBool join_use_nulls;
+    extern SettingsSeconds lock_acquire_timeout;
+    extern SettingsUInt64 max_rows_in_join;
+    extern SettingsUInt64 max_bytes_in_join;
 }
 
 namespace ErrorCodes

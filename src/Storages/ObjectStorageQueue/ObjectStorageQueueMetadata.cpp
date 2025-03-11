@@ -45,13 +45,13 @@ namespace ErrorCodes
 
 namespace Setting
 {
-    extern const SettingsBool cloud_mode;
-    extern const SettingsBool s3queue_migrate_old_metadata_to_buckets;
+    extern SettingsBool cloud_mode;
+    extern SettingsBool s3queue_migrate_old_metadata_to_buckets;
 }
 
 namespace ObjectStorageQueueSetting
 {
-    extern const ObjectStorageQueueSettingsObjectStorageQueueMode mode;
+    extern ObjectStorageQueueSettingsObjectStorageQueueMode mode;
 }
 
 namespace

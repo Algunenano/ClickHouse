@@ -45,7 +45,7 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsBool allow_simdjson;
+    extern SettingsBool allow_simdjson;
 }
 
 namespace ErrorCodes

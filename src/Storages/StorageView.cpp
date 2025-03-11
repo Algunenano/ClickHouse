@@ -35,10 +35,10 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsBool allow_experimental_analyzer;
-    extern const SettingsBool extremes;
-    extern const SettingsUInt64 max_result_rows;
-    extern const SettingsUInt64 max_result_bytes;
+    extern SettingsBool allow_experimental_analyzer;
+    extern SettingsBool extremes;
+    extern SettingsUInt64 max_result_rows;
+    extern SettingsUInt64 max_result_bytes;
 }
 
 namespace ErrorCodes

@@ -14,8 +14,8 @@ namespace DB
 {
 namespace Setting
 {
-extern const SettingsDistributedDDLOutputMode distributed_ddl_output_mode;
-extern const SettingsInt64 distributed_ddl_task_timeout;
+extern SettingsDistributedDDLOutputMode distributed_ddl_output_mode;
+extern SettingsInt64 distributed_ddl_task_timeout;
 }
 namespace ErrorCodes
 {

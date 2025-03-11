@@ -36,16 +36,16 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsMaxThreads max_parsing_threads;
+    extern SettingsMaxThreads max_parsing_threads;
 }
 
 namespace ObjectStorageQueueSetting
 {
-    extern const ObjectStorageQueueSettingsObjectStorageQueueAction after_processing;
-    extern const ObjectStorageQueueSettingsUInt64 max_processed_bytes_before_commit;
-    extern const ObjectStorageQueueSettingsUInt64 max_processed_files_before_commit;
-    extern const ObjectStorageQueueSettingsUInt64 max_processed_rows_before_commit;
-    extern const ObjectStorageQueueSettingsUInt64 max_processing_time_sec_before_commit;
+    extern ObjectStorageQueueSettingsObjectStorageQueueAction after_processing;
+    extern ObjectStorageQueueSettingsUInt64 max_processed_bytes_before_commit;
+    extern ObjectStorageQueueSettingsUInt64 max_processed_files_before_commit;
+    extern ObjectStorageQueueSettingsUInt64 max_processed_rows_before_commit;
+    extern ObjectStorageQueueSettingsUInt64 max_processing_time_sec_before_commit;
 }
 
 namespace FailPoints

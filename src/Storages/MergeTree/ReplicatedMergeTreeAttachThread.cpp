@@ -15,7 +15,7 @@ namespace DB
 
 namespace MergeTreeSetting
 {
-    extern const MergeTreeSettingsSeconds initialization_retry_period;
+    extern MergeTreeSettingsSeconds initialization_retry_period;
 }
 
 namespace ErrorCodes

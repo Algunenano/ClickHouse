@@ -36,7 +36,7 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsBool rows_before_aggregation;
+    extern SettingsBool rows_before_aggregation;
 }
 
 namespace ErrorCodes

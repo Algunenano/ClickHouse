@@ -13,7 +13,7 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsBool log_queries;
+    extern SettingsBool log_queries;
 }
 
 namespace ErrorCodes

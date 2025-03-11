@@ -32,9 +32,9 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsBool log_processors_profiles;
-    extern const SettingsBool opentelemetry_trace_processors;
-    extern const SettingsSeconds max_execution_time;
+    extern SettingsBool log_processors_profiles;
+    extern SettingsBool opentelemetry_trace_processors;
+    extern SettingsSeconds max_execution_time;
 }
 
 namespace ErrorCodes

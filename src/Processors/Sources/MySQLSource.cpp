@@ -28,9 +28,9 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsUInt64 external_storage_max_read_bytes;
-    extern const SettingsUInt64 external_storage_max_read_rows;
-    extern const SettingsUInt64 max_block_size;
+    extern SettingsUInt64 external_storage_max_read_bytes;
+    extern SettingsUInt64 external_storage_max_read_rows;
+    extern SettingsUInt64 max_block_size;
 }
 
 namespace ErrorCodes

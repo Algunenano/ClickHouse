@@ -13,7 +13,7 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsBool optimize_arithmetic_operations_in_aggregate_functions;
+    extern SettingsBool optimize_arithmetic_operations_in_aggregate_functions;
 }
 
 namespace

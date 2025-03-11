@@ -60,9 +60,9 @@ namespace ErrorCodes
 
 namespace Setting
 {
-    extern const SettingsBool join_use_nulls;
-    extern const SettingsBool allow_general_join_planning;
-    extern const SettingsJoinAlgorithm join_algorithm;
+    extern SettingsBool join_use_nulls;
+    extern SettingsBool allow_general_join_planning;
+    extern SettingsJoinAlgorithm join_algorithm;
 }
 
 const ActionsDAG::Node * appendExpression(

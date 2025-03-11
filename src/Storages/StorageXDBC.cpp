@@ -21,13 +21,13 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsSeconds http_receive_timeout;
-    extern const SettingsBool odbc_bridge_use_connection_pooling;
+    extern SettingsSeconds http_receive_timeout;
+    extern SettingsBool odbc_bridge_use_connection_pooling;
 }
 
 namespace ServerSetting
 {
-    extern const ServerSettingsSeconds keep_alive_timeout;
+    extern ServerSettingsSeconds keep_alive_timeout;
 }
 
 namespace ErrorCodes

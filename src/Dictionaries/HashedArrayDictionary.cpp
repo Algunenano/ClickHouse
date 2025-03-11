@@ -19,8 +19,8 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsBool dictionary_use_async_executor;
-    extern const SettingsSeconds max_execution_time;
+    extern SettingsBool dictionary_use_async_executor;
+    extern SettingsSeconds max_execution_time;
 }
 
 namespace ErrorCodes

@@ -33,10 +33,10 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsBool formatdatetime_f_prints_scale_number_of_digits;
-    extern const SettingsBool formatdatetime_f_prints_single_zero;
-    extern const SettingsBool formatdatetime_format_without_leading_zeros;
-    extern const SettingsBool formatdatetime_parsedatetime_m_is_month_name;
+    extern SettingsBool formatdatetime_f_prints_scale_number_of_digits;
+    extern SettingsBool formatdatetime_f_prints_single_zero;
+    extern SettingsBool formatdatetime_format_without_leading_zeros;
+    extern SettingsBool formatdatetime_parsedatetime_m_is_month_name;
 }
 
 namespace ErrorCodes

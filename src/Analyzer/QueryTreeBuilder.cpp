@@ -55,13 +55,13 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsBool allow_experimental_variant_type;
-    extern const SettingsBool any_join_distinct_right_table_keys;
-    extern const SettingsJoinStrictness join_default_strictness;
-    extern const SettingsBool enable_order_by_all;
-    extern const SettingsUInt64 limit;
-    extern const SettingsUInt64 offset;
-    extern const SettingsBool use_variant_as_common_type;
+    extern SettingsBool allow_experimental_variant_type;
+    extern SettingsBool any_join_distinct_right_table_keys;
+    extern SettingsJoinStrictness join_default_strictness;
+    extern SettingsBool enable_order_by_all;
+    extern SettingsUInt64 limit;
+    extern SettingsUInt64 offset;
+    extern SettingsBool use_variant_as_common_type;
 }
 
 

@@ -15,7 +15,7 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsBool allow_experimental_nlp_functions;
+    extern SettingsBool allow_experimental_nlp_functions;
 }
 
 namespace ErrorCodes

@@ -49,11 +49,11 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsBool force_remove_data_recursively_on_drop;
-    extern const SettingsBool fsync_metadata;
-    extern const SettingsSeconds lock_acquire_timeout;
-    extern const SettingsUInt64 max_parser_backtracks;
-    extern const SettingsUInt64 max_parser_depth;
+    extern SettingsBool force_remove_data_recursively_on_drop;
+    extern SettingsBool fsync_metadata;
+    extern SettingsSeconds lock_acquire_timeout;
+    extern SettingsUInt64 max_parser_backtracks;
+    extern SettingsUInt64 max_parser_depth;
 }
 
 namespace ErrorCodes

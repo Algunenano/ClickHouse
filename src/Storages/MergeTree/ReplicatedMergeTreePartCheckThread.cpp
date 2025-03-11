@@ -20,8 +20,8 @@ namespace DB
 
 namespace MergeTreeSetting
 {
-    extern const MergeTreeSettingsSeconds lock_acquire_timeout_for_background_operations;
-    extern const MergeTreeSettingsSeconds old_parts_lifetime;
+    extern MergeTreeSettingsSeconds lock_acquire_timeout_for_background_operations;
+    extern MergeTreeSettingsSeconds old_parts_lifetime;
 }
 
 namespace ErrorCodes

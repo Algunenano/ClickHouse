@@ -24,12 +24,12 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsBool dictionary_validate_primary_key_type;
+    extern SettingsBool dictionary_validate_primary_key_type;
 }
 
 namespace ServerSetting
 {
-    extern const ServerSettingsBool dictionaries_lazy_load;
+    extern ServerSettingsBool dictionaries_lazy_load;
 }
 
 namespace ErrorCodes

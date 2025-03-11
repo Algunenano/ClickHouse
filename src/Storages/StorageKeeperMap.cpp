@@ -69,14 +69,14 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsUInt64 insert_keeper_max_retries;
-    extern const SettingsUInt64 insert_keeper_retry_initial_backoff_ms;
-    extern const SettingsUInt64 insert_keeper_retry_max_backoff_ms;
-    extern const SettingsBool keeper_map_strict_mode;
-    extern const SettingsUInt64 keeper_max_retries;
-    extern const SettingsUInt64 keeper_retry_initial_backoff_ms;
-    extern const SettingsUInt64 keeper_retry_max_backoff_ms;
-    extern const SettingsUInt64 max_compress_block_size;
+    extern SettingsUInt64 insert_keeper_max_retries;
+    extern SettingsUInt64 insert_keeper_retry_initial_backoff_ms;
+    extern SettingsUInt64 insert_keeper_retry_max_backoff_ms;
+    extern SettingsBool keeper_map_strict_mode;
+    extern SettingsUInt64 keeper_max_retries;
+    extern SettingsUInt64 keeper_retry_initial_backoff_ms;
+    extern SettingsUInt64 keeper_retry_max_backoff_ms;
+    extern SettingsUInt64 max_compress_block_size;
 }
 
 namespace FailPoints

@@ -24,7 +24,7 @@ namespace DB
 
 namespace MergeTreeSetting
 {
-    extern const MergeTreeSettingsSeconds zookeeper_session_expiration_check_period;
+    extern MergeTreeSettingsSeconds zookeeper_session_expiration_check_period;
 }
 
 namespace ErrorCodes

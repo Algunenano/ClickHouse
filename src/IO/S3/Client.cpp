@@ -53,7 +53,7 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsBool s3_use_adaptive_timeouts;
+    extern SettingsBool s3_use_adaptive_timeouts;
 }
 
 namespace ErrorCodes

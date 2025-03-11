@@ -8,7 +8,7 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsBool decimal_check_overflow;
+    extern SettingsBool decimal_check_overflow;
 }
 
 namespace ErrorCodes

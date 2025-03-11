@@ -22,8 +22,8 @@ namespace DB
 
 namespace MergeTreeSetting
 {
-    extern const MergeTreeSettingsMilliseconds async_block_ids_cache_update_wait_ms;
-    extern const MergeTreeSettingsBool use_async_block_ids_cache;
+    extern MergeTreeSettingsMilliseconds async_block_ids_cache_update_wait_ms;
+    extern MergeTreeSettingsBool use_async_block_ids_cache;
 }
 
 static constexpr int FAILURE_RETRY_MS = 3000;

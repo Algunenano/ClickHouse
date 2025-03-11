@@ -17,7 +17,7 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsTimezone session_timezone;
+    extern SettingsTimezone session_timezone;
 }
 }
 

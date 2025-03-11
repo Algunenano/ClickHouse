@@ -15,8 +15,8 @@ namespace DB
 
 namespace QueryPlanSerializationSetting
 {
-    extern const QueryPlanSerializationSettingsFloat totals_auto_threshold;
-    extern const QueryPlanSerializationSettingsTotalsMode totals_mode;
+    extern QueryPlanSerializationSettingsFloat totals_auto_threshold;
+    extern QueryPlanSerializationSettingsTotalsMode totals_mode;
 }
 
 namespace ErrorCodes

@@ -36,7 +36,7 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsSeconds lock_acquire_timeout;
+    extern SettingsSeconds lock_acquire_timeout;
 }
 
 StoragesInfoStreamBase::StoragesInfoStreamBase(ContextPtr context)

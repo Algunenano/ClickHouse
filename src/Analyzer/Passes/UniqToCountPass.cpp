@@ -15,7 +15,7 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsBool optimize_uniq_to_count;
+    extern SettingsBool optimize_uniq_to_count;
 }
 
 namespace

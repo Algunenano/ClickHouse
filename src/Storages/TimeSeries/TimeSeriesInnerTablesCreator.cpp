@@ -24,10 +24,10 @@ namespace DB
 
 namespace TimeSeriesSetting
 {
-    extern const TimeSeriesSettingsBool aggregate_min_time_and_max_time;
-    extern const TimeSeriesSettingsBool store_min_time_and_max_time;
-    extern const TimeSeriesSettingsMap tags_to_columns;
-    extern const TimeSeriesSettingsBool use_all_tags_column_to_generate_id;
+    extern TimeSeriesSettingsBool aggregate_min_time_and_max_time;
+    extern TimeSeriesSettingsBool store_min_time_and_max_time;
+    extern TimeSeriesSettingsMap tags_to_columns;
+    extern TimeSeriesSettingsBool use_all_tags_column_to_generate_id;
 }
 
 TimeSeriesInnerTablesCreator::TimeSeriesInnerTablesCreator(ContextPtr context_,

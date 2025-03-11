@@ -5,7 +5,7 @@
 
 namespace DB::Setting
 {
-    extern const SettingsString local_filesystem_read_method;
+    extern SettingsString local_filesystem_read_method;
 }
 
 struct ContextHolder

@@ -94,50 +94,50 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsUInt64 aggregation_in_order_max_block_bytes;
-    extern const SettingsUInt64 aggregation_memory_efficient_merge_threads;
-    extern const SettingsUInt64 allow_experimental_parallel_reading_from_replicas;
-    extern const SettingsBool collect_hash_table_stats_during_aggregation;
-    extern const SettingsOverflowMode distinct_overflow_mode;
-    extern const SettingsBool distributed_aggregation_memory_efficient;
-    extern const SettingsBool enable_memory_bound_merging_of_aggregation_results;
-    extern const SettingsBool empty_result_for_aggregation_by_constant_keys_on_empty_set;
-    extern const SettingsBool empty_result_for_aggregation_by_empty_set;
-    extern const SettingsBool exact_rows_before_limit;
-    extern const SettingsBool extremes;
-    extern const SettingsBool force_aggregation_in_order;
-    extern const SettingsUInt64 group_by_two_level_threshold;
-    extern const SettingsUInt64 group_by_two_level_threshold_bytes;
-    extern const SettingsBool group_by_use_nulls;
-    extern const SettingsUInt64 max_bytes_in_distinct;
-    extern const SettingsUInt64 max_block_size;
-    extern const SettingsUInt64 max_size_to_preallocate_for_aggregation;
-    extern const SettingsUInt64 max_subquery_depth;
-    extern const SettingsUInt64 max_rows_in_distinct;
-    extern const SettingsMaxThreads max_threads;
-    extern const SettingsBool parallel_replicas_allow_in_with_subquery;
-    extern const SettingsString parallel_replicas_custom_key;
-    extern const SettingsUInt64 parallel_replicas_min_number_of_rows_per_replica;
-    extern const SettingsBool query_plan_enable_multithreading_after_window_functions;
-    extern const SettingsBool throw_on_unsupported_query_inside_transaction;
-    extern const SettingsFloat totals_auto_threshold;
-    extern const SettingsTotalsMode totals_mode;
-    extern const SettingsBool use_with_fill_by_sorting_prefix;
-    extern const SettingsFloat min_hit_rate_to_use_consecutive_keys_optimization;
-    extern const SettingsUInt64 max_rows_to_group_by;
-    extern const SettingsOverflowModeGroupBy group_by_overflow_mode;
-    extern const SettingsUInt64 max_bytes_before_external_group_by;
-    extern const SettingsDouble max_bytes_ratio_before_external_group_by;
-    extern const SettingsUInt64 min_free_disk_space_for_temporary_data;
-    extern const SettingsBool compile_aggregate_expressions;
-    extern const SettingsUInt64 min_count_to_compile_aggregate_expression;
-    extern const SettingsBool enable_software_prefetch_in_aggregation;
-    extern const SettingsBool optimize_group_by_constant_keys;
+    extern SettingsUInt64 aggregation_in_order_max_block_bytes;
+    extern SettingsUInt64 aggregation_memory_efficient_merge_threads;
+    extern SettingsUInt64 allow_experimental_parallel_reading_from_replicas;
+    extern SettingsBool collect_hash_table_stats_during_aggregation;
+    extern SettingsOverflowMode distinct_overflow_mode;
+    extern SettingsBool distributed_aggregation_memory_efficient;
+    extern SettingsBool enable_memory_bound_merging_of_aggregation_results;
+    extern SettingsBool empty_result_for_aggregation_by_constant_keys_on_empty_set;
+    extern SettingsBool empty_result_for_aggregation_by_empty_set;
+    extern SettingsBool exact_rows_before_limit;
+    extern SettingsBool extremes;
+    extern SettingsBool force_aggregation_in_order;
+    extern SettingsUInt64 group_by_two_level_threshold;
+    extern SettingsUInt64 group_by_two_level_threshold_bytes;
+    extern SettingsBool group_by_use_nulls;
+    extern SettingsUInt64 max_bytes_in_distinct;
+    extern SettingsUInt64 max_block_size;
+    extern SettingsUInt64 max_size_to_preallocate_for_aggregation;
+    extern SettingsUInt64 max_subquery_depth;
+    extern SettingsUInt64 max_rows_in_distinct;
+    extern SettingsMaxThreads max_threads;
+    extern SettingsBool parallel_replicas_allow_in_with_subquery;
+    extern SettingsString parallel_replicas_custom_key;
+    extern SettingsUInt64 parallel_replicas_min_number_of_rows_per_replica;
+    extern SettingsBool query_plan_enable_multithreading_after_window_functions;
+    extern SettingsBool throw_on_unsupported_query_inside_transaction;
+    extern SettingsFloat totals_auto_threshold;
+    extern SettingsTotalsMode totals_mode;
+    extern SettingsBool use_with_fill_by_sorting_prefix;
+    extern SettingsFloat min_hit_rate_to_use_consecutive_keys_optimization;
+    extern SettingsUInt64 max_rows_to_group_by;
+    extern SettingsOverflowModeGroupBy group_by_overflow_mode;
+    extern SettingsUInt64 max_bytes_before_external_group_by;
+    extern SettingsDouble max_bytes_ratio_before_external_group_by;
+    extern SettingsUInt64 min_free_disk_space_for_temporary_data;
+    extern SettingsBool compile_aggregate_expressions;
+    extern SettingsUInt64 min_count_to_compile_aggregate_expression;
+    extern SettingsBool enable_software_prefetch_in_aggregation;
+    extern SettingsBool optimize_group_by_constant_keys;
 }
 
 namespace ServerSetting
 {
-    extern const ServerSettingsUInt64 max_entries_for_hash_table_stats;
+    extern ServerSettingsUInt64 max_entries_for_hash_table_stats;
 }
 
 namespace ErrorCodes

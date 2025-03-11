@@ -35,7 +35,7 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsBool validate_polygons;
+    extern SettingsBool validate_polygons;
 }
 
 namespace ErrorCodes

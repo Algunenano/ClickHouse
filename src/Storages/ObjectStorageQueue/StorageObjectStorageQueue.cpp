@@ -53,10 +53,10 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsString s3queue_default_zookeeper_path;
-    extern const SettingsBool s3queue_enable_logging_to_s3queue_log;
-    extern const SettingsBool stream_like_engine_allow_direct_select;
-    extern const SettingsBool use_concurrency_control;
+    extern SettingsString s3queue_default_zookeeper_path;
+    extern SettingsBool s3queue_enable_logging_to_s3queue_log;
+    extern SettingsBool stream_like_engine_allow_direct_select;
+    extern SettingsBool use_concurrency_control;
 }
 
 namespace FailPoints
@@ -66,32 +66,32 @@ namespace FailPoints
 
 namespace ServerSetting
 {
-    extern const ServerSettingsUInt64 keeper_multiread_batch_size;
+    extern ServerSettingsUInt64 keeper_multiread_batch_size;
 }
 
 namespace ObjectStorageQueueSetting
 {
-    extern const ObjectStorageQueueSettingsUInt32 cleanup_interval_max_ms;
-    extern const ObjectStorageQueueSettingsUInt32 cleanup_interval_min_ms;
-    extern const ObjectStorageQueueSettingsUInt32 enable_logging_to_queue_log;
-    extern const ObjectStorageQueueSettingsString keeper_path;
-    extern const ObjectStorageQueueSettingsObjectStorageQueueMode mode;
-    extern const ObjectStorageQueueSettingsUInt64 max_processed_bytes_before_commit;
-    extern const ObjectStorageQueueSettingsUInt64 max_processed_files_before_commit;
-    extern const ObjectStorageQueueSettingsUInt64 max_processed_rows_before_commit;
-    extern const ObjectStorageQueueSettingsUInt64 max_processing_time_sec_before_commit;
-    extern const ObjectStorageQueueSettingsUInt64 polling_min_timeout_ms;
-    extern const ObjectStorageQueueSettingsUInt64 polling_max_timeout_ms;
-    extern const ObjectStorageQueueSettingsUInt64 polling_backoff_ms;
-    extern const ObjectStorageQueueSettingsUInt64 processing_threads_num;
-    extern const ObjectStorageQueueSettingsUInt64 buckets;
-    extern const ObjectStorageQueueSettingsUInt64 tracked_file_ttl_sec;
-    extern const ObjectStorageQueueSettingsUInt64 tracked_files_limit;
-    extern const ObjectStorageQueueSettingsString last_processed_path;
-    extern const ObjectStorageQueueSettingsUInt64 loading_retries;
-    extern const ObjectStorageQueueSettingsObjectStorageQueueAction after_processing;
-    extern const ObjectStorageQueueSettingsUInt64 list_objects_batch_size;
-    extern const ObjectStorageQueueSettingsBool enable_hash_ring_filtering;
+    extern ObjectStorageQueueSettingsUInt32 cleanup_interval_max_ms;
+    extern ObjectStorageQueueSettingsUInt32 cleanup_interval_min_ms;
+    extern ObjectStorageQueueSettingsUInt32 enable_logging_to_queue_log;
+    extern ObjectStorageQueueSettingsString keeper_path;
+    extern ObjectStorageQueueSettingsObjectStorageQueueMode mode;
+    extern ObjectStorageQueueSettingsUInt64 max_processed_bytes_before_commit;
+    extern ObjectStorageQueueSettingsUInt64 max_processed_files_before_commit;
+    extern ObjectStorageQueueSettingsUInt64 max_processed_rows_before_commit;
+    extern ObjectStorageQueueSettingsUInt64 max_processing_time_sec_before_commit;
+    extern ObjectStorageQueueSettingsUInt64 polling_min_timeout_ms;
+    extern ObjectStorageQueueSettingsUInt64 polling_max_timeout_ms;
+    extern ObjectStorageQueueSettingsUInt64 polling_backoff_ms;
+    extern ObjectStorageQueueSettingsUInt64 processing_threads_num;
+    extern ObjectStorageQueueSettingsUInt64 buckets;
+    extern ObjectStorageQueueSettingsUInt64 tracked_file_ttl_sec;
+    extern ObjectStorageQueueSettingsUInt64 tracked_files_limit;
+    extern ObjectStorageQueueSettingsString last_processed_path;
+    extern ObjectStorageQueueSettingsUInt64 loading_retries;
+    extern ObjectStorageQueueSettingsObjectStorageQueueAction after_processing;
+    extern ObjectStorageQueueSettingsUInt64 list_objects_batch_size;
+    extern ObjectStorageQueueSettingsBool enable_hash_ring_filtering;
 }
 
 namespace ErrorCodes

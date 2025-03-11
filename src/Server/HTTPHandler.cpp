@@ -52,19 +52,19 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsBool add_http_cors_header;
-    extern const SettingsBool cancel_http_readonly_queries_on_client_close;
-    extern const SettingsBool enable_http_compression;
-    extern const SettingsUInt64 http_headers_progress_interval_ms;
-    extern const SettingsUInt64 http_max_request_param_data_size;
-    extern const SettingsBool http_native_compression_disable_checksumming_on_decompress;
-    extern const SettingsUInt64 http_response_buffer_size;
-    extern const SettingsBool http_wait_end_of_query;
-    extern const SettingsBool http_write_exception_in_output_format;
-    extern const SettingsInt64 http_zlib_compression_level;
-    extern const SettingsUInt64 readonly;
-    extern const SettingsBool send_progress_in_http_headers;
-    extern const SettingsInt64 zstd_window_log_max;
+    extern SettingsBool add_http_cors_header;
+    extern SettingsBool cancel_http_readonly_queries_on_client_close;
+    extern SettingsBool enable_http_compression;
+    extern SettingsUInt64 http_headers_progress_interval_ms;
+    extern SettingsUInt64 http_max_request_param_data_size;
+    extern SettingsBool http_native_compression_disable_checksumming_on_decompress;
+    extern SettingsUInt64 http_response_buffer_size;
+    extern SettingsBool http_wait_end_of_query;
+    extern SettingsBool http_write_exception_in_output_format;
+    extern SettingsInt64 http_zlib_compression_level;
+    extern SettingsUInt64 readonly;
+    extern SettingsBool send_progress_in_http_headers;
+    extern SettingsInt64 zstd_window_log_max;
 }
 
 namespace ErrorCodes

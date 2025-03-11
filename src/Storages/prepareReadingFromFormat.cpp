@@ -11,7 +11,7 @@ namespace DB
 
 namespace Setting
 {
-    extern const SettingsBool enable_parsing_to_custom_serialization;
+    extern SettingsBool enable_parsing_to_custom_serialization;
 }
 
 ReadFromFormatInfo prepareReadingFromFormat(

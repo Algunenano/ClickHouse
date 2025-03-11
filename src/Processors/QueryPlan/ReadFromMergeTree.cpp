@@ -137,62 +137,62 @@ namespace DB
 
 namespace Setting
 {
-    extern const SettingsBool allow_asynchronous_read_from_io_pool_for_merge_tree;
-    extern const SettingsBool allow_prefetched_read_pool_for_local_filesystem;
-    extern const SettingsBool allow_prefetched_read_pool_for_remote_filesystem;
-    extern const SettingsBool apply_deleted_mask;
-    extern const SettingsBool checksum_on_read;
-    extern const SettingsBool compile_sort_description;
-    extern const SettingsBool do_not_merge_across_partitions_select_final;
-    extern const SettingsBool enable_multiple_prewhere_read_steps;
-    extern const SettingsBool enable_vertical_final;
-    extern const SettingsBool force_aggregate_partitions_independently;
-    extern const SettingsBool force_primary_key;
-    extern const SettingsString ignore_data_skipping_indices;
-    extern const SettingsUInt64 max_number_of_partitions_for_independent_aggregation;
-    extern const SettingsUInt64 max_rows_to_read;
-    extern const SettingsUInt64 max_rows_to_read_leaf;
-    extern const SettingsMaxThreads max_final_threads;
-    extern const SettingsUInt64 max_parser_backtracks;
-    extern const SettingsUInt64 max_parser_depth;
-    extern const SettingsUInt64 max_query_size;
-    extern const SettingsFloat max_streams_to_max_threads_ratio;
-    extern const SettingsUInt64 max_streams_for_merge_tree_reading;
-    extern const SettingsMaxThreads max_threads;
-    extern const SettingsUInt64 merge_tree_max_bytes_to_use_cache;
-    extern const SettingsUInt64 merge_tree_max_rows_to_use_cache;
-    extern const SettingsUInt64 merge_tree_min_bytes_for_concurrent_read_for_remote_filesystem;
-    extern const SettingsUInt64 merge_tree_min_rows_for_concurrent_read_for_remote_filesystem;
-    extern const SettingsUInt64 merge_tree_min_bytes_for_concurrent_read;
-    extern const SettingsUInt64 merge_tree_min_rows_for_concurrent_read;
-    extern const SettingsFloat merge_tree_read_split_ranges_into_intersecting_and_non_intersecting_injection_probability;
-    extern const SettingsBool merge_tree_use_const_size_tasks_for_remote_reading;
-    extern const SettingsUInt64 min_count_to_compile_sort_description;
-    extern const SettingsOverflowMode read_overflow_mode;
-    extern const SettingsOverflowMode read_overflow_mode_leaf;
-    extern const SettingsUInt64 parallel_replicas_count;
-    extern const SettingsBool parallel_replicas_local_plan;
-    extern const SettingsUInt64 preferred_block_size_bytes;
-    extern const SettingsUInt64 preferred_max_column_in_block_size_bytes;
-    extern const SettingsUInt64 read_in_order_two_level_merge_threshold;
-    extern const SettingsBool split_parts_ranges_into_intersecting_and_non_intersecting_final;
-    extern const SettingsBool split_intersecting_parts_ranges_into_layers_final;
-    extern const SettingsBool use_skip_indexes;
-    extern const SettingsBool use_skip_indexes_if_final;
-    extern const SettingsBool use_uncompressed_cache;
-    extern const SettingsBool query_plan_merge_filters;
-    extern const SettingsUInt64 merge_tree_min_read_task_size;
-    extern const SettingsBool read_in_order_use_virtual_row;
-    extern const SettingsBool use_query_condition_cache;
-    extern const SettingsBool allow_experimental_analyzer;
-    extern const SettingsBool merge_tree_use_deserialization_prefixes_cache;
-    extern const SettingsBool merge_tree_use_prefixes_deserialization_thread_pool;
+    extern SettingsBool allow_asynchronous_read_from_io_pool_for_merge_tree;
+    extern SettingsBool allow_prefetched_read_pool_for_local_filesystem;
+    extern SettingsBool allow_prefetched_read_pool_for_remote_filesystem;
+    extern SettingsBool apply_deleted_mask;
+    extern SettingsBool checksum_on_read;
+    extern SettingsBool compile_sort_description;
+    extern SettingsBool do_not_merge_across_partitions_select_final;
+    extern SettingsBool enable_multiple_prewhere_read_steps;
+    extern SettingsBool enable_vertical_final;
+    extern SettingsBool force_aggregate_partitions_independently;
+    extern SettingsBool force_primary_key;
+    extern SettingsString ignore_data_skipping_indices;
+    extern SettingsUInt64 max_number_of_partitions_for_independent_aggregation;
+    extern SettingsUInt64 max_rows_to_read;
+    extern SettingsUInt64 max_rows_to_read_leaf;
+    extern SettingsMaxThreads max_final_threads;
+    extern SettingsUInt64 max_parser_backtracks;
+    extern SettingsUInt64 max_parser_depth;
+    extern SettingsUInt64 max_query_size;
+    extern SettingsFloat max_streams_to_max_threads_ratio;
+    extern SettingsUInt64 max_streams_for_merge_tree_reading;
+    extern SettingsMaxThreads max_threads;
+    extern SettingsUInt64 merge_tree_max_bytes_to_use_cache;
+    extern SettingsUInt64 merge_tree_max_rows_to_use_cache;
+    extern SettingsUInt64 merge_tree_min_bytes_for_concurrent_read_for_remote_filesystem;
+    extern SettingsUInt64 merge_tree_min_rows_for_concurrent_read_for_remote_filesystem;
+    extern SettingsUInt64 merge_tree_min_bytes_for_concurrent_read;
+    extern SettingsUInt64 merge_tree_min_rows_for_concurrent_read;
+    extern SettingsFloat merge_tree_read_split_ranges_into_intersecting_and_non_intersecting_injection_probability;
+    extern SettingsBool merge_tree_use_const_size_tasks_for_remote_reading;
+    extern SettingsUInt64 min_count_to_compile_sort_description;
+    extern SettingsOverflowMode read_overflow_mode;
+    extern SettingsOverflowMode read_overflow_mode_leaf;
+    extern SettingsUInt64 parallel_replicas_count;
+    extern SettingsBool parallel_replicas_local_plan;
+    extern SettingsUInt64 preferred_block_size_bytes;
+    extern SettingsUInt64 preferred_max_column_in_block_size_bytes;
+    extern SettingsUInt64 read_in_order_two_level_merge_threshold;
+    extern SettingsBool split_parts_ranges_into_intersecting_and_non_intersecting_final;
+    extern SettingsBool split_intersecting_parts_ranges_into_layers_final;
+    extern SettingsBool use_skip_indexes;
+    extern SettingsBool use_skip_indexes_if_final;
+    extern SettingsBool use_uncompressed_cache;
+    extern SettingsBool query_plan_merge_filters;
+    extern SettingsUInt64 merge_tree_min_read_task_size;
+    extern SettingsBool read_in_order_use_virtual_row;
+    extern SettingsBool use_query_condition_cache;
+    extern SettingsBool allow_experimental_analyzer;
+    extern SettingsBool merge_tree_use_deserialization_prefixes_cache;
+    extern SettingsBool merge_tree_use_prefixes_deserialization_thread_pool;
 }
 
 namespace MergeTreeSetting
 {
-    extern const MergeTreeSettingsUInt64 index_granularity;
-    extern const MergeTreeSettingsUInt64 index_granularity_bytes;
+    extern MergeTreeSettingsUInt64 index_granularity;
+    extern MergeTreeSettingsUInt64 index_granularity_bytes;
 }
 
 namespace ErrorCodes

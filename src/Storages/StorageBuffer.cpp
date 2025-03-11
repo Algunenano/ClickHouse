@@ -78,10 +78,10 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsBool allow_experimental_analyzer;
-    extern const SettingsBool insert_allow_materialized_columns;
-    extern const SettingsSeconds lock_acquire_timeout;
-    extern const SettingsUInt64 readonly;
+    extern SettingsBool allow_experimental_analyzer;
+    extern SettingsBool insert_allow_materialized_columns;
+    extern SettingsSeconds lock_acquire_timeout;
+    extern SettingsUInt64 readonly;
 }
 
 namespace ErrorCodes

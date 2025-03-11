@@ -39,13 +39,13 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsBool allow_unrestricted_reads_from_keeper;
-    extern const SettingsFloat insert_keeper_fault_injection_probability;
-    extern const SettingsUInt64 insert_keeper_fault_injection_seed;
-    extern const SettingsUInt64 insert_keeper_max_retries;
-    extern const SettingsUInt64 insert_keeper_retry_initial_backoff_ms;
-    extern const SettingsUInt64 insert_keeper_retry_max_backoff_ms;
-    extern const SettingsMaxThreads max_download_threads;
+    extern SettingsBool allow_unrestricted_reads_from_keeper;
+    extern SettingsFloat insert_keeper_fault_injection_probability;
+    extern SettingsUInt64 insert_keeper_fault_injection_seed;
+    extern SettingsUInt64 insert_keeper_max_retries;
+    extern SettingsUInt64 insert_keeper_retry_initial_backoff_ms;
+    extern SettingsUInt64 insert_keeper_retry_max_backoff_ms;
+    extern SettingsMaxThreads max_download_threads;
 }
 
 namespace ErrorCodes

@@ -18,7 +18,7 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsBool optimize_if_transform_strings_to_enum;
+    extern SettingsBool optimize_if_transform_strings_to_enum;
 }
 
 namespace

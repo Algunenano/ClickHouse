@@ -16,7 +16,7 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsBool optimize_aggregators_of_group_by_keys;
+    extern SettingsBool optimize_aggregators_of_group_by_keys;
 }
 
 namespace ErrorCodes

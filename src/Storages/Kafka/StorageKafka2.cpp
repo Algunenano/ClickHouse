@@ -76,33 +76,33 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsUInt64 max_block_size;
-    extern const SettingsUInt64 max_insert_block_size;
-    extern const SettingsUInt64 output_format_avro_rows_in_file;
-    extern const SettingsMilliseconds stream_flush_interval_ms;
-    extern const SettingsMilliseconds stream_poll_timeout_ms;
+    extern SettingsUInt64 max_block_size;
+    extern SettingsUInt64 max_insert_block_size;
+    extern SettingsUInt64 output_format_avro_rows_in_file;
+    extern SettingsMilliseconds stream_flush_interval_ms;
+    extern SettingsMilliseconds stream_poll_timeout_ms;
 }
 
 namespace KafkaSetting
 {
-    extern const KafkaSettingsUInt64 input_format_allow_errors_num;
-    extern const KafkaSettingsFloat input_format_allow_errors_ratio;
-    extern const KafkaSettingsString kafka_broker_list;
-    extern const KafkaSettingsString kafka_client_id;
-    extern const KafkaSettingsMilliseconds kafka_flush_interval_ms;
-    extern const KafkaSettingsString kafka_format;
-    extern const KafkaSettingsString kafka_group_name;
-    extern const KafkaSettingsStreamingHandleErrorMode kafka_handle_error_mode;
-    extern const KafkaSettingsString kafka_keeper_path;
-    extern const KafkaSettingsUInt64 kafka_max_block_size;
-    extern const KafkaSettingsUInt64 kafka_max_rows_per_message;
-    extern const KafkaSettingsUInt64 kafka_num_consumers;
-    extern const KafkaSettingsUInt64 kafka_poll_max_batch_size;
-    extern const KafkaSettingsMilliseconds kafka_poll_timeout_ms;
-    extern const KafkaSettingsString kafka_replica_name;
-    extern const KafkaSettingsString kafka_schema;
-    extern const KafkaSettingsBool kafka_thread_per_consumer;
-    extern const KafkaSettingsString kafka_topic_list;
+    extern KafkaSettingsUInt64 input_format_allow_errors_num;
+    extern KafkaSettingsFloat input_format_allow_errors_ratio;
+    extern KafkaSettingsString kafka_broker_list;
+    extern KafkaSettingsString kafka_client_id;
+    extern KafkaSettingsMilliseconds kafka_flush_interval_ms;
+    extern KafkaSettingsString kafka_format;
+    extern KafkaSettingsString kafka_group_name;
+    extern KafkaSettingsStreamingHandleErrorMode kafka_handle_error_mode;
+    extern KafkaSettingsString kafka_keeper_path;
+    extern KafkaSettingsUInt64 kafka_max_block_size;
+    extern KafkaSettingsUInt64 kafka_max_rows_per_message;
+    extern KafkaSettingsUInt64 kafka_num_consumers;
+    extern KafkaSettingsUInt64 kafka_poll_max_batch_size;
+    extern KafkaSettingsMilliseconds kafka_poll_timeout_ms;
+    extern KafkaSettingsString kafka_replica_name;
+    extern KafkaSettingsString kafka_schema;
+    extern KafkaSettingsBool kafka_thread_per_consumer;
+    extern KafkaSettingsString kafka_topic_list;
 }
 
 namespace fs = std::filesystem;

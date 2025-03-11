@@ -27,15 +27,17 @@ If enabled, the engine would use delta-kernel-rs for DeltaLake metadata parsing
     STORAGE_OBJECT_STORAGE_RELATED_SETTINGS(M, ALIAS) \
     LIST_OF_ALL_FORMAT_SETTINGS(M, ALIAS)
 
-DECLARE_SETTINGS_TRAITS(StorageObjectStorageSettingsTraits, LIST_OF_STORAGE_OBJECT_STORAGE_SETTINGS)
+DECLARE_SETTINGS_TRAITS(StorageObjectStorageSettingsTraits, LIST_OF_STORAGE_OBJECT_STORAGE_SETTINGS, STORAGE_OBJECT_STORAGE_SETTINGS_SUPPORTED_TYPES)
 IMPLEMENT_SETTINGS_TRAITS(StorageObjectStorageSettingsTraits, LIST_OF_STORAGE_OBJECT_STORAGE_SETTINGS)
 
 struct StorageObjectStorageSettingsImpl : public BaseSettings<StorageObjectStorageSettingsTraits>
 {
 };
 
+STORAGE_OBJECT_STORAGE_SETTINGS_SUPPORTED_TYPES(StorageObjectStorageSettings, IMPLEMENT_SETTING_SUBSCRIPT_OPERATOR)
+
 #define INITIALIZE_SETTING_EXTERN(TYPE, NAME, DEFAULT, DESCRIPTION, FLAGS) \
-    StorageObjectStorageSettings##TYPE NAME = &StorageObjectStorageSettingsImpl ::NAME;
+    StorageObjectStorageSettings##TYPE NAME = { &StorageObjectStorageSettingsImpl ::data_##TYPE , &StorageObjectStorageSettingsImpl :: position_##NAME };
 
 namespace StorageObjectStorageSetting
 {
@@ -60,9 +62,6 @@ StorageObjectStorageSettings::StorageObjectStorageSettings(StorageObjectStorageS
 
 
 StorageObjectStorageSettings::~StorageObjectStorageSettings() = default;
-
-STORAGE_OBJECT_STORAGE_SETTINGS_SUPPORTED_TYPES(StorageObjectStorageSettings, IMPLEMENT_SETTING_SUBSCRIPT_OPERATOR)
-
 
 void StorageObjectStorageSettings::loadFromQuery(ASTSetQuery & settings_ast)
 {

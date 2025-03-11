@@ -43,8 +43,8 @@ namespace DB
 
 namespace Setting
 {
-extern const SettingsBool short_circuit_function_evaluation_for_nulls;
-extern const SettingsDouble short_circuit_function_evaluation_for_nulls_threshold;
+extern SettingsBool short_circuit_function_evaluation_for_nulls;
+extern SettingsDouble short_circuit_function_evaluation_for_nulls_threshold;
 }
 
 namespace ErrorCodes

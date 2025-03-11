@@ -32,7 +32,7 @@ namespace DB
 
 namespace MergeTreeSetting
 {
-    extern const MergeTreeSettingsFloat ratio_of_defaults_for_sparse_serialization;
+    extern MergeTreeSettingsFloat ratio_of_defaults_for_sparse_serialization;
 }
 
 namespace ErrorCodes

@@ -18,7 +18,7 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsBool allow_experimental_analyzer;
+    extern SettingsBool allow_experimental_analyzer;
 }
 
 namespace ErrorCodes

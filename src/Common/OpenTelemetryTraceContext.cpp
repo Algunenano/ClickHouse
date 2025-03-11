@@ -17,7 +17,7 @@ namespace DB
 
 namespace Setting
 {
-    extern const SettingsFloat opentelemetry_start_trace_probability;
+    extern SettingsFloat opentelemetry_start_trace_probability;
 }
 
 namespace OpenTelemetry

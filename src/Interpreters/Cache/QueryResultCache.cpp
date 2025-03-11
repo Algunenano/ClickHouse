@@ -33,7 +33,7 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsString query_cache_tag;
+    extern SettingsString query_cache_tag;
 }
 
 namespace

@@ -14,7 +14,7 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsUInt64 function_visible_width_behavior;
+    extern SettingsUInt64 function_visible_width_behavior;
 }
 
 namespace ErrorCodes

@@ -32,11 +32,11 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsBool allow_distributed_ddl;
-    extern const SettingsBool database_replicated_enforce_synchronous_settings;
-    extern const SettingsDistributedDDLOutputMode distributed_ddl_output_mode;
-    extern const SettingsInt64 distributed_ddl_task_timeout;
-    extern const SettingsBool throw_on_unsupported_query_inside_transaction;
+    extern SettingsBool allow_distributed_ddl;
+    extern SettingsBool database_replicated_enforce_synchronous_settings;
+    extern SettingsDistributedDDLOutputMode distributed_ddl_output_mode;
+    extern SettingsInt64 distributed_ddl_task_timeout;
+    extern SettingsBool throw_on_unsupported_query_inside_transaction;
 }
 
 namespace ErrorCodes

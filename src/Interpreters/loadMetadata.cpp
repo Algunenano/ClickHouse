@@ -39,9 +39,9 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsBool allow_deprecated_database_ordinary;
-    extern const SettingsUInt64 max_parser_backtracks;
-    extern const SettingsUInt64 max_parser_depth;
+    extern SettingsBool allow_deprecated_database_ordinary;
+    extern SettingsUInt64 max_parser_backtracks;
+    extern SettingsUInt64 max_parser_depth;
 }
 
 namespace ErrorCodes

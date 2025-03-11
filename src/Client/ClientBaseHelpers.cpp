@@ -16,7 +16,7 @@ namespace DB
 
 namespace Setting
 {
-    extern const SettingsBool implicit_select;
+    extern SettingsBool implicit_select;
 }
 
 /// Should we celebrate a bit?

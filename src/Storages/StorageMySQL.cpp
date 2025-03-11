@@ -33,15 +33,15 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsUInt64 glob_expansion_max_elements;
-    extern const SettingsMySQLDataTypesSupport mysql_datatypes_support_level;
-    extern const SettingsUInt64 mysql_max_rows_to_insert;
+    extern SettingsUInt64 glob_expansion_max_elements;
+    extern SettingsMySQLDataTypesSupport mysql_datatypes_support_level;
+    extern SettingsUInt64 mysql_max_rows_to_insert;
 }
 
 namespace MySQLSetting
 {
-    extern const MySQLSettingsBool connection_auto_close;
-    extern const MySQLSettingsUInt64 connection_pool_size;
+    extern MySQLSettingsBool connection_auto_close;
+    extern MySQLSettingsUInt64 connection_pool_size;
 }
 
 namespace ErrorCodes

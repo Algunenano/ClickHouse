@@ -62,23 +62,23 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsBool materialize_skip_indexes_on_insert;
-    extern const SettingsBool materialize_statistics_on_insert;
-    extern const SettingsBool optimize_on_insert;
-    extern const SettingsBool throw_on_max_partitions_per_insert_block;
-    extern const SettingsUInt64 min_free_disk_bytes_to_perform_insert;
-    extern const SettingsFloat min_free_disk_ratio_to_perform_insert;
+    extern SettingsBool materialize_skip_indexes_on_insert;
+    extern SettingsBool materialize_statistics_on_insert;
+    extern SettingsBool optimize_on_insert;
+    extern SettingsBool throw_on_max_partitions_per_insert_block;
+    extern SettingsUInt64 min_free_disk_bytes_to_perform_insert;
+    extern SettingsFloat min_free_disk_ratio_to_perform_insert;
 }
 
 namespace MergeTreeSetting
 {
-    extern const MergeTreeSettingsBool assign_part_uuids;
-    extern const MergeTreeSettingsBool fsync_after_insert;
-    extern const MergeTreeSettingsBool fsync_part_directory;
-    extern const MergeTreeSettingsUInt64 min_free_disk_bytes_to_perform_insert;
-    extern const MergeTreeSettingsFloat min_free_disk_ratio_to_perform_insert;
-    extern const MergeTreeSettingsBool optimize_row_order;
-    extern const MergeTreeSettingsFloat ratio_of_defaults_for_sparse_serialization;
+    extern MergeTreeSettingsBool assign_part_uuids;
+    extern MergeTreeSettingsBool fsync_after_insert;
+    extern MergeTreeSettingsBool fsync_part_directory;
+    extern MergeTreeSettingsUInt64 min_free_disk_bytes_to_perform_insert;
+    extern MergeTreeSettingsFloat min_free_disk_ratio_to_perform_insert;
+    extern MergeTreeSettingsBool optimize_row_order;
+    extern MergeTreeSettingsFloat ratio_of_defaults_for_sparse_serialization;
 }
 
 namespace ErrorCodes

@@ -39,10 +39,10 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsBool allow_experimental_analyzer;
-    extern const SettingsBool fallback_to_stale_replicas_for_distributed_queries;
-    extern const SettingsUInt64 max_replica_delay_for_distributed_queries;
-    extern const SettingsBool prefer_localhost_replica;
+    extern SettingsBool allow_experimental_analyzer;
+    extern SettingsBool fallback_to_stale_replicas_for_distributed_queries;
+    extern SettingsUInt64 max_replica_delay_for_distributed_queries;
+    extern SettingsBool prefer_localhost_replica;
 }
 
 namespace ErrorCodes

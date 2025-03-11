@@ -16,7 +16,7 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsBool allow_named_collection_override_by_default;
+    extern SettingsBool allow_named_collection_override_by_default;
 }
 
 namespace ErrorCodes

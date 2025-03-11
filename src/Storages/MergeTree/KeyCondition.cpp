@@ -52,8 +52,8 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsBool analyze_index_with_space_filling_curves;
-    extern const SettingsDateTimeOverflowBehavior date_time_overflow_behavior;
+    extern SettingsBool analyze_index_with_space_filling_curves;
+    extern SettingsDateTimeOverflowBehavior date_time_overflow_behavior;
 }
 
 namespace ErrorCodes

@@ -46,23 +46,23 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsBool allow_deprecated_database_ordinary;
-    extern const SettingsBool fsync_metadata;
-    extern const SettingsSeconds lock_acquire_timeout;
-    extern const SettingsUInt64 max_parser_backtracks;
-    extern const SettingsUInt64 max_parser_depth;
-    extern const SettingsSetOperationMode union_default_mode;
+    extern SettingsBool allow_deprecated_database_ordinary;
+    extern SettingsBool fsync_metadata;
+    extern SettingsSeconds lock_acquire_timeout;
+    extern SettingsUInt64 max_parser_backtracks;
+    extern SettingsUInt64 max_parser_depth;
+    extern SettingsSetOperationMode union_default_mode;
 }
 
 namespace MergeTreeSetting
 {
-    extern const MergeTreeSettingsString storage_policy;
+    extern MergeTreeSettingsString storage_policy;
 }
 
 namespace ServerSetting
 {
-    extern const ServerSettingsString default_replica_name;
-    extern const ServerSettingsString default_replica_path;
+    extern ServerSettingsString default_replica_name;
+    extern ServerSettingsString default_replica_path;
 }
 
 namespace ErrorCodes

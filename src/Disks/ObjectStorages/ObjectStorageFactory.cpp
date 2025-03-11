@@ -34,7 +34,7 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsUInt64 hdfs_replication;
+    extern SettingsUInt64 hdfs_replication;
 }
 
 namespace ErrorCodes

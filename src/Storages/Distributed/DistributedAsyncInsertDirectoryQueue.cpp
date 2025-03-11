@@ -48,21 +48,21 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsBool distributed_insert_skip_read_only_replicas;
-    extern const SettingsSeconds distributed_replica_error_half_life;
-    extern const SettingsUInt64 distributed_replica_error_cap;
-    extern const SettingsLoadBalancing load_balancing;
-    extern const SettingsUInt64 min_insert_block_size_bytes;
-    extern const SettingsUInt64 min_insert_block_size_rows;
+    extern SettingsBool distributed_insert_skip_read_only_replicas;
+    extern SettingsSeconds distributed_replica_error_half_life;
+    extern SettingsUInt64 distributed_replica_error_cap;
+    extern SettingsLoadBalancing load_balancing;
+    extern SettingsUInt64 min_insert_block_size_bytes;
+    extern SettingsUInt64 min_insert_block_size_rows;
 }
 
 namespace DistributedSetting
 {
-    extern const DistributedSettingsUInt64 background_insert_batch;
-    extern const DistributedSettingsMilliseconds background_insert_max_sleep_time_ms;
-    extern const DistributedSettingsMilliseconds background_insert_sleep_time_ms;
-    extern const DistributedSettingsUInt64 background_insert_split_batch_on_failure;
-    extern const DistributedSettingsBool fsync_directories;
+    extern DistributedSettingsUInt64 background_insert_batch;
+    extern DistributedSettingsMilliseconds background_insert_max_sleep_time_ms;
+    extern DistributedSettingsMilliseconds background_insert_sleep_time_ms;
+    extern DistributedSettingsUInt64 background_insert_split_batch_on_failure;
+    extern DistributedSettingsBool fsync_directories;
 }
 
 namespace ErrorCodes

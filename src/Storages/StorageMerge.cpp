@@ -67,10 +67,10 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsBool allow_experimental_analyzer;
-    extern const SettingsSeconds lock_acquire_timeout;
-    extern const SettingsFloat max_streams_multiplier_for_merge_tables;
-    extern const SettingsUInt64 merge_table_max_tables_to_look_for_schema_inference;
+    extern SettingsBool allow_experimental_analyzer;
+    extern SettingsSeconds lock_acquire_timeout;
+    extern SettingsFloat max_streams_multiplier_for_merge_tables;
+    extern SettingsUInt64 merge_table_max_tables_to_look_for_schema_inference;
 }
 
 namespace

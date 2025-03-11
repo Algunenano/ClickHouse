@@ -25,12 +25,12 @@ namespace DB
 
 namespace Setting
 {
-    extern const SettingsBool allow_settings_after_format_in_insert;
-    extern const SettingsUInt64 distributed_ddl_entry_format_version;
-    extern const SettingsUInt64 log_queries_cut_to_length;
-    extern const SettingsUInt64 max_parser_depth;
-    extern const SettingsUInt64 max_parser_backtracks;
-    extern const SettingsUInt64 max_query_size;
+    extern SettingsBool allow_settings_after_format_in_insert;
+    extern SettingsUInt64 distributed_ddl_entry_format_version;
+    extern SettingsUInt64 log_queries_cut_to_length;
+    extern SettingsUInt64 max_parser_depth;
+    extern SettingsUInt64 max_parser_backtracks;
+    extern SettingsUInt64 max_query_size;
 }
 
 namespace ErrorCodes

@@ -15,7 +15,7 @@ namespace ErrorCodes
 
 namespace MergeTreeSetting
 {
-    extern const MergeTreeSettingsUInt64 replicated_max_mutations_in_one_entry;
+    extern MergeTreeSettingsUInt64 replicated_max_mutations_in_one_entry;
 }
 
 using MergeCore = DistributedMergePredicate<ActiveDataPartSet, ReplicatedMergeTreeQueue>;

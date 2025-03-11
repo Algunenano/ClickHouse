@@ -23,7 +23,7 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsBool external_table_strict_query;
+    extern SettingsBool external_table_strict_query;
 }
 
 namespace ErrorCodes

@@ -16,8 +16,8 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsBool allow_ddl;
-    extern const SettingsUInt64 readonly;
+    extern SettingsBool allow_ddl;
+    extern SettingsUInt64 readonly;
 }
 
 namespace ErrorCodes

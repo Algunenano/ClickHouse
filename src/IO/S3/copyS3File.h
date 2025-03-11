@@ -39,7 +39,7 @@ void copyS3File(
     std::shared_ptr<const S3::Client> dest_s3_client,
     const String & dest_bucket,
     const String & dest_key,
-    const S3::S3RequestSettings & settings,
+    const S3RequestSettings & settings,
     const ReadSettings & read_settings,
     BlobStorageLogWriterPtr blob_storage_log,
     ThreadPoolCallbackRunnerUnsafe<void> schedule,
@@ -58,7 +58,7 @@ void copyDataToS3File(
     const std::shared_ptr<const S3::Client> & dest_s3_client,
     const String & dest_bucket,
     const String & dest_key,
-    const S3::S3RequestSettings & settings,
+    const S3RequestSettings & settings,
     BlobStorageLogWriterPtr blob_storage_log,
     ThreadPoolCallbackRunnerUnsafe<void> schedule,
     const std::optional<std::map<String, String>> & object_metadata = std::nullopt);

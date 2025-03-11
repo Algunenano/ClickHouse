@@ -11,9 +11,9 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsBool allow_ddl;
-    extern const SettingsBool allow_introspection_functions;
-    extern const SettingsUInt64 readonly;
+    extern SettingsBool allow_ddl;
+    extern SettingsBool allow_introspection_functions;
+    extern SettingsUInt64 readonly;
 }
 
 ContextAccessParams::ContextAccessParams(

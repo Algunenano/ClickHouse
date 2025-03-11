@@ -13,9 +13,9 @@ namespace DB
 {
 namespace MergeTreeSetting
 {
-    extern const MergeTreeSettingsUInt64 max_postpone_time_for_failed_mutations_ms;
-    extern const MergeTreeSettingsUInt64 zero_copy_merge_mutation_min_parts_size_sleep_no_scale_before_lock;
-    extern const MergeTreeSettingsUInt64 zero_copy_merge_mutation_min_parts_size_sleep_before_lock;
+    extern MergeTreeSettingsUInt64 max_postpone_time_for_failed_mutations_ms;
+    extern MergeTreeSettingsUInt64 zero_copy_merge_mutation_min_parts_size_sleep_no_scale_before_lock;
+    extern MergeTreeSettingsUInt64 zero_copy_merge_mutation_min_parts_size_sleep_before_lock;
 }
 
 namespace ErrorCodes

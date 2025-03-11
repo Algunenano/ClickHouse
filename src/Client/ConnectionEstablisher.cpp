@@ -17,7 +17,7 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsUInt64 max_replica_delay_for_distributed_queries;
+    extern SettingsUInt64 max_replica_delay_for_distributed_queries;
 }
 
 namespace ErrorCodes

@@ -30,9 +30,9 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsUInt64 allow_experimental_parallel_reading_from_replicas;
-    extern const SettingsBool parallel_replicas_allow_in_with_subquery;
-    extern const SettingsBool prefer_global_in_and_join;
+    extern SettingsUInt64 allow_experimental_parallel_reading_from_replicas;
+    extern SettingsBool parallel_replicas_allow_in_with_subquery;
+    extern SettingsBool prefer_global_in_and_join;
 }
 
 namespace ErrorCodes

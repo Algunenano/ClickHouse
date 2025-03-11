@@ -29,23 +29,23 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsUInt64 log_queries_cut_to_length;
-    extern const SettingsBool stop_refreshable_materialized_views_on_startup;
-    extern const SettingsSeconds lock_acquire_timeout;
+    extern SettingsUInt64 log_queries_cut_to_length;
+    extern SettingsBool stop_refreshable_materialized_views_on_startup;
+    extern SettingsSeconds lock_acquire_timeout;
 }
 
 namespace ServerSetting
 {
-    extern const ServerSettingsString default_replica_name;
-    extern const ServerSettingsString default_replica_path;
+    extern ServerSettingsString default_replica_name;
+    extern ServerSettingsString default_replica_path;
 }
 
 namespace RefreshSetting
 {
-    extern const RefreshSettingsBool all_replicas;
-    extern const RefreshSettingsInt64 refresh_retries;
-    extern const RefreshSettingsUInt64 refresh_retry_initial_backoff_ms;
-    extern const RefreshSettingsUInt64 refresh_retry_max_backoff_ms;
+    extern RefreshSettingsBool all_replicas;
+    extern RefreshSettingsInt64 refresh_retries;
+    extern RefreshSettingsUInt64 refresh_retry_initial_backoff_ms;
+    extern RefreshSettingsUInt64 refresh_retry_max_backoff_ms;
 }
 
 namespace ErrorCodes

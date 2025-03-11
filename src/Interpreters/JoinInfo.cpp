@@ -18,69 +18,69 @@ namespace ErrorCodes
 
 namespace Setting
 {
-    extern const SettingsJoinAlgorithm join_algorithm;
-    extern const SettingsUInt64 max_block_size;
-    extern const SettingsUInt64 max_rows_in_join;
-    extern const SettingsUInt64 max_bytes_in_join;
-    extern const SettingsOverflowMode join_overflow_mode;
-    extern const SettingsBool join_any_take_last_row;
-    extern const SettingsUInt64 cross_join_min_rows_to_compress;
-    extern const SettingsUInt64 cross_join_min_bytes_to_compress;
-    extern const SettingsUInt64 partial_merge_join_left_table_buffer_bytes;
-    extern const SettingsUInt64 partial_merge_join_rows_in_right_blocks;
-    extern const SettingsUInt64 join_on_disk_max_files_to_merge;
+    extern SettingsJoinAlgorithm join_algorithm;
+    extern SettingsUInt64 max_block_size;
+    extern SettingsUInt64 max_rows_in_join;
+    extern SettingsUInt64 max_bytes_in_join;
+    extern SettingsOverflowMode join_overflow_mode;
+    extern SettingsBool join_any_take_last_row;
+    extern SettingsUInt64 cross_join_min_rows_to_compress;
+    extern SettingsUInt64 cross_join_min_bytes_to_compress;
+    extern SettingsUInt64 partial_merge_join_left_table_buffer_bytes;
+    extern SettingsUInt64 partial_merge_join_rows_in_right_blocks;
+    extern SettingsUInt64 join_on_disk_max_files_to_merge;
 
-    extern const SettingsNonZeroUInt64 grace_hash_join_initial_buckets;
-    extern const SettingsNonZeroUInt64 grace_hash_join_max_buckets;
+    extern SettingsNonZeroUInt64 grace_hash_join_initial_buckets;
+    extern SettingsNonZeroUInt64 grace_hash_join_max_buckets;
 
-    extern const SettingsUInt64 max_rows_in_set_to_optimize_join;
+    extern SettingsUInt64 max_rows_in_set_to_optimize_join;
 
-    extern const SettingsBool collect_hash_table_stats_during_joins;
-    extern const SettingsUInt64 max_size_to_preallocate_for_joins;
+    extern SettingsBool collect_hash_table_stats_during_joins;
+    extern SettingsUInt64 max_size_to_preallocate_for_joins;
 
-    extern const SettingsUInt64 max_joined_block_size_rows;
-    extern const SettingsString temporary_files_codec;
-    extern const SettingsUInt64 join_output_by_rowlist_perkey_rows_threshold;
-    extern const SettingsUInt64 join_to_sort_minimum_perkey_rows;
-    extern const SettingsUInt64 join_to_sort_maximum_table_rows;
-    extern const SettingsBool allow_experimental_join_right_table_sorting;
-    extern const SettingsUInt64 min_joined_block_size_bytes;
-    extern const SettingsMaxThreads max_threads;
+    extern SettingsUInt64 max_joined_block_size_rows;
+    extern SettingsString temporary_files_codec;
+    extern SettingsUInt64 join_output_by_rowlist_perkey_rows_threshold;
+    extern SettingsUInt64 join_to_sort_minimum_perkey_rows;
+    extern SettingsUInt64 join_to_sort_maximum_table_rows;
+    extern SettingsBool allow_experimental_join_right_table_sorting;
+    extern SettingsUInt64 min_joined_block_size_bytes;
+    extern SettingsMaxThreads max_threads;
 
-    extern const SettingsUInt64 default_max_bytes_in_join;
+    extern SettingsUInt64 default_max_bytes_in_join;
 }
 
 namespace QueryPlanSerializationSetting
 {
-    extern const QueryPlanSerializationSettingsJoinAlgorithm join_algorithm;
-    extern const QueryPlanSerializationSettingsUInt64 max_block_size;
-    extern const QueryPlanSerializationSettingsUInt64 max_rows_in_join;
-    extern const QueryPlanSerializationSettingsUInt64 max_bytes_in_join;
-    extern const QueryPlanSerializationSettingsOverflowMode join_overflow_mode;
-    extern const QueryPlanSerializationSettingsBool join_any_take_last_row;
-    extern const QueryPlanSerializationSettingsUInt64 cross_join_min_rows_to_compress;
-    extern const QueryPlanSerializationSettingsUInt64 cross_join_min_bytes_to_compress;
-    extern const QueryPlanSerializationSettingsUInt64 partial_merge_join_left_table_buffer_bytes;
-    extern const QueryPlanSerializationSettingsUInt64 partial_merge_join_rows_in_right_blocks;
-    extern const QueryPlanSerializationSettingsUInt64 join_on_disk_max_files_to_merge;
+    extern QueryPlanSerializationSettingsJoinAlgorithm join_algorithm;
+    extern QueryPlanSerializationSettingsUInt64 max_block_size;
+    extern QueryPlanSerializationSettingsUInt64 max_rows_in_join;
+    extern QueryPlanSerializationSettingsUInt64 max_bytes_in_join;
+    extern QueryPlanSerializationSettingsOverflowMode join_overflow_mode;
+    extern QueryPlanSerializationSettingsBool join_any_take_last_row;
+    extern QueryPlanSerializationSettingsUInt64 cross_join_min_rows_to_compress;
+    extern QueryPlanSerializationSettingsUInt64 cross_join_min_bytes_to_compress;
+    extern QueryPlanSerializationSettingsUInt64 partial_merge_join_left_table_buffer_bytes;
+    extern QueryPlanSerializationSettingsUInt64 partial_merge_join_rows_in_right_blocks;
+    extern QueryPlanSerializationSettingsUInt64 join_on_disk_max_files_to_merge;
 
-    extern const QueryPlanSerializationSettingsUInt64 grace_hash_join_initial_buckets;
-    extern const QueryPlanSerializationSettingsUInt64 grace_hash_join_max_buckets;
+    extern QueryPlanSerializationSettingsUInt64 grace_hash_join_initial_buckets;
+    extern QueryPlanSerializationSettingsUInt64 grace_hash_join_max_buckets;
 
-    extern const QueryPlanSerializationSettingsUInt64 max_rows_in_set_to_optimize_join;
+    extern QueryPlanSerializationSettingsUInt64 max_rows_in_set_to_optimize_join;
 
-    extern const QueryPlanSerializationSettingsBool collect_hash_table_stats_during_joins;
-    extern const QueryPlanSerializationSettingsUInt64 max_size_to_preallocate_for_joins;
+    extern QueryPlanSerializationSettingsBool collect_hash_table_stats_during_joins;
+    extern QueryPlanSerializationSettingsUInt64 max_size_to_preallocate_for_joins;
 
-    extern const QueryPlanSerializationSettingsUInt64 max_joined_block_size_rows;
-    extern const QueryPlanSerializationSettingsString temporary_files_codec;
-    extern const QueryPlanSerializationSettingsUInt64 join_output_by_rowlist_perkey_rows_threshold;
-    extern const QueryPlanSerializationSettingsUInt64 join_to_sort_minimum_perkey_rows;
-    extern const QueryPlanSerializationSettingsUInt64 join_to_sort_maximum_table_rows;
-    extern const QueryPlanSerializationSettingsBool allow_experimental_join_right_table_sorting;
-    extern const QueryPlanSerializationSettingsUInt64 min_joined_block_size_bytes;
+    extern QueryPlanSerializationSettingsUInt64 max_joined_block_size_rows;
+    extern QueryPlanSerializationSettingsString temporary_files_codec;
+    extern QueryPlanSerializationSettingsUInt64 join_output_by_rowlist_perkey_rows_threshold;
+    extern QueryPlanSerializationSettingsUInt64 join_to_sort_minimum_perkey_rows;
+    extern QueryPlanSerializationSettingsUInt64 join_to_sort_maximum_table_rows;
+    extern QueryPlanSerializationSettingsBool allow_experimental_join_right_table_sorting;
+    extern QueryPlanSerializationSettingsUInt64 min_joined_block_size_bytes;
 
-    extern const QueryPlanSerializationSettingsUInt64 default_max_bytes_in_join;
+    extern QueryPlanSerializationSettingsUInt64 default_max_bytes_in_join;
 }
 
 JoinSettings::JoinSettings(const Settings & query_settings)

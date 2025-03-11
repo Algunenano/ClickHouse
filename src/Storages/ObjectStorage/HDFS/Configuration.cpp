@@ -23,15 +23,15 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsBool hdfs_create_new_file_on_insert;
-    extern const SettingsBool hdfs_ignore_file_doesnt_exist;
-    extern const SettingsUInt64 hdfs_replication;
-    extern const SettingsBool hdfs_skip_empty_files;
-    extern const SettingsBool hdfs_throw_on_zero_files_match;
-    extern const SettingsBool hdfs_truncate_on_insert;
-    extern const SettingsUInt64 remote_read_min_bytes_for_seek;
-    extern const SettingsSchemaInferenceMode schema_inference_mode;
-    extern const SettingsBool schema_inference_use_cache_for_hdfs;
+    extern SettingsBool hdfs_create_new_file_on_insert;
+    extern SettingsBool hdfs_ignore_file_doesnt_exist;
+    extern SettingsUInt64 hdfs_replication;
+    extern SettingsBool hdfs_skip_empty_files;
+    extern SettingsBool hdfs_throw_on_zero_files_match;
+    extern SettingsBool hdfs_truncate_on_insert;
+    extern SettingsUInt64 remote_read_min_bytes_for_seek;
+    extern SettingsSchemaInferenceMode schema_inference_mode;
+    extern SettingsBool schema_inference_use_cache_for_hdfs;
 }
 
 namespace ErrorCodes

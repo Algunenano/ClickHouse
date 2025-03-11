@@ -61,17 +61,17 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsBool allow_settings_after_format_in_insert;
-    extern const SettingsBool calculate_text_stack_trace;
-    extern const SettingsUInt64 interactive_delay;
-    extern const SettingsLogsLevel send_logs_level;
-    extern const SettingsString send_logs_source_regexp;
-    extern const SettingsUInt64 max_insert_block_size;
-    extern const SettingsUInt64 max_parser_backtracks;
-    extern const SettingsUInt64 max_parser_depth;
-    extern const SettingsUInt64 max_query_size;
-    extern const SettingsBool throw_if_no_data_to_insert;
-    extern const SettingsBool use_concurrency_control;
+    extern SettingsBool allow_settings_after_format_in_insert;
+    extern SettingsBool calculate_text_stack_trace;
+    extern SettingsUInt64 interactive_delay;
+    extern SettingsLogsLevel send_logs_level;
+    extern SettingsString send_logs_source_regexp;
+    extern SettingsUInt64 max_insert_block_size;
+    extern SettingsUInt64 max_parser_backtracks;
+    extern SettingsUInt64 max_parser_depth;
+    extern SettingsUInt64 max_query_size;
+    extern SettingsBool throw_if_no_data_to_insert;
+    extern SettingsBool use_concurrency_control;
 }
 
 namespace ErrorCodes

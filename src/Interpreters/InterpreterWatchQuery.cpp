@@ -26,13 +26,13 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsBool allow_experimental_live_view;
-    extern const SettingsBool allow_experimental_window_view;
-    extern const SettingsUInt64 max_block_size;
-    extern const SettingsUInt64 max_columns_to_read;
-    extern const SettingsUInt64 max_result_bytes;
-    extern const SettingsUInt64 max_result_rows;
-    extern const SettingsOverflowMode result_overflow_mode;
+    extern SettingsBool allow_experimental_live_view;
+    extern SettingsBool allow_experimental_window_view;
+    extern SettingsUInt64 max_block_size;
+    extern SettingsUInt64 max_columns_to_read;
+    extern SettingsUInt64 max_result_bytes;
+    extern SettingsUInt64 max_result_rows;
+    extern SettingsOverflowMode result_overflow_mode;
 }
 
 

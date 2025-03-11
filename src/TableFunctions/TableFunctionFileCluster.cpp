@@ -11,7 +11,7 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsString rename_files_after_processing;
+    extern SettingsString rename_files_after_processing;
 }
 
 StoragePtr TableFunctionFileCluster::getStorage(

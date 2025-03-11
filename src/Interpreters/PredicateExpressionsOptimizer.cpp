@@ -17,9 +17,9 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsBool allow_push_predicate_when_subquery_contains_with;
-    extern const SettingsBool enable_optimize_predicate_expression;
-    extern const SettingsBool enable_optimize_predicate_expression_to_final_subquery;
+    extern SettingsBool allow_push_predicate_when_subquery_contains_with;
+    extern SettingsBool enable_optimize_predicate_expression;
+    extern SettingsBool enable_optimize_predicate_expression_to_final_subquery;
 }
 
 namespace ErrorCodes

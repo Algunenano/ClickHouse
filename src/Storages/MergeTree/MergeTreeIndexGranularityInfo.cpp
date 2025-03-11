@@ -10,9 +10,9 @@ namespace DB
 
 namespace MergeTreeSetting
 {
-    extern const MergeTreeSettingsBool compress_marks;
-    extern const MergeTreeSettingsUInt64 index_granularity;
-    extern const MergeTreeSettingsUInt64 index_granularity_bytes;
+    extern MergeTreeSettingsBool compress_marks;
+    extern MergeTreeSettingsUInt64 index_granularity;
+    extern MergeTreeSettingsUInt64 index_granularity_bytes;
 }
 
 namespace ErrorCodes

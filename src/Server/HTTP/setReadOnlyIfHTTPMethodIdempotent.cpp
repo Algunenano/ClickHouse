@@ -9,7 +9,7 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsUInt64 readonly;
+    extern SettingsUInt64 readonly;
 }
 
 void setReadOnlyIfHTTPMethodIdempotent(ContextMutablePtr context, const String & http_method)

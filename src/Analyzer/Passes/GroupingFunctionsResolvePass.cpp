@@ -24,8 +24,8 @@ namespace DB
 
 namespace Setting
 {
-    extern const SettingsBool force_grouping_standard_compatibility;
-    extern const SettingsBool group_by_use_nulls;
+    extern SettingsBool force_grouping_standard_compatibility;
+    extern SettingsBool group_by_use_nulls;
 }
 
 namespace ErrorCodes

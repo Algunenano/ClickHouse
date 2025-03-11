@@ -5,7 +5,7 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsBool allow_nonconst_timezone_arguments;
+    extern SettingsBool allow_nonconst_timezone_arguments;
 }
 
 FunctionFromUnixTimestamp64::FunctionFromUnixTimestamp64(size_t target_scale_, const char * name_, ContextPtr context)

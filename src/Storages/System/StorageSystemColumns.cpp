@@ -27,7 +27,7 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsSeconds lock_acquire_timeout;
+    extern SettingsSeconds lock_acquire_timeout;
 }
 
 StorageSystemColumns::StorageSystemColumns(const StorageID & table_id_)

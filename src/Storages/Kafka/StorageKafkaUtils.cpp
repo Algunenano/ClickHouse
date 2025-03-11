@@ -53,34 +53,34 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsBool allow_experimental_kafka_offsets_storage_in_keeper;
-    extern const SettingsBool kafka_disable_num_consumers_limit;
+    extern SettingsBool allow_experimental_kafka_offsets_storage_in_keeper;
+    extern SettingsBool kafka_disable_num_consumers_limit;
 }
 
 namespace KafkaSetting
 {
-    extern const KafkaSettingsUInt64 input_format_allow_errors_num;
-    extern const KafkaSettingsFloat input_format_allow_errors_ratio;
-    extern const KafkaSettingsBool input_format_skip_unknown_fields;
-    extern const KafkaSettingsString kafka_broker_list;
-    extern const KafkaSettingsString kafka_client_id;
-    extern const KafkaSettingsBool kafka_commit_every_batch;
-    extern const KafkaSettingsBool kafka_commit_on_select;
-    extern const KafkaSettingsMilliseconds kafka_flush_interval_ms;
-    extern const KafkaSettingsString kafka_format;
-    extern const KafkaSettingsString kafka_group_name;
-    extern const KafkaSettingsStreamingHandleErrorMode kafka_handle_error_mode;
-    extern const KafkaSettingsString kafka_keeper_path;
-    extern const KafkaSettingsUInt64 kafka_max_block_size;
-    extern const KafkaSettingsUInt64 kafka_max_rows_per_message;
-    extern const KafkaSettingsUInt64 kafka_num_consumers;
-    extern const KafkaSettingsUInt64 kafka_poll_max_batch_size;
-    extern const KafkaSettingsMilliseconds kafka_poll_timeout_ms;
-    extern const KafkaSettingsString kafka_replica_name;
-    extern const KafkaSettingsString kafka_schema;
-    extern const KafkaSettingsUInt64 kafka_skip_broken_messages;
-    extern const KafkaSettingsBool kafka_thread_per_consumer;
-    extern const KafkaSettingsString kafka_topic_list;
+    extern KafkaSettingsUInt64 input_format_allow_errors_num;
+    extern KafkaSettingsFloat input_format_allow_errors_ratio;
+    extern KafkaSettingsBool input_format_skip_unknown_fields;
+    extern KafkaSettingsString kafka_broker_list;
+    extern KafkaSettingsString kafka_client_id;
+    extern KafkaSettingsBool kafka_commit_every_batch;
+    extern KafkaSettingsBool kafka_commit_on_select;
+    extern KafkaSettingsMilliseconds kafka_flush_interval_ms;
+    extern KafkaSettingsString kafka_format;
+    extern KafkaSettingsString kafka_group_name;
+    extern KafkaSettingsStreamingHandleErrorMode kafka_handle_error_mode;
+    extern KafkaSettingsString kafka_keeper_path;
+    extern KafkaSettingsUInt64 kafka_max_block_size;
+    extern KafkaSettingsUInt64 kafka_max_rows_per_message;
+    extern KafkaSettingsUInt64 kafka_num_consumers;
+    extern KafkaSettingsUInt64 kafka_poll_max_batch_size;
+    extern KafkaSettingsMilliseconds kafka_poll_timeout_ms;
+    extern KafkaSettingsString kafka_replica_name;
+    extern KafkaSettingsString kafka_schema;
+    extern KafkaSettingsUInt64 kafka_skip_broken_messages;
+    extern KafkaSettingsBool kafka_thread_per_consumer;
+    extern KafkaSettingsString kafka_topic_list;
 }
 
 using namespace std::chrono_literals;

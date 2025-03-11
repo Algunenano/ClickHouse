@@ -20,10 +20,10 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsUInt64 max_rows_to_read;
-    extern const SettingsUInt64 max_rows_to_read_leaf;
-    extern const SettingsOverflowMode read_overflow_mode;
-    extern const SettingsOverflowMode read_overflow_mode_leaf;
+    extern SettingsUInt64 max_rows_to_read;
+    extern SettingsUInt64 max_rows_to_read_leaf;
+    extern SettingsOverflowMode read_overflow_mode;
+    extern SettingsOverflowMode read_overflow_mode_leaf;
 }
 
 namespace ErrorCodes

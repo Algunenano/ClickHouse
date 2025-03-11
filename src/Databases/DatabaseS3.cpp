@@ -29,8 +29,8 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsUInt64 max_parser_backtracks;
-    extern const SettingsUInt64 max_parser_depth;
+    extern SettingsUInt64 max_parser_backtracks;
+    extern SettingsUInt64 max_parser_depth;
 }
 
 static const std::unordered_set<std::string_view> optional_configuration_keys = {

@@ -15,8 +15,8 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsBool asterisk_include_alias_columns;
-    extern const SettingsBool asterisk_include_materialized_columns;
+    extern SettingsBool asterisk_include_alias_columns;
+    extern SettingsBool asterisk_include_materialized_columns;
 }
 
 namespace ErrorCodes

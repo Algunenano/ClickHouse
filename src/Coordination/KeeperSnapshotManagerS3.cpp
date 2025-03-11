@@ -33,32 +33,32 @@ namespace DB
 
 namespace S3AuthSetting
 {
-    extern const S3AuthSettingsString access_key_id;
-    extern const S3AuthSettingsUInt64 expiration_window_seconds;
-    extern const S3AuthSettingsBool no_sign_request;
-    extern const S3AuthSettingsString region;
-    extern const S3AuthSettingsString secret_access_key;
-    extern const S3AuthSettingsString server_side_encryption_customer_key_base64;
-    extern const S3AuthSettingsString session_token;
-    extern const S3AuthSettingsBool use_environment_credentials;
-    extern const S3AuthSettingsBool use_insecure_imds_request;
+    extern S3AuthSettingsString access_key_id;
+    extern S3AuthSettingsUInt64 expiration_window_seconds;
+    extern S3AuthSettingsBool no_sign_request;
+    extern S3AuthSettingsString region;
+    extern S3AuthSettingsString secret_access_key;
+    extern S3AuthSettingsString server_side_encryption_customer_key_base64;
+    extern S3AuthSettingsString session_token;
+    extern S3AuthSettingsBool use_environment_credentials;
+    extern S3AuthSettingsBool use_insecure_imds_request;
 }
 
 namespace S3RequestSetting
 {
-    extern const S3RequestSettingsUInt64 max_single_read_retries;
+    extern S3RequestSettingsUInt64 max_single_read_retries;
 }
 
 struct KeeperSnapshotManagerS3::S3Configuration
 {
-    S3Configuration(S3::URI uri_, S3::S3AuthSettings auth_settings_, std::shared_ptr<const S3::Client> client_)
+    S3Configuration(S3::URI uri_, S3AuthSettings auth_settings_, std::shared_ptr<const S3::Client> client_)
         : uri(std::move(uri_))
         , auth_settings(std::move(auth_settings_))
         , client(std::move(client_))
     {}
 
     S3::URI uri;
-    S3::S3AuthSettings auth_settings;
+    S3AuthSettings auth_settings;
     std::shared_ptr<const S3::Client> client;
 };
 
@@ -84,7 +84,7 @@ void KeeperSnapshotManagerS3::updateS3Configuration(const Poco::Util::AbstractCo
         }
 
         const auto & settings = Context::getGlobalContextInstance()->getSettingsRef();
-        auto auth_settings = S3::S3AuthSettings(config, settings, config_prefix);
+        auto auth_settings = S3AuthSettings(config, settings, config_prefix);
 
         String endpoint = macros->expand(config.getString(config_prefix + ".endpoint"));
         auto new_uri = S3::URI{endpoint};
@@ -174,7 +174,7 @@ void KeeperSnapshotManagerS3::uploadSnapshotImpl(const SnapshotFileInfo & snapsh
         if (s3_client == nullptr)
             return;
 
-        S3::S3RequestSettings request_settings_1;
+        S3RequestSettings request_settings_1;
 
         const auto create_writer = [&](const auto & key)
         {
@@ -217,7 +217,7 @@ void KeeperSnapshotManagerS3::uploadSnapshotImpl(const SnapshotFileInfo & snapsh
         lock_writer.finalize();
 
         // We read back the written UUID, if it's the same we can upload the file
-        S3::S3RequestSettings request_settings_2;
+        S3RequestSettings request_settings_2;
         request_settings_2[S3RequestSetting::max_single_read_retries] = 1;
         ReadBufferFromS3 lock_reader
         {

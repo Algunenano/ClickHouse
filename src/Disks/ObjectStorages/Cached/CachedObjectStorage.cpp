@@ -17,7 +17,7 @@ namespace DB
 {
 namespace FileCacheSetting
 {
-    extern const FileCacheSettingsBool cache_on_write_operations;
+    extern FileCacheSettingsBool cache_on_write_operations;
 }
 
 CachedObjectStorage::CachedObjectStorage(

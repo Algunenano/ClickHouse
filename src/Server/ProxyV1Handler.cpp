@@ -10,7 +10,7 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsSeconds receive_timeout;
+    extern SettingsSeconds receive_timeout;
 }
 
 namespace ErrorCodes

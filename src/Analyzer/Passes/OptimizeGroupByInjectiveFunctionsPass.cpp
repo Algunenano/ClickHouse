@@ -11,8 +11,8 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsBool group_by_use_nulls;
-    extern const SettingsBool optimize_injective_functions_in_group_by;
+    extern SettingsBool group_by_use_nulls;
+    extern SettingsBool optimize_injective_functions_in_group_by;
 }
 
 namespace

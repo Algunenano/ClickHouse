@@ -31,18 +31,18 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsFloat insert_keeper_fault_injection_probability;
-    extern const SettingsUInt64 insert_keeper_fault_injection_seed;
-    extern const SettingsUInt64 insert_keeper_max_retries;
-    extern const SettingsUInt64 insert_keeper_retry_initial_backoff_ms;
-    extern const SettingsUInt64 insert_keeper_retry_max_backoff_ms;
-    extern const SettingsUInt64 max_insert_delayed_streams_for_parallel_write;
-    extern const SettingsBool optimize_on_insert;
+    extern SettingsFloat insert_keeper_fault_injection_probability;
+    extern SettingsUInt64 insert_keeper_fault_injection_seed;
+    extern SettingsUInt64 insert_keeper_max_retries;
+    extern SettingsUInt64 insert_keeper_retry_initial_backoff_ms;
+    extern SettingsUInt64 insert_keeper_retry_max_backoff_ms;
+    extern SettingsUInt64 max_insert_delayed_streams_for_parallel_write;
+    extern SettingsBool optimize_on_insert;
 }
 
 namespace MergeTreeSetting
 {
-    extern const MergeTreeSettingsMilliseconds sleep_before_commit_local_part_in_replicated_table_ms;
+    extern MergeTreeSettingsMilliseconds sleep_before_commit_local_part_in_replicated_table_ms;
 }
 
 namespace FailPoints

@@ -40,8 +40,8 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsBool enable_named_columns_in_function_tuple;
-    extern const SettingsBool transform_null_in;
+    extern SettingsBool enable_named_columns_in_function_tuple;
+    extern SettingsBool transform_null_in;
 }
 
 namespace ErrorCodes

@@ -1021,7 +1021,7 @@ namespace DB
 
 /// If you add a setting which can be updated at runtime, please update 'changeable_settings' map in dumpToSystemServerSettingsColumns below
 
-DECLARE_SETTINGS_TRAITS(ServerSettingsTraits, LIST_OF_SERVER_SETTINGS)
+DECLARE_SETTINGS_TRAITS(ServerSettingsTraits, LIST_OF_SERVER_SETTINGS, SERVER_SETTINGS_SUPPORTED_TYPES)
 IMPLEMENT_SETTINGS_TRAITS(ServerSettingsTraits, LIST_OF_SERVER_SETTINGS)
 
 struct ServerSettingsImpl : public BaseSettings<ServerSettingsTraits>
@@ -1066,8 +1066,10 @@ void ServerSettingsImpl::loadSettingsFromConfig(const Poco::Util::AbstractConfig
     }
 }
 
+SERVER_SETTINGS_SUPPORTED_TYPES(ServerSettings, IMPLEMENT_SETTING_SUBSCRIPT_OPERATOR)
 
-#define INITIALIZE_SETTING_EXTERN(TYPE, NAME, DEFAULT, DESCRIPTION, FLAGS) ServerSettings##TYPE NAME = &ServerSettingsImpl ::NAME;
+#define INITIALIZE_SETTING_EXTERN(TYPE, NAME, DEFAULT, DESCRIPTION, FLAGS) \
+    ServerSettings##TYPE NAME = { &ServerSettingsImpl ::data_##TYPE , &ServerSettingsImpl :: position_##NAME };
 
 namespace ServerSetting
 {
@@ -1085,8 +1087,6 @@ ServerSettings::ServerSettings(const ServerSettings & settings) : impl(std::make
 }
 
 ServerSettings::~ServerSettings() = default;
-
-SERVER_SETTINGS_SUPPORTED_TYPES(ServerSettings, IMPLEMENT_SETTING_SUBSCRIPT_OPERATOR)
 
 void ServerSettings::set(std::string_view name, const Field & value)
 {

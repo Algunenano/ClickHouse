@@ -21,7 +21,6 @@ namespace DB
 class Block;
 struct Settings;
 class SettingsChanges;
-struct FormatFactorySettings;
 struct ReadSettings;
 
 class ReadBuffer;

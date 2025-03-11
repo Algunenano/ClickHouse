@@ -40,9 +40,9 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsBool extremes;
-    extern const SettingsUInt64 max_result_bytes;
-    extern const SettingsUInt64 max_result_rows;
+    extern SettingsBool extremes;
+    extern SettingsUInt64 max_result_bytes;
+    extern SettingsUInt64 max_result_rows;
 }
 
 namespace ErrorCodes

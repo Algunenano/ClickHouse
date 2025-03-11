@@ -19,7 +19,7 @@ namespace ErrorCodes
 
 namespace FileCacheSetting
 {
-    extern const FileCacheSettingsString path;
+    extern FileCacheSettingsString path;
 }
 
 void registerDiskCache(DiskFactory & factory, bool /* global_skip_access_check */)

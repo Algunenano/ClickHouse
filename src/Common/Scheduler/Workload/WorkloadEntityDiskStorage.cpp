@@ -33,9 +33,9 @@ namespace DB
 
 namespace Setting
 {
-    extern const SettingsUInt64 max_parser_backtracks;
-    extern const SettingsUInt64 max_parser_depth;
-    extern const SettingsBool fsync_metadata;
+    extern SettingsUInt64 max_parser_backtracks;
+    extern SettingsUInt64 max_parser_depth;
+    extern SettingsBool fsync_metadata;
 }
 
 namespace ErrorCodes

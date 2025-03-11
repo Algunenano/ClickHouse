@@ -15,7 +15,7 @@ namespace ErrorCodes
 
 namespace ServerSetting
 {
-    extern const ServerSettingsUInt64 dictionary_background_reconnect_interval;
+    extern ServerSettingsUInt64 dictionary_background_reconnect_interval;
 }
 
 ReplicasReconnector::ReplicasReconnector(ContextPtr context)

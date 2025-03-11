@@ -12,7 +12,7 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsBool allow_get_client_http_header;
+    extern SettingsBool allow_get_client_http_header;
 }
 
 namespace ErrorCodes

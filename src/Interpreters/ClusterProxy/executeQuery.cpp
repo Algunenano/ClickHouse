@@ -37,40 +37,40 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsMap additional_table_filters;
-    extern const SettingsBool allow_experimental_analyzer;
-    extern const SettingsUInt64 allow_experimental_parallel_reading_from_replicas;
-    extern const SettingsUInt64 force_optimize_skip_unused_shards;
-    extern const SettingsUInt64 force_optimize_skip_unused_shards_nesting;
-    extern const SettingsUInt64 limit;
-    extern const SettingsLoadBalancing load_balancing;
-    extern const SettingsUInt64 max_concurrent_queries_for_user;
-    extern const SettingsUInt64 max_distributed_depth;
-    extern const SettingsSeconds max_execution_time;
-    extern const SettingsSeconds max_execution_time_leaf;
-    extern const SettingsUInt64 max_memory_usage_for_user;
-    extern const SettingsUInt64 max_network_bandwidth;
-    extern const SettingsUInt64 max_network_bytes;
-    extern const SettingsNonZeroUInt64 max_parallel_replicas;
-    extern const SettingsUInt64 offset;
-    extern const SettingsBool optimize_skip_unused_shards;
-    extern const SettingsUInt64 optimize_skip_unused_shards_nesting;
-    extern const SettingsBool optimize_skip_unused_shards_rewrite_in;
-    extern const SettingsString parallel_replicas_custom_key;
-    extern const SettingsParallelReplicasMode parallel_replicas_mode;
-    extern const SettingsUInt64 parallel_replicas_custom_key_range_lower;
-    extern const SettingsUInt64 parallel_replicas_custom_key_range_upper;
-    extern const SettingsBool parallel_replicas_local_plan;
-    extern const SettingsMilliseconds queue_max_wait_ms;
-    extern const SettingsBool skip_unavailable_shards;
-    extern const SettingsOverflowMode timeout_overflow_mode;
-    extern const SettingsOverflowMode timeout_overflow_mode_leaf;
-    extern const SettingsBool use_hedged_requests;
+    extern SettingsMap additional_table_filters;
+    extern SettingsBool allow_experimental_analyzer;
+    extern SettingsUInt64 allow_experimental_parallel_reading_from_replicas;
+    extern SettingsUInt64 force_optimize_skip_unused_shards;
+    extern SettingsUInt64 force_optimize_skip_unused_shards_nesting;
+    extern SettingsUInt64 limit;
+    extern SettingsLoadBalancing load_balancing;
+    extern SettingsUInt64 max_concurrent_queries_for_user;
+    extern SettingsUInt64 max_distributed_depth;
+    extern SettingsSeconds max_execution_time;
+    extern SettingsSeconds max_execution_time_leaf;
+    extern SettingsUInt64 max_memory_usage_for_user;
+    extern SettingsUInt64 max_network_bandwidth;
+    extern SettingsUInt64 max_network_bytes;
+    extern SettingsNonZeroUInt64 max_parallel_replicas;
+    extern SettingsUInt64 offset;
+    extern SettingsBool optimize_skip_unused_shards;
+    extern SettingsUInt64 optimize_skip_unused_shards_nesting;
+    extern SettingsBool optimize_skip_unused_shards_rewrite_in;
+    extern SettingsString parallel_replicas_custom_key;
+    extern SettingsParallelReplicasMode parallel_replicas_mode;
+    extern SettingsUInt64 parallel_replicas_custom_key_range_lower;
+    extern SettingsUInt64 parallel_replicas_custom_key_range_upper;
+    extern SettingsBool parallel_replicas_local_plan;
+    extern SettingsMilliseconds queue_max_wait_ms;
+    extern SettingsBool skip_unavailable_shards;
+    extern SettingsOverflowMode timeout_overflow_mode;
+    extern SettingsOverflowMode timeout_overflow_mode_leaf;
+    extern SettingsBool use_hedged_requests;
 }
 
 namespace DistributedSetting
 {
-    extern const DistributedSettingsBool skip_unavailable_shards;
+    extern DistributedSettingsBool skip_unavailable_shards;
 }
 
 namespace ErrorCodes

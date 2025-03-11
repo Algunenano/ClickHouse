@@ -27,8 +27,8 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsUInt64 max_block_size;
-    extern const SettingsBool use_concurrency_control;
+    extern SettingsUInt64 max_block_size;
+    extern SettingsBool use_concurrency_control;
 }
 
 namespace ErrorCodes

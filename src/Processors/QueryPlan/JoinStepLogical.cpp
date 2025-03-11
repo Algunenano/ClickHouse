@@ -33,10 +33,10 @@ namespace DB
 
 namespace Setting
 {
-    extern const SettingsJoinAlgorithm join_algorithm;
-    extern const SettingsBool join_any_take_last_row;
-    extern const SettingsUInt64 default_max_bytes_in_join;
-    extern const SettingsBool join_use_nulls;
+    extern SettingsJoinAlgorithm join_algorithm;
+    extern SettingsBool join_any_take_last_row;
+    extern SettingsUInt64 default_max_bytes_in_join;
+    extern SettingsBool join_use_nulls;
 }
 
 namespace ErrorCodes

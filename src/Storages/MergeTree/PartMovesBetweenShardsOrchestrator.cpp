@@ -13,8 +13,8 @@ namespace DB
 
 namespace MergeTreeSetting
 {
-    extern const MergeTreeSettingsUInt64 part_moves_between_shards_delay_seconds;
-    extern const MergeTreeSettingsUInt64 part_moves_between_shards_enable;
+    extern MergeTreeSettingsUInt64 part_moves_between_shards_delay_seconds;
+    extern MergeTreeSettingsUInt64 part_moves_between_shards_enable;
 }
 
 namespace ErrorCodes

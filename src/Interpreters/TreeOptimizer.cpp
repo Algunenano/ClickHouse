@@ -42,24 +42,24 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsBool allow_hyperscan;
-    extern const SettingsBool convert_query_to_cnf;
-    extern const SettingsBool enable_positional_arguments;
-    extern const SettingsUInt64 max_hyperscan_regexp_length;
-    extern const SettingsUInt64 max_hyperscan_regexp_total_length;
-    extern const SettingsBool optimize_aggregators_of_group_by_keys;
-    extern const SettingsBool optimize_append_index;
-    extern const SettingsBool optimize_arithmetic_operations_in_aggregate_functions;
-    extern const SettingsBool optimize_group_by_function_keys;
-    extern const SettingsBool optimize_if_transform_strings_to_enum;
-    extern const SettingsBool optimize_injective_functions_inside_uniq;
-    extern const SettingsBool optimize_normalize_count_variants;
-    extern const SettingsBool optimize_substitute_columns;
-    extern const SettingsBool optimize_time_filter_with_preimage;
-    extern const SettingsBool optimize_using_constraints;
-    extern const SettingsBool optimize_redundant_functions_in_order_by;
-    extern const SettingsBool optimize_rewrite_array_exists_to_has;
-    extern const SettingsBool optimize_or_like_chain;
+    extern SettingsBool allow_hyperscan;
+    extern SettingsBool convert_query_to_cnf;
+    extern SettingsBool enable_positional_arguments;
+    extern SettingsUInt64 max_hyperscan_regexp_length;
+    extern SettingsUInt64 max_hyperscan_regexp_total_length;
+    extern SettingsBool optimize_aggregators_of_group_by_keys;
+    extern SettingsBool optimize_append_index;
+    extern SettingsBool optimize_arithmetic_operations_in_aggregate_functions;
+    extern SettingsBool optimize_group_by_function_keys;
+    extern SettingsBool optimize_if_transform_strings_to_enum;
+    extern SettingsBool optimize_injective_functions_inside_uniq;
+    extern SettingsBool optimize_normalize_count_variants;
+    extern SettingsBool optimize_substitute_columns;
+    extern SettingsBool optimize_time_filter_with_preimage;
+    extern SettingsBool optimize_using_constraints;
+    extern SettingsBool optimize_redundant_functions_in_order_by;
+    extern SettingsBool optimize_rewrite_array_exists_to_has;
+    extern SettingsBool optimize_or_like_chain;
 }
 
 namespace ErrorCodes

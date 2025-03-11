@@ -16,7 +16,7 @@ namespace DB
 
 namespace Setting
 {
-    extern const SettingsLogsLevel send_logs_level;
+    extern SettingsLogsLevel send_logs_level;
 }
 
 namespace ErrorCodes

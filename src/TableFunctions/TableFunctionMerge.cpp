@@ -26,7 +26,7 @@ namespace ErrorCodes
 
 namespace Setting
 {
-    extern const SettingsUInt64 merge_table_max_tables_to_look_for_schema_inference;
+    extern SettingsUInt64 merge_table_max_tables_to_look_for_schema_inference;
 }
 
 namespace

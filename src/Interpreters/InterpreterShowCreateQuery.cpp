@@ -18,7 +18,7 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsBool show_table_uuid_in_table_create_query_if_not_nil;
+    extern SettingsBool show_table_uuid_in_table_create_query_if_not_nil;
 }
 
 namespace ErrorCodes

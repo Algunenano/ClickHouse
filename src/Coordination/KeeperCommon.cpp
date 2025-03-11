@@ -15,8 +15,8 @@ namespace DB
 
 namespace CoordinationSetting
 {
-    extern const CoordinationSettingsUInt64 disk_move_retries_during_init;
-    extern const CoordinationSettingsUInt64 disk_move_retries_wait_ms;
+    extern CoordinationSettingsUInt64 disk_move_retries_during_init;
+    extern CoordinationSettingsUInt64 disk_move_retries_wait_ms;
 }
 
 static size_t findLastSlash(StringRef path)

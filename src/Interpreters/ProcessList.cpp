@@ -25,30 +25,30 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsUInt64 max_concurrent_queries_for_all_users;
-    extern const SettingsUInt64 max_concurrent_queries_for_user;
-    extern const SettingsSeconds max_execution_time;
-    extern const SettingsUInt64 max_memory_usage;
-    extern const SettingsUInt64 max_memory_usage_for_user;
-    extern const SettingsUInt64 max_network_bandwidth_for_all_users;
-    extern const SettingsUInt64 max_network_bandwidth_for_user;
-    extern const SettingsUInt64 max_temporary_data_on_disk_size_for_user;
-    extern const SettingsUInt64 memory_usage_overcommit_max_wait_microseconds;
-    extern const SettingsUInt64 memory_overcommit_ratio_denominator;
-    extern const SettingsUInt64 memory_overcommit_ratio_denominator_for_user;
-    extern const SettingsUInt64 memory_profiler_step;
-    extern const SettingsUInt64 memory_profiler_sample_min_allocation_size;
-    extern const SettingsUInt64 memory_profiler_sample_max_allocation_size;
-    extern const SettingsFloat memory_profiler_sample_probability;
-    extern const SettingsUInt64 max_temporary_data_on_disk_size_for_query;
-    extern const SettingsFloat memory_tracker_fault_probability;
-    extern const SettingsUInt64 priority;
-    extern const SettingsMilliseconds queue_max_wait_ms;
-    extern const SettingsBool replace_running_query;
-    extern const SettingsMilliseconds replace_running_query_max_wait_ms;
-    extern const SettingsString temporary_files_codec;
-    extern const SettingsOverflowMode timeout_overflow_mode;
-    extern const SettingsBool trace_profile_events;
+    extern SettingsUInt64 max_concurrent_queries_for_all_users;
+    extern SettingsUInt64 max_concurrent_queries_for_user;
+    extern SettingsSeconds max_execution_time;
+    extern SettingsUInt64 max_memory_usage;
+    extern SettingsUInt64 max_memory_usage_for_user;
+    extern SettingsUInt64 max_network_bandwidth_for_all_users;
+    extern SettingsUInt64 max_network_bandwidth_for_user;
+    extern SettingsUInt64 max_temporary_data_on_disk_size_for_user;
+    extern SettingsUInt64 memory_usage_overcommit_max_wait_microseconds;
+    extern SettingsUInt64 memory_overcommit_ratio_denominator;
+    extern SettingsUInt64 memory_overcommit_ratio_denominator_for_user;
+    extern SettingsUInt64 memory_profiler_step;
+    extern SettingsUInt64 memory_profiler_sample_min_allocation_size;
+    extern SettingsUInt64 memory_profiler_sample_max_allocation_size;
+    extern SettingsFloat memory_profiler_sample_probability;
+    extern SettingsUInt64 max_temporary_data_on_disk_size_for_query;
+    extern SettingsFloat memory_tracker_fault_probability;
+    extern SettingsUInt64 priority;
+    extern SettingsMilliseconds queue_max_wait_ms;
+    extern SettingsBool replace_running_query;
+    extern SettingsMilliseconds replace_running_query_max_wait_ms;
+    extern SettingsString temporary_files_codec;
+    extern SettingsOverflowMode timeout_overflow_mode;
+    extern SettingsBool trace_profile_events;
 }
 
 namespace ErrorCodes

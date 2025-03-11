@@ -62,13 +62,13 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsBool allow_experimental_analyzer;
-    extern const SettingsBool allow_experimental_variant_type;
-    extern const SettingsBool force_grouping_standard_compatibility;
-    extern const SettingsUInt64 max_ast_elements;
-    extern const SettingsBool transform_null_in;
-    extern const SettingsBool validate_enum_literals_in_operators;
-    extern const SettingsBool use_variant_as_common_type;
+    extern SettingsBool allow_experimental_analyzer;
+    extern SettingsBool allow_experimental_variant_type;
+    extern SettingsBool force_grouping_standard_compatibility;
+    extern SettingsUInt64 max_ast_elements;
+    extern SettingsBool transform_null_in;
+    extern SettingsBool validate_enum_literals_in_operators;
+    extern SettingsBool use_variant_as_common_type;
 }
 
 namespace ErrorCodes

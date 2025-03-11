@@ -7,9 +7,9 @@ namespace DB
 
 namespace Setting
 {
-    extern const SettingsBool query_plan_merge_filters;
-    extern const SettingsMaxThreads max_threads;
-    extern const SettingsUInt64 aggregation_memory_efficient_merge_threads;
+    extern SettingsBool query_plan_merge_filters;
+    extern SettingsMaxThreads max_threads;
+    extern SettingsUInt64 aggregation_memory_efficient_merge_threads;
 }
 
 BuildQueryPipelineSettings::BuildQueryPipelineSettings(ContextPtr from)

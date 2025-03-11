@@ -27,7 +27,7 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsUInt64 table_function_remote_max_addresses;
+    extern SettingsUInt64 table_function_remote_max_addresses;
 }
 
 namespace ErrorCodes

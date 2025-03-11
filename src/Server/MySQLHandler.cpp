@@ -40,9 +40,9 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsBool prefer_column_name_to_alias;
-    extern const SettingsSeconds receive_timeout;
-    extern const SettingsSeconds send_timeout;
+    extern SettingsBool prefer_column_name_to_alias;
+    extern SettingsSeconds receive_timeout;
+    extern SettingsSeconds send_timeout;
 }
 
 using namespace MySQLProtocol;

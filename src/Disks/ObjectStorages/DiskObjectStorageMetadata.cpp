@@ -14,7 +14,7 @@ namespace DB
 
 namespace ServerSetting
 {
-    extern const ServerSettingsBool storage_metadata_write_full_object_key;
+    extern ServerSettingsBool storage_metadata_write_full_object_key;
 }
 
 namespace ErrorCodes

@@ -29,7 +29,7 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsBool group_by_use_nulls;
+    extern SettingsBool group_by_use_nulls;
 }
 
 namespace ErrorCodes

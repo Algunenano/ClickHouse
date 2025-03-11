@@ -26,9 +26,9 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsBool external_table_functions_use_nulls;
-    extern const SettingsSeconds http_receive_timeout;
-    extern const SettingsBool odbc_bridge_use_connection_pooling;
+    extern SettingsBool external_table_functions_use_nulls;
+    extern SettingsSeconds http_receive_timeout;
+    extern SettingsBool odbc_bridge_use_connection_pooling;
 }
 
 namespace ErrorCodes

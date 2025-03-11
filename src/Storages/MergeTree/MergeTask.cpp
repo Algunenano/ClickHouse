@@ -84,33 +84,33 @@ namespace DB
 
 namespace Setting
 {
-    extern const SettingsBool compile_sort_description;
-    extern const SettingsUInt64 max_insert_delayed_streams_for_parallel_write;
-    extern const SettingsUInt64 min_count_to_compile_sort_description;
-    extern const SettingsUInt64 min_insert_block_size_bytes;
-    extern const SettingsUInt64 min_insert_block_size_rows;
+    extern SettingsBool compile_sort_description;
+    extern SettingsUInt64 max_insert_delayed_streams_for_parallel_write;
+    extern SettingsUInt64 min_count_to_compile_sort_description;
+    extern SettingsUInt64 min_insert_block_size_bytes;
+    extern SettingsUInt64 min_insert_block_size_rows;
 }
 
 namespace MergeTreeSetting
 {
-    extern const MergeTreeSettingsBool allow_experimental_replacing_merge_with_cleanup;
-    extern const MergeTreeSettingsBool allow_vertical_merges_from_compact_to_wide_parts;
-    extern const MergeTreeSettingsMilliseconds background_task_preferred_step_execution_time_ms;
-    extern const MergeTreeSettingsDeduplicateMergeProjectionMode deduplicate_merge_projection_mode;
-    extern const MergeTreeSettingsBool enable_block_number_column;
-    extern const MergeTreeSettingsBool enable_block_offset_column;
-    extern const MergeTreeSettingsUInt64 enable_vertical_merge_algorithm;
-    extern const MergeTreeSettingsUInt64 merge_max_block_size_bytes;
-    extern const MergeTreeSettingsUInt64 merge_max_block_size;
-    extern const MergeTreeSettingsUInt64 min_merge_bytes_to_use_direct_io;
-    extern const MergeTreeSettingsFloat ratio_of_defaults_for_sparse_serialization;
-    extern const MergeTreeSettingsUInt64 vertical_merge_algorithm_min_bytes_to_activate;
-    extern const MergeTreeSettingsUInt64 vertical_merge_algorithm_min_columns_to_activate;
-    extern const MergeTreeSettingsUInt64 vertical_merge_algorithm_min_rows_to_activate;
-    extern const MergeTreeSettingsBool vertical_merge_remote_filesystem_prefetch;
-    extern const MergeTreeSettingsBool materialize_skip_indexes_on_merge;
-    extern const MergeTreeSettingsBool prewarm_mark_cache;
-    extern const MergeTreeSettingsBool use_const_adaptive_granularity;
+    extern MergeTreeSettingsBool allow_experimental_replacing_merge_with_cleanup;
+    extern MergeTreeSettingsBool allow_vertical_merges_from_compact_to_wide_parts;
+    extern MergeTreeSettingsMilliseconds background_task_preferred_step_execution_time_ms;
+    extern MergeTreeSettingsDeduplicateMergeProjectionMode deduplicate_merge_projection_mode;
+    extern MergeTreeSettingsBool enable_block_number_column;
+    extern MergeTreeSettingsBool enable_block_offset_column;
+    extern MergeTreeSettingsUInt64 enable_vertical_merge_algorithm;
+    extern MergeTreeSettingsUInt64 merge_max_block_size_bytes;
+    extern MergeTreeSettingsUInt64 merge_max_block_size;
+    extern MergeTreeSettingsUInt64 min_merge_bytes_to_use_direct_io;
+    extern MergeTreeSettingsFloat ratio_of_defaults_for_sparse_serialization;
+    extern MergeTreeSettingsUInt64 vertical_merge_algorithm_min_bytes_to_activate;
+    extern MergeTreeSettingsUInt64 vertical_merge_algorithm_min_columns_to_activate;
+    extern MergeTreeSettingsUInt64 vertical_merge_algorithm_min_rows_to_activate;
+    extern MergeTreeSettingsBool vertical_merge_remote_filesystem_prefetch;
+    extern MergeTreeSettingsBool materialize_skip_indexes_on_merge;
+    extern MergeTreeSettingsBool prewarm_mark_cache;
+    extern MergeTreeSettingsBool use_const_adaptive_granularity;
 }
 
 namespace ErrorCodes

@@ -17,11 +17,11 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsUInt64 postgresql_connection_attempt_timeout;
-    extern const SettingsBool postgresql_connection_pool_auto_close_connection;
-    extern const SettingsUInt64 postgresql_connection_pool_retries;
-    extern const SettingsUInt64 postgresql_connection_pool_size;
-    extern const SettingsUInt64 postgresql_connection_pool_wait_timeout;
+    extern SettingsUInt64 postgresql_connection_attempt_timeout;
+    extern SettingsBool postgresql_connection_pool_auto_close_connection;
+    extern SettingsUInt64 postgresql_connection_pool_retries;
+    extern SettingsUInt64 postgresql_connection_pool_size;
+    extern SettingsUInt64 postgresql_connection_pool_wait_timeout;
 }
 
 namespace ErrorCodes

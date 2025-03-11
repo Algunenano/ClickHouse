@@ -42,14 +42,18 @@ namespace ErrorCodes
     CLIENT_SETTINGS(M, ALIAS) \
     AUTH_SETTINGS(M, ALIAS)
 
-DECLARE_SETTINGS_TRAITS(S3AuthSettingsTraits, CLIENT_SETTINGS_LIST)
+
+DECLARE_SETTINGS_TRAITS(S3AuthSettingsTraits, CLIENT_SETTINGS_LIST, S3AUTH_SETTINGS_SUPPORTED_TYPES)
 IMPLEMENT_SETTINGS_TRAITS(S3AuthSettingsTraits, CLIENT_SETTINGS_LIST)
 
 struct S3AuthSettingsImpl : public BaseSettings<S3AuthSettingsTraits>
 {
 };
 
-#define INITIALIZE_SETTING_EXTERN(TYPE, NAME, DEFAULT, DESCRIPTION, FLAGS) S3AuthSettings##TYPE NAME = &S3AuthSettingsImpl ::NAME;
+S3AUTH_SETTINGS_SUPPORTED_TYPES(S3AuthSettings, IMPLEMENT_SETTING_SUBSCRIPT_OPERATOR)
+
+#define INITIALIZE_SETTING_EXTERN(TYPE, NAME, DEFAULT, DESCRIPTION, FLAGS) \
+    S3AuthSettings##TYPE NAME = { &S3AuthSettingsImpl ::data_##TYPE , &S3AuthSettingsImpl :: position_##NAME };
 
 namespace S3AuthSetting
 {
@@ -57,9 +61,6 @@ CLIENT_SETTINGS_LIST(INITIALIZE_SETTING_EXTERN, SKIP_ALIAS)
 }
 
 #undef INITIALIZE_SETTING_EXTERN
-
-namespace S3
-{
 
 namespace
 {
@@ -105,10 +106,10 @@ S3AuthSettings::S3AuthSettings(
         }
     }
 
-    headers = getHTTPHeaders(config_prefix, config, "header");
-    access_headers = getHTTPHeaders(config_prefix, config, "access_header");
+    headers = S3::getHTTPHeaders(config_prefix, config, "header");
+    access_headers = S3::getHTTPHeaders(config_prefix, config, "access_header");
 
-    server_side_encryption_kms_config = getSSEKMSConfig(config_prefix, config);
+    server_side_encryption_kms_config = S3::getSSEKMSConfig(config_prefix, config);
 
     Poco::Util::AbstractConfiguration::Keys keys;
     config.keys(config_prefix, keys);
@@ -143,8 +144,6 @@ S3AuthSettings::S3AuthSettings(const DB::Settings & settings) : impl(std::make_u
 }
 
 S3AuthSettings::~S3AuthSettings() = default;
-
-S3AUTH_SETTINGS_SUPPORTED_TYPES(S3AuthSettings, IMPLEMENT_SETTING_SUBSCRIPT_OPERATOR)
 
 S3AuthSettings & S3AuthSettings::operator=(S3AuthSettings && settings) noexcept
 {
@@ -228,5 +227,4 @@ HTTPHeaderEntries S3AuthSettings::getHeaders() const
     return result;
 }
 
-}
 }

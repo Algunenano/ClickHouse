@@ -19,7 +19,7 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsBool allow_introspection_functions;
+    extern SettingsBool allow_introspection_functions;
 }
 
 

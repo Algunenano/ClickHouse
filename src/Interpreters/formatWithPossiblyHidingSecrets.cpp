@@ -8,10 +8,10 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsBool format_display_secrets_in_show_and_select;
-    extern const SettingsIdentifierQuotingRule show_create_query_identifier_quoting_rule;
-    extern const SettingsIdentifierQuotingStyle show_create_query_identifier_quoting_style;
-    extern const SettingsBool print_pretty_type_names;
+    extern SettingsBool format_display_secrets_in_show_and_select;
+    extern SettingsIdentifierQuotingRule show_create_query_identifier_quoting_rule;
+    extern SettingsIdentifierQuotingStyle show_create_query_identifier_quoting_style;
+    extern SettingsBool print_pretty_type_names;
 }
 
 String format(const SecretHidingFormatSettings & settings)

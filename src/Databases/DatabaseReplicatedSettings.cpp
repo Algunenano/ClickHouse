@@ -15,15 +15,17 @@ namespace DB
     DECLARE(Bool, check_consistency, true, "Check consistency of local metadata and metadata in Keeper, do replica recovery on inconsistency", 0) \
     DECLARE(UInt64, max_retries_before_automatic_recovery, 100, "Max number of attempts to execute a queue entry before marking replica as lost recovering it from snapshot (0 means infinite)", 0) \
 
-DECLARE_SETTINGS_TRAITS(DatabaseReplicatedSettingsTraits, LIST_OF_DATABASE_REPLICATED_SETTINGS)
+DECLARE_SETTINGS_TRAITS(DatabaseReplicatedSettingsTraits, LIST_OF_DATABASE_REPLICATED_SETTINGS, DATABASE_REPLICATED_SETTINGS_SUPPORTED_TYPES)
 IMPLEMENT_SETTINGS_TRAITS(DatabaseReplicatedSettingsTraits, LIST_OF_DATABASE_REPLICATED_SETTINGS)
 
 struct DatabaseReplicatedSettingsImpl : public BaseSettings<DatabaseReplicatedSettingsTraits>
 {
 };
 
+DATABASE_REPLICATED_SETTINGS_SUPPORTED_TYPES(DatabaseReplicatedSettings, IMPLEMENT_SETTING_SUBSCRIPT_OPERATOR)
+
 #define INITIALIZE_SETTING_EXTERN(TYPE, NAME, DEFAULT, DESCRIPTION, FLAGS) \
-    DatabaseReplicatedSettings##TYPE NAME = &DatabaseReplicatedSettingsImpl ::NAME;
+    DatabaseReplicatedSettings##TYPE NAME = { &DatabaseReplicatedSettingsImpl ::data_##TYPE , &DatabaseReplicatedSettingsImpl :: position_##NAME };
 
 namespace DatabaseReplicatedSetting
 {
@@ -47,8 +49,6 @@ DatabaseReplicatedSettings::DatabaseReplicatedSettings(DatabaseReplicatedSetting
 }
 
 DatabaseReplicatedSettings::~DatabaseReplicatedSettings() = default;
-
-DATABASE_REPLICATED_SETTINGS_SUPPORTED_TYPES(DatabaseReplicatedSettings, IMPLEMENT_SETTING_SUBSCRIPT_OPERATOR)
 
 void DatabaseReplicatedSettings::loadFromQuery(ASTStorage & storage_def)
 {

@@ -28,11 +28,11 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsBool allow_experimental_codecs;
-    extern const SettingsBool allow_suspicious_codecs;
-    extern const SettingsBool allow_suspicious_ttl_expressions;
-    extern const SettingsBool enable_zstd_qat_codec;
-    extern const SettingsBool enable_deflate_qpl_codec;
+    extern SettingsBool allow_experimental_codecs;
+    extern SettingsBool allow_suspicious_codecs;
+    extern SettingsBool allow_suspicious_ttl_expressions;
+    extern SettingsBool enable_zstd_qat_codec;
+    extern SettingsBool enable_deflate_qpl_codec;
 }
 
 namespace ErrorCodes

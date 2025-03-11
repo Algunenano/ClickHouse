@@ -43,7 +43,7 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsUInt64 preferred_block_size_bytes;
+    extern SettingsUInt64 preferred_block_size_bytes;
 }
 
 namespace ErrorCodes

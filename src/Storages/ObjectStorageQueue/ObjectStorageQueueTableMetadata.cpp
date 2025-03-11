@@ -14,14 +14,14 @@ namespace DB
 
 namespace ObjectStorageQueueSetting
 {
-    extern const ObjectStorageQueueSettingsObjectStorageQueueAction after_processing;
-    extern const ObjectStorageQueueSettingsUInt64 buckets;
-    extern const ObjectStorageQueueSettingsString last_processed_path;
-    extern const ObjectStorageQueueSettingsObjectStorageQueueMode mode;
-    extern const ObjectStorageQueueSettingsUInt64 loading_retries;
-    extern const ObjectStorageQueueSettingsUInt64 processing_threads_num;
-    extern const ObjectStorageQueueSettingsUInt64 tracked_files_limit;
-    extern const ObjectStorageQueueSettingsUInt64 tracked_file_ttl_sec;
+    extern ObjectStorageQueueSettingsObjectStorageQueueAction after_processing;
+    extern ObjectStorageQueueSettingsUInt64 buckets;
+    extern ObjectStorageQueueSettingsString last_processed_path;
+    extern ObjectStorageQueueSettingsObjectStorageQueueMode mode;
+    extern ObjectStorageQueueSettingsUInt64 loading_retries;
+    extern ObjectStorageQueueSettingsUInt64 processing_threads_num;
+    extern ObjectStorageQueueSettingsUInt64 tracked_files_limit;
+    extern ObjectStorageQueueSettingsUInt64 tracked_file_ttl_sec;
 
 }
 

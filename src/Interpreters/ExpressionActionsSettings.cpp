@@ -7,11 +7,11 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsBool compile_expressions;
-    extern const SettingsShortCircuitFunctionEvaluation short_circuit_function_evaluation;
-    extern const SettingsUInt64 max_temporary_columns;
-    extern const SettingsUInt64 max_temporary_non_const_columns;
-    extern const SettingsUInt64 min_count_to_compile_expression;
+    extern SettingsBool compile_expressions;
+    extern SettingsShortCircuitFunctionEvaluation short_circuit_function_evaluation;
+    extern SettingsUInt64 max_temporary_columns;
+    extern SettingsUInt64 max_temporary_non_const_columns;
+    extern SettingsUInt64 min_count_to_compile_expression;
 }
 
 ExpressionActionsSettings::ExpressionActionsSettings()

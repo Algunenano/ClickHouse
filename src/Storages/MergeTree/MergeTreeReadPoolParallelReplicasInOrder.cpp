@@ -17,7 +17,7 @@ extern const int BAD_ARGUMENTS;
 
 namespace MergeTreeSetting
 {
-extern const MergeTreeSettingsUInt64 index_granularity;
+extern MergeTreeSettingsUInt64 index_granularity;
 }
 
 MergeTreeReadPoolParallelReplicasInOrder::MergeTreeReadPoolParallelReplicasInOrder(

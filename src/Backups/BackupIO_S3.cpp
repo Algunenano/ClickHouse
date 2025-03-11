@@ -29,32 +29,32 @@ namespace DB
 
 namespace Setting
 {
-    extern const SettingsUInt64 backup_restore_s3_retry_attempts;
-    extern const SettingsBool enable_s3_requests_logging;
-    extern const SettingsBool s3_disable_checksum;
-    extern const SettingsUInt64 s3_max_connections;
-    extern const SettingsUInt64 s3_max_redirects;
+    extern SettingsUInt64 backup_restore_s3_retry_attempts;
+    extern SettingsBool enable_s3_requests_logging;
+    extern SettingsBool s3_disable_checksum;
+    extern SettingsUInt64 s3_max_connections;
+    extern SettingsUInt64 s3_max_redirects;
 }
 
 namespace S3AuthSetting
 {
-    extern const S3AuthSettingsString access_key_id;
-    extern const S3AuthSettingsUInt64 expiration_window_seconds;
-    extern const S3AuthSettingsBool no_sign_request;
-    extern const S3AuthSettingsString region;
-    extern const S3AuthSettingsString secret_access_key;
-    extern const S3AuthSettingsString server_side_encryption_customer_key_base64;
-    extern const S3AuthSettingsBool use_environment_credentials;
-    extern const S3AuthSettingsBool use_insecure_imds_request;
+    extern S3AuthSettingsString access_key_id;
+    extern S3AuthSettingsUInt64 expiration_window_seconds;
+    extern S3AuthSettingsBool no_sign_request;
+    extern S3AuthSettingsString region;
+    extern S3AuthSettingsString secret_access_key;
+    extern S3AuthSettingsString server_side_encryption_customer_key_base64;
+    extern S3AuthSettingsBool use_environment_credentials;
+    extern S3AuthSettingsBool use_insecure_imds_request;
 }
 
 namespace S3RequestSetting
 {
-    extern const S3RequestSettingsBool allow_native_copy;
-    extern const S3RequestSettingsString storage_class_name;
-    extern const S3RequestSettingsUInt64 http_max_fields;
-    extern const S3RequestSettingsUInt64 http_max_field_name_size;
-    extern const S3RequestSettingsUInt64 http_max_field_value_size;
+    extern S3RequestSettingsBool allow_native_copy;
+    extern S3RequestSettingsString storage_class_name;
+    extern S3RequestSettingsUInt64 http_max_fields;
+    extern S3RequestSettingsUInt64 http_max_field_name_size;
+    extern S3RequestSettingsUInt64 http_max_field_value_size;
 }
 
 namespace ErrorCodes

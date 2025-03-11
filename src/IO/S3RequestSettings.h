@@ -24,9 +24,6 @@ struct Settings;
 
 S3REQUEST_SETTINGS_SUPPORTED_TYPES(S3RequestSettings, DECLARE_SETTING_TRAIT)
 
-namespace S3
-{
-
 /// We use s3 settings for DiskS3, StorageS3 (StorageS3Cluster, S3Queue, etc), BackupIO_S3, etc.
 /// 1. For DiskS3 we usually have configuration in disk section in configuration file.
 ///    REQUEST_SETTINGS, PART_UPLOAD_SETTINGS start with "s3_" prefix there, while AUTH_SETTINGS and CLIENT_SETTINGS do not
@@ -80,4 +77,3 @@ private:
 
 }
 
-}

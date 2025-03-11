@@ -15,7 +15,7 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsBool allow_nonconst_timezone_arguments;
+    extern SettingsBool allow_nonconst_timezone_arguments;
 }
 
 namespace ErrorCodes

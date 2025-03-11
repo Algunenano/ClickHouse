@@ -25,8 +25,8 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsBool check_referential_table_dependencies;
-    extern const SettingsBool check_table_dependencies;
+    extern SettingsBool check_referential_table_dependencies;
+    extern SettingsBool check_table_dependencies;
 }
 
 namespace ErrorCodes

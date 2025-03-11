@@ -82,9 +82,9 @@ namespace DB
 
 namespace S3AuthSetting
 {
-    extern const S3AuthSettingsString access_key_id;
-    extern const S3AuthSettingsString secret_access_key;
-    extern const S3AuthSettingsString region;
+    extern S3AuthSettingsString access_key_id;
+    extern S3AuthSettingsString secret_access_key;
+    extern S3AuthSettingsString region;
 }
 
 DeltaLake::KernelHelperPtr getKernelHelper(const StorageObjectStorage::ConfigurationPtr & configuration)

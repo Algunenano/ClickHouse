@@ -31,12 +31,12 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsUInt64 min_insert_block_size_rows;
+    extern SettingsUInt64 min_insert_block_size_rows;
 }
 
 namespace RocksDBSetting
 {
-    extern const RocksDBSettingsUInt64 bulk_insert_block_size;
+    extern RocksDBSettingsUInt64 bulk_insert_block_size;
 }
 
 namespace ErrorCodes

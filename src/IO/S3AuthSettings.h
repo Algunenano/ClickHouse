@@ -24,8 +24,6 @@ struct S3AuthSettingsImpl;
 
 S3AUTH_SETTINGS_SUPPORTED_TYPES(S3AuthSettings, DECLARE_SETTING_TRAIT)
 
-namespace S3
-{
 
 /// We use s3 settings for DiskS3, StorageS3 (StorageS3Cluster, S3Queue, etc), BackupIO_S3, etc.
 /// 1. For DiskS3 we usually have configuration in disk section in configuration file.
@@ -61,7 +59,7 @@ struct S3AuthSettings
     HTTPHeaderEntries access_headers;
 
     std::unordered_set<std::string> users;
-    ServerSideEncryptionKMSConfig server_side_encryption_kms_config;
+    S3::ServerSideEncryptionKMSConfig server_side_encryption_kms_config;
 
 private:
     std::unique_ptr<S3AuthSettingsImpl> impl;
@@ -69,4 +67,3 @@ private:
 
 }
 
-}

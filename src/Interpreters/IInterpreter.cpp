@@ -9,7 +9,7 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsBool throw_on_unsupported_query_inside_transaction;
+    extern SettingsBool throw_on_unsupported_query_inside_transaction;
 }
 
 namespace ErrorCodes

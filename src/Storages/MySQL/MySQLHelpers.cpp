@@ -9,11 +9,11 @@ namespace DB
 
 namespace MySQLSetting
 {
-    extern const MySQLSettingsUInt64 connection_max_tries;
-    extern const MySQLSettingsUInt64 connection_pool_size;
-    extern const MySQLSettingsUInt64 connection_wait_timeout;
-    extern const MySQLSettingsUInt64 connect_timeout;
-    extern const MySQLSettingsUInt64 read_write_timeout;
+    extern MySQLSettingsUInt64 connection_max_tries;
+    extern MySQLSettingsUInt64 connection_pool_size;
+    extern MySQLSettingsUInt64 connection_wait_timeout;
+    extern MySQLSettingsUInt64 connect_timeout;
+    extern MySQLSettingsUInt64 read_write_timeout;
 }
 
 namespace ErrorCodes

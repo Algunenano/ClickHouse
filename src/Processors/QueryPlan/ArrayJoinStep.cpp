@@ -13,7 +13,7 @@ namespace DB
 
 namespace QueryPlanSerializationSetting
 {
-    extern const QueryPlanSerializationSettingsUInt64 max_block_size;
+    extern QueryPlanSerializationSettingsUInt64 max_block_size;
 }
 
 static ITransformingStep::Traits getTraits()

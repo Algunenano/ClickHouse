@@ -21,7 +21,7 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsSeconds lock_acquire_timeout;
+    extern SettingsSeconds lock_acquire_timeout;
 }
 
 bool needRewriteQueryWithFinalForStorage(const Names & column_names, const StoragePtr & storage)

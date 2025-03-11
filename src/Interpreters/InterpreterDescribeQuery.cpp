@@ -26,13 +26,13 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsBool allow_experimental_analyzer;
-    extern const SettingsBool describe_compact_output;
-    extern const SettingsBool describe_extend_object_types;
-    extern const SettingsBool describe_include_subcolumns;
-    extern const SettingsBool describe_include_virtual_columns;
-    extern const SettingsSeconds lock_acquire_timeout;
-    extern const SettingsBool print_pretty_type_names;
+    extern SettingsBool allow_experimental_analyzer;
+    extern SettingsBool describe_compact_output;
+    extern SettingsBool describe_extend_object_types;
+    extern SettingsBool describe_include_subcolumns;
+    extern SettingsBool describe_include_virtual_columns;
+    extern SettingsSeconds lock_acquire_timeout;
+    extern SettingsBool print_pretty_type_names;
 }
 
 InterpreterDescribeQuery::InterpreterDescribeQuery(const ASTPtr & query_ptr_, ContextPtr context_)

@@ -21,11 +21,11 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsBool allow_statistics_optimize;
-    extern const SettingsUInt64 log_queries_cut_to_length;
-    extern const SettingsBool move_all_conditions_to_prewhere;
-    extern const SettingsBool move_primary_key_columns_to_end_of_prewhere;
-    extern const SettingsBool allow_reorder_prewhere_conditions;
+    extern SettingsBool allow_statistics_optimize;
+    extern SettingsUInt64 log_queries_cut_to_length;
+    extern SettingsBool move_all_conditions_to_prewhere;
+    extern SettingsBool move_primary_key_columns_to_end_of_prewhere;
+    extern SettingsBool allow_reorder_prewhere_conditions;
 }
 
 /// Conditions like "x = N" are considered good if abs(N) > threshold.

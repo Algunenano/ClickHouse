@@ -47,14 +47,14 @@ namespace DB
 
 namespace CoordinationSetting
 {
-    extern const CoordinationSettingsMilliseconds dead_session_check_period_ms;
-    extern const CoordinationSettingsUInt64 max_request_queue_size;
-    extern const CoordinationSettingsUInt64 max_requests_batch_bytes_size;
-    extern const CoordinationSettingsUInt64 max_requests_batch_size;
-    extern const CoordinationSettingsMilliseconds operation_timeout_ms;
-    extern const CoordinationSettingsBool quorum_reads;
-    extern const CoordinationSettingsMilliseconds session_shutdown_timeout;
-    extern const CoordinationSettingsMilliseconds sleep_before_leader_change_ms;
+    extern CoordinationSettingsMilliseconds dead_session_check_period_ms;
+    extern CoordinationSettingsUInt64 max_request_queue_size;
+    extern CoordinationSettingsUInt64 max_requests_batch_bytes_size;
+    extern CoordinationSettingsUInt64 max_requests_batch_size;
+    extern CoordinationSettingsMilliseconds operation_timeout_ms;
+    extern CoordinationSettingsBool quorum_reads;
+    extern CoordinationSettingsMilliseconds session_shutdown_timeout;
+    extern CoordinationSettingsMilliseconds sleep_before_leader_change_ms;
 }
 
 namespace ErrorCodes

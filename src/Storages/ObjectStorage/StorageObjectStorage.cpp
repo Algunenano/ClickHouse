@@ -34,10 +34,10 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsMaxThreads max_threads;
-    extern const SettingsBool optimize_count_from_files;
-    extern const SettingsBool use_hive_partitioning;
-    extern const SettingsBool use_iceberg_partition_pruning;
+    extern SettingsMaxThreads max_threads;
+    extern SettingsBool optimize_count_from_files;
+    extern SettingsBool use_hive_partitioning;
+    extern SettingsBool use_iceberg_partition_pruning;
 }
 
 namespace ErrorCodes
@@ -49,8 +49,8 @@ namespace ErrorCodes
 
 namespace StorageObjectStorageSetting
 {
-extern const StorageObjectStorageSettingsBool allow_dynamic_metadata_for_data_lakes;
-extern const StorageObjectStorageSettingsBool allow_experimental_delta_kernel_rs;
+extern StorageObjectStorageSettingsBool allow_dynamic_metadata_for_data_lakes;
+extern StorageObjectStorageSettingsBool allow_experimental_delta_kernel_rs;
 }
 
 String StorageObjectStorage::getPathSample(ContextPtr context)

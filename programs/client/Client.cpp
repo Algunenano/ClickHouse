@@ -50,8 +50,8 @@ namespace DB
 {
 namespace Setting
 {
-extern const SettingsDialect dialect;
-extern const SettingsBool use_client_time_zone;
+extern SettingsDialect dialect;
+extern SettingsBool use_client_time_zone;
 }
 
 namespace ErrorCodes

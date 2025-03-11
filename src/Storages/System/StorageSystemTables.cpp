@@ -34,9 +34,9 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsSeconds lock_acquire_timeout;
-    extern const SettingsUInt64 select_sequential_consistency;
-    extern const SettingsBool show_table_uuid_in_table_create_query_if_not_nil;
+    extern SettingsSeconds lock_acquire_timeout;
+    extern SettingsUInt64 select_sequential_consistency;
+    extern SettingsBool show_table_uuid_in_table_create_query_if_not_nil;
 }
 
 namespace

@@ -42,16 +42,16 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsUInt64 max_compress_block_size;
+    extern SettingsUInt64 max_compress_block_size;
 }
 
 namespace MemorySetting
 {
-    extern const MemorySettingsBool compress;
-    extern const MemorySettingsUInt64 max_bytes_to_keep;
-    extern const MemorySettingsUInt64 max_rows_to_keep;
-    extern const MemorySettingsUInt64 min_bytes_to_keep;
-    extern const MemorySettingsUInt64 min_rows_to_keep;
+    extern MemorySettingsBool compress;
+    extern MemorySettingsUInt64 max_bytes_to_keep;
+    extern MemorySettingsUInt64 max_rows_to_keep;
+    extern MemorySettingsUInt64 min_bytes_to_keep;
+    extern MemorySettingsUInt64 min_rows_to_keep;
 }
 
 namespace ErrorCodes

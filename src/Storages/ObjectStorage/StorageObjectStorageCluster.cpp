@@ -17,7 +17,7 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsBool use_hive_partitioning;
+    extern SettingsBool use_hive_partitioning;
 }
 
 namespace ErrorCodes

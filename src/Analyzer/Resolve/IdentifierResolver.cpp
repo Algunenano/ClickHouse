@@ -35,8 +35,8 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsSeconds lock_acquire_timeout;
-    extern const SettingsBool single_join_prefer_left_table;
+    extern SettingsSeconds lock_acquire_timeout;
+    extern SettingsBool single_join_prefer_left_table;
 }
 
 namespace ErrorCodes

@@ -8,7 +8,7 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsBool enable_extended_results_for_datetime_functions;
+    extern SettingsBool enable_extended_results_for_datetime_functions;
 }
 
 namespace ErrorCodes

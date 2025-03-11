@@ -32,25 +32,25 @@ namespace Setting
 FORMAT_FACTORY_SETTINGS(DECLARE_FORMAT_EXTERN, SKIP_ALIAS)
 #undef DECLARE_FORMAT_EXTERN
 
-    extern const SettingsBool allow_experimental_object_type;
-    extern const SettingsBool allow_experimental_json_type;
-    extern const SettingsBool http_write_exception_in_output_format;
-    extern const SettingsBool input_format_parallel_parsing;
-    extern const SettingsBool log_queries;
-    extern const SettingsUInt64 max_download_buffer_size;
-    extern const SettingsMaxThreads max_download_threads;
-    extern const SettingsSeconds max_execution_time;
-    extern const SettingsUInt64 max_parser_depth;
-    extern const SettingsMaxThreads max_parsing_threads;
-    extern const SettingsUInt64 max_memory_usage;
-    extern const SettingsUInt64 max_memory_usage_for_user;
-    extern const SettingsMaxThreads max_threads;
-    extern const SettingsNonZeroUInt64 min_chunk_bytes_for_parallel_parsing;
-    extern const SettingsBool output_format_parallel_formatting;
-    extern const SettingsOverflowMode timeout_overflow_mode;
-    extern const SettingsInt64 zstd_window_log_max;
-    extern const SettingsUInt64 output_format_compression_level;
-    extern const SettingsUInt64 interactive_delay;
+    extern SettingsBool allow_experimental_object_type;
+    extern SettingsBool allow_experimental_json_type;
+    extern SettingsBool http_write_exception_in_output_format;
+    extern SettingsBool input_format_parallel_parsing;
+    extern SettingsBool log_queries;
+    extern SettingsUInt64 max_download_buffer_size;
+    extern SettingsMaxThreads max_download_threads;
+    extern SettingsSeconds max_execution_time;
+    extern SettingsUInt64 max_parser_depth;
+    extern SettingsMaxThreads max_parsing_threads;
+    extern SettingsUInt64 max_memory_usage;
+    extern SettingsUInt64 max_memory_usage_for_user;
+    extern SettingsMaxThreads max_threads;
+    extern SettingsNonZeroUInt64 min_chunk_bytes_for_parallel_parsing;
+    extern SettingsBool output_format_parallel_formatting;
+    extern SettingsOverflowMode timeout_overflow_mode;
+    extern SettingsInt64 zstd_window_log_max;
+    extern SettingsUInt64 output_format_compression_level;
+    extern SettingsUInt64 interactive_delay;
 }
 
 namespace ErrorCodes

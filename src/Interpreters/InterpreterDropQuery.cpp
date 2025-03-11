@@ -28,11 +28,11 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsBool check_referential_table_dependencies;
-    extern const SettingsBool check_table_dependencies;
-    extern const SettingsBool database_atomic_wait_for_drop_and_detach_synchronously;
-    extern const SettingsFloat ignore_drop_queries_probability;
-    extern const SettingsSeconds lock_acquire_timeout;
+    extern SettingsBool check_referential_table_dependencies;
+    extern SettingsBool check_table_dependencies;
+    extern SettingsBool database_atomic_wait_for_drop_and_detach_synchronously;
+    extern SettingsFloat ignore_drop_queries_probability;
+    extern SettingsSeconds lock_acquire_timeout;
 }
 
 namespace ErrorCodes

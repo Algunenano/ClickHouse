@@ -19,7 +19,7 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsBool allow_deprecated_error_prone_window_functions;
+    extern SettingsBool allow_deprecated_error_prone_window_functions;
 }
 
 namespace ErrorCodes

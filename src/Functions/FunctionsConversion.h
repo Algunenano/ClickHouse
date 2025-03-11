@@ -81,13 +81,13 @@ namespace DB
 
 namespace Setting
 {
-    extern const SettingsBool cast_ipv4_ipv6_default_on_conversion_error;
-    extern const SettingsBool cast_string_to_dynamic_use_inference;
-    extern const SettingsDateTimeOverflowBehavior date_time_overflow_behavior;
-    extern const SettingsBool input_format_ipv4_default_on_conversion_error;
-    extern const SettingsBool input_format_ipv6_default_on_conversion_error;
-    extern const SettingsBool precise_float_parsing;
-    extern const SettingsBool date_time_64_output_format_cut_trailing_zeros_align_to_groups_of_thousands;
+    extern SettingsBool cast_ipv4_ipv6_default_on_conversion_error;
+    extern SettingsBool cast_string_to_dynamic_use_inference;
+    extern SettingsDateTimeOverflowBehavior date_time_overflow_behavior;
+    extern SettingsBool input_format_ipv4_default_on_conversion_error;
+    extern SettingsBool input_format_ipv6_default_on_conversion_error;
+    extern SettingsBool precise_float_parsing;
+    extern SettingsBool date_time_64_output_format_cut_trailing_zeros_align_to_groups_of_thousands;
 }
 
 namespace ErrorCodes

@@ -23,7 +23,7 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsBool optimize_syntax_fuse_functions;
+    extern SettingsBool optimize_syntax_fuse_functions;
 }
 
 namespace ErrorCodes

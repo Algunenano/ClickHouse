@@ -43,7 +43,7 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsBool external_table_functions_use_nulls;
+    extern SettingsBool external_table_functions_use_nulls;
 }
 
 std::map<String, ColumnsDescription> fetchTablesColumnsList(

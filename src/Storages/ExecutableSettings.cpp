@@ -24,14 +24,17 @@ namespace ErrorCodes
     DECLARE(ExternalCommandStderrReaction, stderr_reaction, ExternalCommandStderrReaction::NONE, "Reaction when external command outputs data to its stderr.", 0) \
     DECLARE(Bool, check_exit_code, false, "Throw exception if the command exited with non-zero status code.", 0) \
 
-DECLARE_SETTINGS_TRAITS(ExecutableSettingsTraits, LIST_OF_EXECUTABLE_SETTINGS)
+DECLARE_SETTINGS_TRAITS(ExecutableSettingsTraits, LIST_OF_EXECUTABLE_SETTINGS, EXECUTABLE_SETTINGS_SUPPORTED_TYPES)
 IMPLEMENT_SETTINGS_TRAITS(ExecutableSettingsTraits, LIST_OF_EXECUTABLE_SETTINGS)
 
 struct ExecutableSettingsImpl : public BaseSettings<ExecutableSettingsTraits>
 {
 };
 
-#define INITIALIZE_SETTING_EXTERN(TYPE, NAME, DEFAULT, DESCRIPTION, FLAGS) ExecutableSettings##TYPE NAME = &ExecutableSettingsImpl ::NAME;
+EXECUTABLE_SETTINGS_SUPPORTED_TYPES(ExecutableSettings, IMPLEMENT_SETTING_SUBSCRIPT_OPERATOR)
+
+#define INITIALIZE_SETTING_EXTERN(TYPE, NAME, DEFAULT, DESCRIPTION, FLAGS) \
+    ExecutableSettings##TYPE NAME = { &ExecutableSettingsImpl ::data_##TYPE , &ExecutableSettingsImpl :: position_##NAME };
 
 namespace ExecutableSetting
 {
@@ -65,8 +68,6 @@ ExecutableSettings::ExecutableSettings(ExecutableSettings && settings) noexcept
 }
 
 ExecutableSettings::~ExecutableSettings() = default;
-
-EXECUTABLE_SETTINGS_SUPPORTED_TYPES(ExecutableSettings, IMPLEMENT_SETTING_SUBSCRIPT_OPERATOR)
 
 void ExecutableSettings::loadFromQuery(ASTStorage & storage_def)
 {

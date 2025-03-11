@@ -23,8 +23,8 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsBool transform_null_in;
-    extern const SettingsBool validate_enum_literals_in_operators;
+    extern SettingsBool transform_null_in;
+    extern SettingsBool validate_enum_literals_in_operators;
 }
 
 namespace ErrorCodes

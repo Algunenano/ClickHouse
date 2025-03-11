@@ -84,43 +84,43 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsBool allow_experimental_analyzer;
-    extern const SettingsBool allow_experimental_codecs;
-    extern const SettingsBool allow_experimental_query_deduplication;
-    extern const SettingsBool allow_suspicious_codecs;
-    extern const SettingsBool async_insert;
-    extern const SettingsUInt64 async_insert_max_data_size;
-    extern const SettingsBool calculate_text_stack_trace;
-    extern const SettingsBool deduplicate_blocks_in_dependent_materialized_views;
-    extern const SettingsBool enable_deflate_qpl_codec;
-    extern const SettingsBool enable_zstd_qat_codec;
-    extern const SettingsUInt64 idle_connection_timeout;
-    extern const SettingsBool input_format_defaults_for_omitted_fields;
-    extern const SettingsUInt64 interactive_delay;
-    extern const SettingsBool low_cardinality_allow_in_native_format;
-    extern const SettingsString network_compression_method;
-    extern const SettingsInt64 network_zstd_compression_level;
-    extern const SettingsBool partial_result_on_first_cancel;
-    extern const SettingsUInt64 poll_interval;
-    extern const SettingsSeconds receive_timeout;
-    extern const SettingsLogsLevel send_logs_level;
-    extern const SettingsString send_logs_source_regexp;
-    extern const SettingsSeconds send_timeout;
-    extern const SettingsTimezone session_timezone;
-    extern const SettingsMilliseconds sleep_after_receiving_query_ms;
-    extern const SettingsMilliseconds sleep_in_send_data_ms;
-    extern const SettingsMilliseconds sleep_in_send_tables_status_ms;
-    extern const SettingsBool throw_if_deduplication_in_dependent_materialized_views_enabled_with_async_insert;
-    extern const SettingsUInt64 unknown_packet_in_send_data;
-    extern const SettingsBool wait_for_async_insert;
-    extern const SettingsSeconds wait_for_async_insert_timeout;
-    extern const SettingsBool use_concurrency_control;
-    extern const SettingsBool apply_settings_from_server;
+    extern SettingsBool allow_experimental_analyzer;
+    extern SettingsBool allow_experimental_codecs;
+    extern SettingsBool allow_experimental_query_deduplication;
+    extern SettingsBool allow_suspicious_codecs;
+    extern SettingsBool async_insert;
+    extern SettingsUInt64 async_insert_max_data_size;
+    extern SettingsBool calculate_text_stack_trace;
+    extern SettingsBool deduplicate_blocks_in_dependent_materialized_views;
+    extern SettingsBool enable_deflate_qpl_codec;
+    extern SettingsBool enable_zstd_qat_codec;
+    extern SettingsUInt64 idle_connection_timeout;
+    extern SettingsBool input_format_defaults_for_omitted_fields;
+    extern SettingsUInt64 interactive_delay;
+    extern SettingsBool low_cardinality_allow_in_native_format;
+    extern SettingsString network_compression_method;
+    extern SettingsInt64 network_zstd_compression_level;
+    extern SettingsBool partial_result_on_first_cancel;
+    extern SettingsUInt64 poll_interval;
+    extern SettingsSeconds receive_timeout;
+    extern SettingsLogsLevel send_logs_level;
+    extern SettingsString send_logs_source_regexp;
+    extern SettingsSeconds send_timeout;
+    extern SettingsTimezone session_timezone;
+    extern SettingsMilliseconds sleep_after_receiving_query_ms;
+    extern SettingsMilliseconds sleep_in_send_data_ms;
+    extern SettingsMilliseconds sleep_in_send_tables_status_ms;
+    extern SettingsBool throw_if_deduplication_in_dependent_materialized_views_enabled_with_async_insert;
+    extern SettingsUInt64 unknown_packet_in_send_data;
+    extern SettingsBool wait_for_async_insert;
+    extern SettingsSeconds wait_for_async_insert_timeout;
+    extern SettingsBool use_concurrency_control;
+    extern SettingsBool apply_settings_from_server;
 }
 
 namespace ServerSetting
 {
-    extern const ServerSettingsBool validate_tcp_client_information;
+    extern ServerSettingsBool validate_tcp_client_information;
 }
 }
 

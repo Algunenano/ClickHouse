@@ -13,7 +13,7 @@ namespace DB
 
 namespace ServerSetting
 {
-extern const ServerSettingsBool storage_shared_set_join_use_inner_uuid;
+extern ServerSettingsBool storage_shared_set_join_use_inner_uuid;
 }
 
 CreateQueryUUIDs::CreateQueryUUIDs(const ASTCreateQuery & query, bool generate_random, bool force_random)

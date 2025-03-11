@@ -17,7 +17,7 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsBool optimize_respect_aliases;
+    extern SettingsBool optimize_respect_aliases;
 }
 
 namespace ErrorCodes

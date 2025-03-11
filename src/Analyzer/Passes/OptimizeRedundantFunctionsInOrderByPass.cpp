@@ -14,7 +14,7 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsBool optimize_redundant_functions_in_order_by;
+    extern SettingsBool optimize_redundant_functions_in_order_by;
 }
 
 namespace

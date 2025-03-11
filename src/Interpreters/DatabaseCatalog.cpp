@@ -55,11 +55,11 @@ namespace DB
 
 namespace ServerSetting
 {
-    extern const ServerSettingsUInt64 database_atomic_delay_before_drop_table_sec;
-    extern const ServerSettingsUInt64 database_catalog_drop_error_cooldown_sec;
-    extern const ServerSettingsUInt64 database_catalog_unused_dir_cleanup_period_sec;
-    extern const ServerSettingsUInt64 database_catalog_unused_dir_hide_timeout_sec;
-    extern const ServerSettingsUInt64 database_catalog_unused_dir_rm_timeout_sec;
+    extern ServerSettingsUInt64 database_atomic_delay_before_drop_table_sec;
+    extern ServerSettingsUInt64 database_catalog_drop_error_cooldown_sec;
+    extern ServerSettingsUInt64 database_catalog_unused_dir_cleanup_period_sec;
+    extern ServerSettingsUInt64 database_catalog_unused_dir_hide_timeout_sec;
+    extern ServerSettingsUInt64 database_catalog_unused_dir_rm_timeout_sec;
 }
 
 namespace ErrorCodes

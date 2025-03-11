@@ -10,10 +10,10 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsBool engine_file_skip_empty_files;
-    extern const SettingsBool engine_file_truncate_on_insert;
-    extern const SettingsSchemaInferenceMode schema_inference_mode;
-    extern const SettingsBool schema_inference_use_cache_for_file;
+    extern SettingsBool engine_file_skip_empty_files;
+    extern SettingsBool engine_file_truncate_on_insert;
+    extern SettingsSchemaInferenceMode schema_inference_mode;
+    extern SettingsBool schema_inference_use_cache_for_file;
 }
 
 namespace ErrorCodes

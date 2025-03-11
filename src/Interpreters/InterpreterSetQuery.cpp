@@ -19,7 +19,7 @@ namespace DB
 
 namespace Setting
 {
-    extern const SettingsDefaultTableEngine default_table_engine;
+    extern SettingsDefaultTableEngine default_table_engine;
 }
 
 BlockIO InterpreterSetQuery::execute()

@@ -43,10 +43,10 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsBool dictionary_use_async_executor;
-    extern const SettingsBool regexp_dict_allow_hyperscan;
-    extern const SettingsBool regexp_dict_flag_case_insensitive;
-    extern const SettingsBool regexp_dict_flag_dotall;
+    extern SettingsBool dictionary_use_async_executor;
+    extern SettingsBool regexp_dict_allow_hyperscan;
+    extern SettingsBool regexp_dict_flag_case_insensitive;
+    extern SettingsBool regexp_dict_flag_dotall;
 }
 
 namespace ErrorCodes

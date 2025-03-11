@@ -83,8 +83,8 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsBool allow_experimental_analyzer;
-    extern const SettingsBool insert_allow_materialized_columns;
+    extern SettingsBool allow_experimental_analyzer;
+    extern SettingsBool insert_allow_materialized_columns;
 }
 
 namespace ErrorCodes

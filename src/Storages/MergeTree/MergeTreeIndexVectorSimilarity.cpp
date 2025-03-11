@@ -39,12 +39,12 @@ namespace DB
 
 namespace Setting
 {
-    extern const SettingsUInt64 hnsw_candidate_list_size_for_search;
+    extern SettingsUInt64 hnsw_candidate_list_size_for_search;
 }
 
 namespace ServerSetting
 {
-    extern const ServerSettingsUInt64 max_build_vector_similarity_index_thread_pool_size;
+    extern ServerSettingsUInt64 max_build_vector_similarity_index_thread_pool_size;
 }
 
 namespace ErrorCodes

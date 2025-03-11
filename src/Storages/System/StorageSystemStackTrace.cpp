@@ -40,7 +40,7 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsMilliseconds storage_system_stack_trace_pipe_read_timeout_ms;
+    extern SettingsMilliseconds storage_system_stack_trace_pipe_read_timeout_ms;
 }
 
 namespace ErrorCodes

@@ -17,7 +17,7 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsBool optimize_rewrite_array_exists_to_has;
+    extern SettingsBool optimize_rewrite_array_exists_to_has;
 }
 
 namespace

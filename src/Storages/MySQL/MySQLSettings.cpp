@@ -14,7 +14,7 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsMySQLDataTypesSupport mysql_datatypes_support_level;
+    extern SettingsMySQLDataTypesSupport mysql_datatypes_support_level;
 }
 
 namespace ErrorCodes
@@ -31,14 +31,17 @@ namespace ErrorCodes
     DECLARE(UInt64, read_write_timeout, DBMS_DEFAULT_RECEIVE_TIMEOUT_SEC, "Read/write timeout (in seconds)", 0) \
     DECLARE(MySQLDataTypesSupport, mysql_datatypes_support_level, MySQLDataTypesSupportList{}, "Which MySQL types should be converted to corresponding ClickHouse types (rather than being represented as String). Can be empty or any combination of 'decimal' or 'datetime64'. When empty MySQL's DECIMAL and DATETIME/TIMESTAMP with non-zero precision are seen as String on ClickHouse's side.", 0) \
 
-DECLARE_SETTINGS_TRAITS(MySQLSettingsTraits, LIST_OF_MYSQL_SETTINGS)
+DECLARE_SETTINGS_TRAITS(MySQLSettingsTraits, LIST_OF_MYSQL_SETTINGS, MYSQL_SETTINGS_SUPPORTED_TYPES)
 IMPLEMENT_SETTINGS_TRAITS(MySQLSettingsTraits, LIST_OF_MYSQL_SETTINGS)
 
 struct MySQLSettingsImpl : public BaseSettings<MySQLSettingsTraits>
 {
 };
 
-#define INITIALIZE_SETTING_EXTERN(TYPE, NAME, DEFAULT, DESCRIPTION, FLAGS) MySQLSettings##TYPE NAME = &MySQLSettingsImpl ::NAME;
+MYSQL_SETTINGS_SUPPORTED_TYPES(MySQLSettings, IMPLEMENT_SETTING_SUBSCRIPT_OPERATOR)
+
+#define INITIALIZE_SETTING_EXTERN(TYPE, NAME, DEFAULT, DESCRIPTION, FLAGS) \
+    MySQLSettings##TYPE NAME = { &MySQLSettingsImpl ::data_##TYPE , &MySQLSettingsImpl :: position_##NAME };
 
 namespace MySQLSetting
 {
@@ -60,8 +63,6 @@ MySQLSettings::MySQLSettings(MySQLSettings && settings) noexcept : impl(std::mak
 }
 
 MySQLSettings::~MySQLSettings() = default;
-
-MYSQL_SETTINGS_SUPPORTED_TYPES(MySQLSettings, IMPLEMENT_SETTING_SUBSCRIPT_OPERATOR)
 
 
 void MySQLSettings::loadFromQuery(const ASTSetQuery & settings_def)
@@ -99,10 +100,10 @@ void MySQLSettings::loadFromQueryContext(ContextPtr context, ASTStorage & storag
 
     const Settings & settings = context->getQueryContext()->getSettingsRef();
 
-    if (settings[Setting::mysql_datatypes_support_level].value != impl->mysql_datatypes_support_level.value)
+    if (settings[Setting::mysql_datatypes_support_level].value != (*this)[MySQLSetting::mysql_datatypes_support_level].value)
     {
         static constexpr auto setting_name = "mysql_datatypes_support_level";
-        impl->mysql_datatypes_support_level = settings[Setting::mysql_datatypes_support_level];
+        (*this)[MySQLSetting::mysql_datatypes_support_level] = settings[Setting::mysql_datatypes_support_level];
 
         if (!storage_def.settings)
         {

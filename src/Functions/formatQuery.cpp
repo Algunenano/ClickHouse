@@ -15,11 +15,11 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsUInt64 max_parser_backtracks;
-    extern const SettingsUInt64 max_parser_depth;
-    extern const SettingsUInt64 max_query_size;
-    extern const SettingsBool print_pretty_type_names;
-    extern const SettingsBool implicit_select;
+    extern SettingsUInt64 max_parser_backtracks;
+    extern SettingsUInt64 max_parser_depth;
+    extern SettingsUInt64 max_query_size;
+    extern SettingsBool print_pretty_type_names;
+    extern SettingsBool implicit_select;
 }
 
 namespace ErrorCodes

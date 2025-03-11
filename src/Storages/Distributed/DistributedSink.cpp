@@ -59,29 +59,29 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsBool allow_experimental_codecs;
-    extern const SettingsBool allow_suspicious_codecs;
-    extern const SettingsMilliseconds distributed_background_insert_sleep_time_ms;
-    extern const SettingsBool distributed_insert_skip_read_only_replicas;
-    extern const SettingsBool enable_deflate_qpl_codec;
-    extern const SettingsBool enable_zstd_qat_codec;
-    extern const SettingsBool insert_allow_materialized_columns;
-    extern const SettingsBool insert_distributed_one_random_shard;
-    extern const SettingsUInt64 insert_shard_id;
-    extern const SettingsUInt64 max_distributed_connections;
-    extern const SettingsUInt64 max_distributed_depth;
-    extern const SettingsUInt64 max_network_bandwidth;
-    extern const SettingsUInt64 max_network_bytes;
-    extern const SettingsString network_compression_method;
-    extern const SettingsInt64 network_zstd_compression_level;
-    extern const SettingsBool prefer_localhost_replica;
-    extern const SettingsBool use_compact_format_in_distributed_parts_names;
+    extern SettingsBool allow_experimental_codecs;
+    extern SettingsBool allow_suspicious_codecs;
+    extern SettingsMilliseconds distributed_background_insert_sleep_time_ms;
+    extern SettingsBool distributed_insert_skip_read_only_replicas;
+    extern SettingsBool enable_deflate_qpl_codec;
+    extern SettingsBool enable_zstd_qat_codec;
+    extern SettingsBool insert_allow_materialized_columns;
+    extern SettingsBool insert_distributed_one_random_shard;
+    extern SettingsUInt64 insert_shard_id;
+    extern SettingsUInt64 max_distributed_connections;
+    extern SettingsUInt64 max_distributed_depth;
+    extern SettingsUInt64 max_network_bandwidth;
+    extern SettingsUInt64 max_network_bytes;
+    extern SettingsString network_compression_method;
+    extern SettingsInt64 network_zstd_compression_level;
+    extern SettingsBool prefer_localhost_replica;
+    extern SettingsBool use_compact_format_in_distributed_parts_names;
 }
 
 namespace DistributedSetting
 {
-    extern const DistributedSettingsBool fsync_after_insert;
-    extern const DistributedSettingsBool fsync_directories;
+    extern DistributedSettingsBool fsync_after_insert;
+    extern DistributedSettingsBool fsync_directories;
 }
 
 namespace ErrorCodes

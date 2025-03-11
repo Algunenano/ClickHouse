@@ -73,56 +73,56 @@ namespace DB
 
 namespace Setting
 {
-    extern const SettingsBool allow_introspection_functions;
-    extern const SettingsBool implicit_select;
-    extern const SettingsLocalFSReadMethod storage_file_read_method;
+    extern SettingsBool allow_introspection_functions;
+    extern SettingsBool implicit_select;
+    extern SettingsLocalFSReadMethod storage_file_read_method;
 }
 
 namespace ServerSetting
 {
-    extern const ServerSettingsUInt32 allow_feature_tier;
-    extern const ServerSettingsDouble cache_size_to_ram_max_ratio;
-    extern const ServerSettingsUInt64 compiled_expression_cache_elements_size;
-    extern const ServerSettingsUInt64 compiled_expression_cache_size;
-    extern const ServerSettingsUInt64 database_catalog_drop_table_concurrency;
-    extern const ServerSettingsString default_database;
-    extern const ServerSettingsString index_mark_cache_policy;
-    extern const ServerSettingsUInt64 index_mark_cache_size;
-    extern const ServerSettingsDouble index_mark_cache_size_ratio;
-    extern const ServerSettingsString index_uncompressed_cache_policy;
-    extern const ServerSettingsUInt64 index_uncompressed_cache_size;
-    extern const ServerSettingsDouble index_uncompressed_cache_size_ratio;
-    extern const ServerSettingsString skipping_index_cache_policy;
-    extern const ServerSettingsUInt64 skipping_index_cache_size;
-    extern const ServerSettingsUInt64 skipping_index_cache_max_entries;
-    extern const ServerSettingsDouble skipping_index_cache_size_ratio;
-    extern const ServerSettingsUInt64 io_thread_pool_queue_size;
-    extern const ServerSettingsString mark_cache_policy;
-    extern const ServerSettingsUInt64 mark_cache_size;
-    extern const ServerSettingsDouble mark_cache_size_ratio;
-    extern const ServerSettingsUInt64 max_active_parts_loading_thread_pool_size;
-    extern const ServerSettingsUInt64 max_io_thread_pool_free_size;
-    extern const ServerSettingsUInt64 max_io_thread_pool_size;
-    extern const ServerSettingsUInt64 max_outdated_parts_loading_thread_pool_size;
-    extern const ServerSettingsUInt64 max_parts_cleaning_thread_pool_size;
-    extern const ServerSettingsUInt64 max_server_memory_usage;
-    extern const ServerSettingsDouble max_server_memory_usage_to_ram_ratio;
-    extern const ServerSettingsUInt64 max_thread_pool_free_size;
-    extern const ServerSettingsUInt64 max_thread_pool_size;
-    extern const ServerSettingsUInt64 max_unexpected_parts_loading_thread_pool_size;
-    extern const ServerSettingsUInt64 mmap_cache_size;
-    extern const ServerSettingsBool show_addresses_in_stack_traces;
-    extern const ServerSettingsUInt64 thread_pool_queue_size;
-    extern const ServerSettingsString uncompressed_cache_policy;
-    extern const ServerSettingsUInt64 uncompressed_cache_size;
-    extern const ServerSettingsDouble uncompressed_cache_size_ratio;
-    extern const ServerSettingsString primary_index_cache_policy;
-    extern const ServerSettingsUInt64 primary_index_cache_size;
-    extern const ServerSettingsDouble primary_index_cache_size_ratio;
-    extern const ServerSettingsBool use_legacy_mongodb_integration;
-    extern const ServerSettingsUInt64 max_prefixes_deserialization_thread_pool_size;
-    extern const ServerSettingsUInt64 max_prefixes_deserialization_thread_pool_free_size;
-    extern const ServerSettingsUInt64 prefixes_deserialization_thread_pool_thread_pool_queue_size;
+    extern ServerSettingsUInt32 allow_feature_tier;
+    extern ServerSettingsDouble cache_size_to_ram_max_ratio;
+    extern ServerSettingsUInt64 compiled_expression_cache_elements_size;
+    extern ServerSettingsUInt64 compiled_expression_cache_size;
+    extern ServerSettingsUInt64 database_catalog_drop_table_concurrency;
+    extern ServerSettingsString default_database;
+    extern ServerSettingsString index_mark_cache_policy;
+    extern ServerSettingsUInt64 index_mark_cache_size;
+    extern ServerSettingsDouble index_mark_cache_size_ratio;
+    extern ServerSettingsString index_uncompressed_cache_policy;
+    extern ServerSettingsUInt64 index_uncompressed_cache_size;
+    extern ServerSettingsDouble index_uncompressed_cache_size_ratio;
+    extern ServerSettingsString skipping_index_cache_policy;
+    extern ServerSettingsUInt64 skipping_index_cache_size;
+    extern ServerSettingsUInt64 skipping_index_cache_max_entries;
+    extern ServerSettingsDouble skipping_index_cache_size_ratio;
+    extern ServerSettingsUInt64 io_thread_pool_queue_size;
+    extern ServerSettingsString mark_cache_policy;
+    extern ServerSettingsUInt64 mark_cache_size;
+    extern ServerSettingsDouble mark_cache_size_ratio;
+    extern ServerSettingsUInt64 max_active_parts_loading_thread_pool_size;
+    extern ServerSettingsUInt64 max_io_thread_pool_free_size;
+    extern ServerSettingsUInt64 max_io_thread_pool_size;
+    extern ServerSettingsUInt64 max_outdated_parts_loading_thread_pool_size;
+    extern ServerSettingsUInt64 max_parts_cleaning_thread_pool_size;
+    extern ServerSettingsUInt64 max_server_memory_usage;
+    extern ServerSettingsDouble max_server_memory_usage_to_ram_ratio;
+    extern ServerSettingsUInt64 max_thread_pool_free_size;
+    extern ServerSettingsUInt64 max_thread_pool_size;
+    extern ServerSettingsUInt64 max_unexpected_parts_loading_thread_pool_size;
+    extern ServerSettingsUInt64 mmap_cache_size;
+    extern ServerSettingsBool show_addresses_in_stack_traces;
+    extern ServerSettingsUInt64 thread_pool_queue_size;
+    extern ServerSettingsString uncompressed_cache_policy;
+    extern ServerSettingsUInt64 uncompressed_cache_size;
+    extern ServerSettingsDouble uncompressed_cache_size_ratio;
+    extern ServerSettingsString primary_index_cache_policy;
+    extern ServerSettingsUInt64 primary_index_cache_size;
+    extern ServerSettingsDouble primary_index_cache_size_ratio;
+    extern ServerSettingsBool use_legacy_mongodb_integration;
+    extern ServerSettingsUInt64 max_prefixes_deserialization_thread_pool_size;
+    extern ServerSettingsUInt64 max_prefixes_deserialization_thread_pool_free_size;
+    extern ServerSettingsUInt64 prefixes_deserialization_thread_pool_thread_pool_queue_size;
 }
 
 namespace ErrorCodes

@@ -10,8 +10,8 @@ namespace DB
 {
 namespace Setting
 {
-extern const SettingsBool database_replicated_enforce_synchronous_settings;
-extern const SettingsDistributedDDLOutputMode distributed_ddl_output_mode;
+extern SettingsBool database_replicated_enforce_synchronous_settings;
+extern SettingsDistributedDDLOutputMode distributed_ddl_output_mode;
 }
 namespace ErrorCodes
 {

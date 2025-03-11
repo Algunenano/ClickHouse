@@ -25,26 +25,26 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsBool allow_archive_path_syntax;
-    extern const SettingsBool s3_create_new_file_on_insert;
-    extern const SettingsBool s3_ignore_file_doesnt_exist;
-    extern const SettingsUInt64 s3_list_object_keys_size;
-    extern const SettingsBool s3_skip_empty_files;
-    extern const SettingsBool s3_truncate_on_insert;
-    extern const SettingsBool s3_throw_on_zero_files_match;
-    extern const SettingsBool s3_validate_request_settings;
-    extern const SettingsSchemaInferenceMode schema_inference_mode;
-    extern const SettingsBool schema_inference_use_cache_for_s3;
+    extern SettingsBool allow_archive_path_syntax;
+    extern SettingsBool s3_create_new_file_on_insert;
+    extern SettingsBool s3_ignore_file_doesnt_exist;
+    extern SettingsUInt64 s3_list_object_keys_size;
+    extern SettingsBool s3_skip_empty_files;
+    extern SettingsBool s3_truncate_on_insert;
+    extern SettingsBool s3_throw_on_zero_files_match;
+    extern SettingsBool s3_validate_request_settings;
+    extern SettingsSchemaInferenceMode schema_inference_mode;
+    extern SettingsBool schema_inference_use_cache_for_s3;
 }
 
 namespace S3AuthSetting
 {
-    extern const S3AuthSettingsString access_key_id;
-    extern const S3AuthSettingsUInt64 expiration_window_seconds;
-    extern const S3AuthSettingsBool no_sign_request;
-    extern const S3AuthSettingsString secret_access_key;
-    extern const S3AuthSettingsString session_token;
-    extern const S3AuthSettingsBool use_environment_credentials;
+    extern S3AuthSettingsString access_key_id;
+    extern S3AuthSettingsUInt64 expiration_window_seconds;
+    extern S3AuthSettingsBool no_sign_request;
+    extern S3AuthSettingsString secret_access_key;
+    extern S3AuthSettingsString session_token;
+    extern S3AuthSettingsBool use_environment_credentials;
 }
 
 namespace ErrorCodes
@@ -183,7 +183,7 @@ void StorageS3Configuration::fromNamedCollection(const NamedCollection & collect
     compression_method = collection.getOrDefault<String>("compression_method", collection.getOrDefault<String>("compression", "auto"));
     structure = collection.getOrDefault<String>("structure", "auto");
 
-    request_settings = S3::S3RequestSettings(collection, settings, /* validate_settings */true);
+    request_settings = S3RequestSettings(collection, settings, /* validate_settings */true);
 
     static_configuration = !auth_settings[S3AuthSetting::access_key_id].value.empty() || auth_settings[S3AuthSetting::no_sign_request].changed;
 

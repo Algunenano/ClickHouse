@@ -21,8 +21,8 @@ namespace DB
 {
 namespace Setting
 {
-extern const SettingsUInt64 max_parser_backtracks;
-extern const SettingsUInt64 max_parser_depth;
+extern SettingsUInt64 max_parser_backtracks;
+extern SettingsUInt64 max_parser_depth;
 }
 
 namespace ErrorCodes

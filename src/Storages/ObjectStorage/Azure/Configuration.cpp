@@ -23,14 +23,14 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsBool azure_create_new_file_on_insert;
-    extern const SettingsBool azure_ignore_file_doesnt_exist;
-    extern const SettingsUInt64 azure_list_object_keys_size;
-    extern const SettingsBool azure_skip_empty_files;
-    extern const SettingsBool azure_throw_on_zero_files_match;
-    extern const SettingsBool azure_truncate_on_insert;
-    extern const SettingsSchemaInferenceMode schema_inference_mode;
-    extern const SettingsBool schema_inference_use_cache_for_azure;
+    extern SettingsBool azure_create_new_file_on_insert;
+    extern SettingsBool azure_ignore_file_doesnt_exist;
+    extern SettingsUInt64 azure_list_object_keys_size;
+    extern SettingsBool azure_skip_empty_files;
+    extern SettingsBool azure_throw_on_zero_files_match;
+    extern SettingsBool azure_truncate_on_insert;
+    extern SettingsSchemaInferenceMode schema_inference_mode;
+    extern SettingsBool schema_inference_use_cache_for_azure;
 }
 
 namespace ErrorCodes

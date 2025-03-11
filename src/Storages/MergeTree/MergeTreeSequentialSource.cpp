@@ -28,7 +28,7 @@ namespace ErrorCodes
 
 namespace MergeTreeSetting
 {
-    extern const MergeTreeSettingsBool force_read_through_cache_for_merges;
+    extern MergeTreeSettingsBool force_read_through_cache_for_merges;
 }
 
 /// Lightweight (in terms of logic) stream for reading single part from

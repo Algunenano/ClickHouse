@@ -17,19 +17,19 @@ namespace DB
 
 namespace MergeTreeSetting
 {
-    extern const MergeTreeSettingsUInt64 cleanup_delay_period;
-    extern const MergeTreeSettingsUInt64 cleanup_delay_period_random_add;
-    extern const MergeTreeSettingsUInt64 cleanup_thread_preferred_points_per_iteration;
-    extern const MergeTreeSettingsUInt64 finished_mutations_to_keep;
-    extern const MergeTreeSettingsSeconds lock_acquire_timeout_for_background_operations;
-    extern const MergeTreeSettingsUInt64 max_cleanup_delay_period;
-    extern const MergeTreeSettingsUInt64 max_replicated_logs_to_keep;
-    extern const MergeTreeSettingsUInt64 min_replicated_logs_to_keep;
-    extern const MergeTreeSettingsUInt64 replicated_deduplication_window;
-    extern const MergeTreeSettingsUInt64 replicated_deduplication_window_for_async_inserts;
-    extern const MergeTreeSettingsUInt64 replicated_deduplication_window_seconds;
-    extern const MergeTreeSettingsUInt64 replicated_deduplication_window_seconds_for_async_inserts;
-    extern const MergeTreeSettingsSeconds temporary_directories_lifetime;
+    extern MergeTreeSettingsUInt64 cleanup_delay_period;
+    extern MergeTreeSettingsUInt64 cleanup_delay_period_random_add;
+    extern MergeTreeSettingsUInt64 cleanup_thread_preferred_points_per_iteration;
+    extern MergeTreeSettingsUInt64 finished_mutations_to_keep;
+    extern MergeTreeSettingsSeconds lock_acquire_timeout_for_background_operations;
+    extern MergeTreeSettingsUInt64 max_cleanup_delay_period;
+    extern MergeTreeSettingsUInt64 max_replicated_logs_to_keep;
+    extern MergeTreeSettingsUInt64 min_replicated_logs_to_keep;
+    extern MergeTreeSettingsUInt64 replicated_deduplication_window;
+    extern MergeTreeSettingsUInt64 replicated_deduplication_window_for_async_inserts;
+    extern MergeTreeSettingsUInt64 replicated_deduplication_window_seconds;
+    extern MergeTreeSettingsUInt64 replicated_deduplication_window_seconds_for_async_inserts;
+    extern MergeTreeSettingsSeconds temporary_directories_lifetime;
 }
 
 namespace ErrorCodes

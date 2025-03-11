@@ -15,18 +15,18 @@ namespace ErrorCodes
 
 namespace MergeTreeSetting
 {
-    extern const MergeTreeSettingsUInt64 max_bytes_to_merge_at_max_space_in_pool;
-    extern const MergeTreeSettingsUInt64 max_parts_to_merge_at_once;
-    extern const MergeTreeSettingsUInt64 merge_selector_blurry_base_scale_factor;
-    extern const MergeTreeSettingsUInt64 merge_selector_window_size;
-    extern const MergeTreeSettingsBool min_age_to_force_merge_on_partition_only;
-    extern const MergeTreeSettingsUInt64 min_age_to_force_merge_seconds;
-    extern const MergeTreeSettingsBool ttl_only_drop_parts;
-    extern const MergeTreeSettingsUInt64 parts_to_throw_insert;
-    extern const MergeTreeSettingsMergeSelectorAlgorithm merge_selector_algorithm;
-    extern const MergeTreeSettingsBool merge_selector_enable_heuristic_to_remove_small_parts_at_right;
-    extern const MergeTreeSettingsFloat merge_selector_base;
-    extern const MergeTreeSettingsUInt64 min_parts_to_merge_at_once;
+    extern MergeTreeSettingsUInt64 max_bytes_to_merge_at_max_space_in_pool;
+    extern MergeTreeSettingsUInt64 max_parts_to_merge_at_once;
+    extern MergeTreeSettingsUInt64 merge_selector_blurry_base_scale_factor;
+    extern MergeTreeSettingsUInt64 merge_selector_window_size;
+    extern MergeTreeSettingsBool min_age_to_force_merge_on_partition_only;
+    extern MergeTreeSettingsUInt64 min_age_to_force_merge_seconds;
+    extern MergeTreeSettingsBool ttl_only_drop_parts;
+    extern MergeTreeSettingsUInt64 parts_to_throw_insert;
+    extern MergeTreeSettingsMergeSelectorAlgorithm merge_selector_algorithm;
+    extern MergeTreeSettingsBool merge_selector_enable_heuristic_to_remove_small_parts_at_right;
+    extern MergeTreeSettingsFloat merge_selector_base;
+    extern MergeTreeSettingsUInt64 min_parts_to_merge_at_once;
 }
 
 namespace

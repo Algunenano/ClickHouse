@@ -58,39 +58,39 @@ namespace FailPoints
 
 namespace Setting
 {
-    extern const SettingsBool allow_experimental_analyzer;
-    extern const SettingsBool allow_suspicious_primary_key;
-    extern const SettingsUInt64 alter_sync;
-    extern const SettingsSeconds lock_acquire_timeout;
-    extern const SettingsBool materialize_ttl_after_modify;
-    extern const SettingsUInt64 max_expanded_ast_elements;
-    extern const SettingsUInt64 max_partitions_per_insert_block;
-    extern const SettingsUInt64 max_table_size_to_drop;
-    extern const SettingsUInt64 mutations_sync;
-    extern const SettingsBool optimize_skip_merged_partitions;
-    extern const SettingsBool optimize_throw_if_noop;
-    extern const SettingsBool parallel_replicas_for_non_replicated_merge_tree;
-    extern const SettingsBool throw_on_unsupported_query_inside_transaction;
-    extern const SettingsUInt64 max_parts_to_move;
+    extern SettingsBool allow_experimental_analyzer;
+    extern SettingsBool allow_suspicious_primary_key;
+    extern SettingsUInt64 alter_sync;
+    extern SettingsSeconds lock_acquire_timeout;
+    extern SettingsBool materialize_ttl_after_modify;
+    extern SettingsUInt64 max_expanded_ast_elements;
+    extern SettingsUInt64 max_partitions_per_insert_block;
+    extern SettingsUInt64 max_table_size_to_drop;
+    extern SettingsUInt64 mutations_sync;
+    extern SettingsBool optimize_skip_merged_partitions;
+    extern SettingsBool optimize_throw_if_noop;
+    extern SettingsBool parallel_replicas_for_non_replicated_merge_tree;
+    extern SettingsBool throw_on_unsupported_query_inside_transaction;
+    extern SettingsUInt64 max_parts_to_move;
 }
 
 namespace MergeTreeSetting
 {
-    extern const MergeTreeSettingsBool allow_experimental_replacing_merge_with_cleanup;
-    extern const MergeTreeSettingsBool always_use_copy_instead_of_hardlinks;
-    extern const MergeTreeSettingsBool assign_part_uuids;
-    extern const MergeTreeSettingsDeduplicateMergeProjectionMode deduplicate_merge_projection_mode;
-    extern const MergeTreeSettingsBool enable_replacing_merge_with_cleanup_for_min_age_to_force_merge;
-    extern const MergeTreeSettingsUInt64 finished_mutations_to_keep;
-    extern const MergeTreeSettingsSeconds lock_acquire_timeout_for_background_operations;
-    extern const MergeTreeSettingsBool min_age_to_force_merge_on_partition_only;
-    extern const MergeTreeSettingsUInt64 min_age_to_force_merge_seconds;
-    extern const MergeTreeSettingsUInt64 max_number_of_merges_with_ttl_in_pool;
-    extern const MergeTreeSettingsUInt64 max_postpone_time_for_failed_mutations_ms;
-    extern const MergeTreeSettingsUInt64 merge_tree_clear_old_parts_interval_seconds;
-    extern const MergeTreeSettingsUInt64 merge_tree_clear_old_temporary_directories_interval_seconds;
-    extern const MergeTreeSettingsUInt64 non_replicated_deduplication_window;
-    extern const MergeTreeSettingsSeconds temporary_directories_lifetime;
+    extern MergeTreeSettingsBool allow_experimental_replacing_merge_with_cleanup;
+    extern MergeTreeSettingsBool always_use_copy_instead_of_hardlinks;
+    extern MergeTreeSettingsBool assign_part_uuids;
+    extern MergeTreeSettingsDeduplicateMergeProjectionMode deduplicate_merge_projection_mode;
+    extern MergeTreeSettingsBool enable_replacing_merge_with_cleanup_for_min_age_to_force_merge;
+    extern MergeTreeSettingsUInt64 finished_mutations_to_keep;
+    extern MergeTreeSettingsSeconds lock_acquire_timeout_for_background_operations;
+    extern MergeTreeSettingsBool min_age_to_force_merge_on_partition_only;
+    extern MergeTreeSettingsUInt64 min_age_to_force_merge_seconds;
+    extern MergeTreeSettingsUInt64 max_number_of_merges_with_ttl_in_pool;
+    extern MergeTreeSettingsUInt64 max_postpone_time_for_failed_mutations_ms;
+    extern MergeTreeSettingsUInt64 merge_tree_clear_old_parts_interval_seconds;
+    extern MergeTreeSettingsUInt64 merge_tree_clear_old_temporary_directories_interval_seconds;
+    extern MergeTreeSettingsUInt64 non_replicated_deduplication_window;
+    extern MergeTreeSettingsSeconds temporary_directories_lifetime;
 }
 
 namespace ErrorCodes

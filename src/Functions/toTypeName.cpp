@@ -10,7 +10,7 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsBool print_pretty_type_names;
+    extern SettingsBool print_pretty_type_names;
 }
 
 namespace

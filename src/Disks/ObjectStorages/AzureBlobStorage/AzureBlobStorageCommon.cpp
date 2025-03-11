@@ -27,22 +27,22 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsUInt64 azure_max_single_part_upload_size;
-    extern const SettingsUInt64 azure_max_single_read_retries;
-    extern const SettingsUInt64 azure_list_object_keys_size;
-    extern const SettingsUInt64 azure_min_upload_part_size;
-    extern const SettingsUInt64 azure_max_upload_part_size;
-    extern const SettingsUInt64 azure_max_single_part_copy_size;
-    extern const SettingsUInt64 azure_max_blocks_in_multipart_upload;
-    extern const SettingsUInt64 azure_max_unexpected_write_error_retries;
-    extern const SettingsUInt64 azure_max_inflight_parts_for_one_file;
-    extern const SettingsUInt64 azure_strict_upload_part_size;
-    extern const SettingsUInt64 azure_upload_part_size_multiply_factor;
-    extern const SettingsUInt64 azure_upload_part_size_multiply_parts_count_threshold;
-    extern const SettingsUInt64 azure_sdk_max_retries;
-    extern const SettingsUInt64 azure_sdk_retry_initial_backoff_ms;
-    extern const SettingsUInt64 azure_sdk_retry_max_backoff_ms;
-    extern const SettingsBool azure_check_objects_after_upload;
+    extern SettingsUInt64 azure_max_single_part_upload_size;
+    extern SettingsUInt64 azure_max_single_read_retries;
+    extern SettingsUInt64 azure_list_object_keys_size;
+    extern SettingsUInt64 azure_min_upload_part_size;
+    extern SettingsUInt64 azure_max_upload_part_size;
+    extern SettingsUInt64 azure_max_single_part_copy_size;
+    extern SettingsUInt64 azure_max_blocks_in_multipart_upload;
+    extern SettingsUInt64 azure_max_unexpected_write_error_retries;
+    extern SettingsUInt64 azure_max_inflight_parts_for_one_file;
+    extern SettingsUInt64 azure_strict_upload_part_size;
+    extern SettingsUInt64 azure_upload_part_size_multiply_factor;
+    extern SettingsUInt64 azure_upload_part_size_multiply_parts_count_threshold;
+    extern SettingsUInt64 azure_sdk_max_retries;
+    extern SettingsUInt64 azure_sdk_retry_initial_backoff_ms;
+    extern SettingsUInt64 azure_sdk_retry_max_backoff_ms;
+    extern SettingsBool azure_check_objects_after_upload;
 }
 
 namespace ErrorCodes

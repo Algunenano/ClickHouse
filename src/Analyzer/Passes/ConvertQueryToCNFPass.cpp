@@ -21,10 +21,10 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsBool convert_query_to_cnf;
-    extern const SettingsBool optimize_append_index;
-    extern const SettingsBool optimize_substitute_columns;
-    extern const SettingsBool optimize_using_constraints;
+    extern SettingsBool convert_query_to_cnf;
+    extern SettingsBool optimize_append_index;
+    extern SettingsBool optimize_substitute_columns;
+    extern SettingsBool optimize_using_constraints;
 }
 
 namespace

@@ -12,7 +12,7 @@ namespace ErrorCodes
 
 namespace FileCacheSetting
 {
-    extern const FileCacheSettingsString path;
+    extern FileCacheSettingsString path;
 }
 
 FileCacheFactory::FileCacheData::FileCacheData(

@@ -19,7 +19,7 @@ namespace DB
 
 namespace Setting
 {
-    extern const SettingsUInt64 extract_key_value_pairs_max_pairs_per_row;
+    extern SettingsUInt64 extract_key_value_pairs_max_pairs_per_row;
 }
 
 template <typename Name, bool WITH_ESCAPING>

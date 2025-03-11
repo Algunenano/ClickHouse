@@ -43,14 +43,14 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsUInt64 glob_expansion_max_elements;
-    extern const SettingsUInt64 max_parser_backtracks;
-    extern const SettingsUInt64 max_parser_depth;
+    extern SettingsUInt64 glob_expansion_max_elements;
+    extern SettingsUInt64 max_parser_backtracks;
+    extern SettingsUInt64 max_parser_depth;
 }
 
 namespace MySQLSetting
 {
-    extern const MySQLSettingsMySQLDataTypesSupport mysql_datatypes_support_level;
+    extern MySQLSettingsMySQLDataTypesSupport mysql_datatypes_support_level;
 }
 
 namespace ErrorCodes

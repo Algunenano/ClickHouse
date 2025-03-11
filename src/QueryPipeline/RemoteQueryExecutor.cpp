@@ -42,13 +42,13 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsBool enable_scalar_subquery_optimization;
-    extern const SettingsSeconds max_execution_time;
-    extern const SettingsSeconds max_estimated_execution_time;
-    extern const SettingsBool skip_unavailable_shards;
-    extern const SettingsOverflowMode timeout_overflow_mode;
-    extern const SettingsBool use_hedged_requests;
-    extern const SettingsBool push_external_roles_in_interserver_queries;
+    extern SettingsBool enable_scalar_subquery_optimization;
+    extern SettingsSeconds max_execution_time;
+    extern SettingsSeconds max_estimated_execution_time;
+    extern SettingsBool skip_unavailable_shards;
+    extern SettingsOverflowMode timeout_overflow_mode;
+    extern SettingsBool use_hedged_requests;
+    extern SettingsBool push_external_roles_in_interserver_queries;
 }
 
 namespace ErrorCodes

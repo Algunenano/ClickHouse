@@ -42,14 +42,14 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsBool allow_experimental_materialized_postgresql_table;
-    extern const SettingsSeconds lock_acquire_timeout;
-    extern const SettingsUInt64 postgresql_connection_attempt_timeout;
+    extern SettingsBool allow_experimental_materialized_postgresql_table;
+    extern SettingsSeconds lock_acquire_timeout;
+    extern SettingsUInt64 postgresql_connection_attempt_timeout;
 }
 
 namespace MaterializedPostgreSQLSetting
 {
-    extern const MaterializedPostgreSQLSettingsString materialized_postgresql_tables_list;
+    extern MaterializedPostgreSQLSettingsString materialized_postgresql_tables_list;
 }
 
 namespace ErrorCodes

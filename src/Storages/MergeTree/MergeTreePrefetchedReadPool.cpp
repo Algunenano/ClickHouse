@@ -27,12 +27,12 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsUInt64 filesystem_prefetches_limit;
-    extern const SettingsUInt64 filesystem_prefetch_max_memory_usage;
-    extern const SettingsUInt64 filesystem_prefetch_step_marks;
-    extern const SettingsUInt64 filesystem_prefetch_step_bytes;
-    extern const SettingsBool merge_tree_determine_task_size_by_prewhere_columns;
-    extern const SettingsUInt64 prefetch_buffer_size;
+    extern SettingsUInt64 filesystem_prefetches_limit;
+    extern SettingsUInt64 filesystem_prefetch_max_memory_usage;
+    extern SettingsUInt64 filesystem_prefetch_step_marks;
+    extern SettingsUInt64 filesystem_prefetch_step_bytes;
+    extern SettingsBool merge_tree_determine_task_size_by_prewhere_columns;
+    extern SettingsUInt64 prefetch_buffer_size;
 }
 
 namespace ErrorCodes

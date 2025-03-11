@@ -27,7 +27,7 @@ namespace DB
 
 namespace Setting
 {
-extern const SettingsUInt64 function_sleep_max_microseconds_per_block;
+extern SettingsUInt64 function_sleep_max_microseconds_per_block;
 }
 
 namespace ErrorCodes

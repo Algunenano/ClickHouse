@@ -6413,11 +6413,11 @@ bool Settings::operator==(const Settings & other) const
 COMMON_SETTINGS_SUPPORTED_TYPES(Settings, IMPLEMENT_SETTING_SUBSCRIPT_OPERATOR)
 
 #define INITIALIZE_SETTING_EXTERN(TYPE, NAME, DEFAULT, DESCRIPTION, FLAGS) \
-    Settings ##TYPE NAME = { &SettingsImpl ::data_##TYPE , & SettingsImpl :: position_##NAME};
+    Settings ##TYPE NAME = { &SettingsImpl ::data_##TYPE , &SettingsImpl :: position_##NAME };
 
 namespace Setting
 {
-    LIST_OF_SETTINGS(INITIALIZE_SETTING_EXTERN, SKIP_ALIAS)  /// NOLINT (misc-use-internal-linkage)
+    LIST_OF_SETTINGS(INITIALIZE_SETTING_EXTERN, SKIP_ALIAS)
 }
 
 #undef INITIALIZE_SETTING_EXTERN

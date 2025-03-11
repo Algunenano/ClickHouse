@@ -82,39 +82,39 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsMap additional_table_filters;
-    extern const SettingsUInt64 allow_experimental_parallel_reading_from_replicas;
-    extern const SettingsBool allow_experimental_query_deduplication;
-    extern const SettingsBool async_socket_for_remote;
-    extern const SettingsBool empty_result_for_aggregation_by_empty_set;
-    extern const SettingsBool enable_unaligned_array_join;
-    extern const SettingsBool join_use_nulls;
-    extern const SettingsBool query_plan_use_new_logical_join_step;
-    extern const SettingsUInt64 max_block_size;
-    extern const SettingsUInt64 max_columns_to_read;
-    extern const SettingsUInt64 max_distributed_connections;
-    extern const SettingsUInt64 max_rows_in_set_to_optimize_join;
-    extern const SettingsUInt64 max_parser_backtracks;
-    extern const SettingsUInt64 max_parser_depth;
-    extern const SettingsUInt64 max_query_size;
-    extern const SettingsNonZeroUInt64 max_parallel_replicas;
-    extern const SettingsFloat max_streams_to_max_threads_ratio;
-    extern const SettingsMaxThreads max_threads;
-    extern const SettingsBool optimize_sorting_by_input_stream_properties;
-    extern const SettingsBool optimize_trivial_count_query;
-    extern const SettingsUInt64 parallel_replicas_count;
-    extern const SettingsString parallel_replicas_custom_key;
-    extern const SettingsParallelReplicasMode parallel_replicas_mode;
-    extern const SettingsUInt64 parallel_replicas_custom_key_range_lower;
-    extern const SettingsUInt64 parallel_replicas_custom_key_range_upper;
-    extern const SettingsBool parallel_replicas_for_non_replicated_merge_tree;
-    extern const SettingsUInt64 parallel_replicas_min_number_of_rows_per_replica;
-    extern const SettingsUInt64 parallel_replica_offset;
-    extern const SettingsBool optimize_move_to_prewhere;
-    extern const SettingsBool optimize_move_to_prewhere_if_final;
-    extern const SettingsBool use_concurrency_control;
-    extern const SettingsBoolAuto query_plan_join_swap_table;
-    extern const SettingsUInt64 min_joined_block_size_bytes;
+    extern SettingsMap additional_table_filters;
+    extern SettingsUInt64 allow_experimental_parallel_reading_from_replicas;
+    extern SettingsBool allow_experimental_query_deduplication;
+    extern SettingsBool async_socket_for_remote;
+    extern SettingsBool empty_result_for_aggregation_by_empty_set;
+    extern SettingsBool enable_unaligned_array_join;
+    extern SettingsBool join_use_nulls;
+    extern SettingsBool query_plan_use_new_logical_join_step;
+    extern SettingsUInt64 max_block_size;
+    extern SettingsUInt64 max_columns_to_read;
+    extern SettingsUInt64 max_distributed_connections;
+    extern SettingsUInt64 max_rows_in_set_to_optimize_join;
+    extern SettingsUInt64 max_parser_backtracks;
+    extern SettingsUInt64 max_parser_depth;
+    extern SettingsUInt64 max_query_size;
+    extern SettingsNonZeroUInt64 max_parallel_replicas;
+    extern SettingsFloat max_streams_to_max_threads_ratio;
+    extern SettingsMaxThreads max_threads;
+    extern SettingsBool optimize_sorting_by_input_stream_properties;
+    extern SettingsBool optimize_trivial_count_query;
+    extern SettingsUInt64 parallel_replicas_count;
+    extern SettingsString parallel_replicas_custom_key;
+    extern SettingsParallelReplicasMode parallel_replicas_mode;
+    extern SettingsUInt64 parallel_replicas_custom_key_range_lower;
+    extern SettingsUInt64 parallel_replicas_custom_key_range_upper;
+    extern SettingsBool parallel_replicas_for_non_replicated_merge_tree;
+    extern SettingsUInt64 parallel_replicas_min_number_of_rows_per_replica;
+    extern SettingsUInt64 parallel_replica_offset;
+    extern SettingsBool optimize_move_to_prewhere;
+    extern SettingsBool optimize_move_to_prewhere_if_final;
+    extern SettingsBool use_concurrency_control;
+    extern SettingsBoolAuto query_plan_join_swap_table;
+    extern SettingsUInt64 min_joined_block_size_bytes;
 }
 
 namespace ErrorCodes

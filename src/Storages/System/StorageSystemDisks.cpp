@@ -11,7 +11,7 @@ namespace DB
 
 namespace FileCacheSetting
 {
-    extern const FileCacheSettingsString path;
+    extern FileCacheSettingsString path;
 }
 
 StorageSystemDisks::StorageSystemDisks(const StorageID & table_id_)

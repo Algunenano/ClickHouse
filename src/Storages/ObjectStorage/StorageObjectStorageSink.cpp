@@ -10,8 +10,8 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsUInt64 output_format_compression_level;
-    extern const SettingsUInt64 output_format_compression_zstd_window_log;
+    extern SettingsUInt64 output_format_compression_level;
+    extern SettingsUInt64 output_format_compression_zstd_window_log;
 }
 
 namespace ErrorCodes

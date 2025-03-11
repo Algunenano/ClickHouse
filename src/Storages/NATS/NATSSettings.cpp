@@ -46,14 +46,16 @@ namespace ErrorCodes
     OBSOLETE_NATS_SETTINGS(M, ALIAS)      \
     LIST_OF_ALL_FORMAT_SETTINGS(M, ALIAS) \
 
-DECLARE_SETTINGS_TRAITS(NATSSettingsTraits, LIST_OF_NATS_SETTINGS)
+DECLARE_SETTINGS_TRAITS(NATSSettingsTraits, LIST_OF_NATS_SETTINGS, NATS_SETTINGS_SUPPORTED_TYPES)
 IMPLEMENT_SETTINGS_TRAITS(NATSSettingsTraits, LIST_OF_NATS_SETTINGS)
 
 struct NATSSettingsImpl : public BaseSettings<NATSSettingsTraits>
 {
 };
 
-#define INITIALIZE_SETTING_EXTERN(TYPE, NAME, DEFAULT, DESCRIPTION, FLAGS) NATSSettings##TYPE NAME = &NATSSettingsImpl ::NAME;
+NATS_SETTINGS_SUPPORTED_TYPES(NATSSettings, IMPLEMENT_SETTING_SUBSCRIPT_OPERATOR)
+#define INITIALIZE_SETTING_EXTERN(TYPE, NAME, DEFAULT, DESCRIPTION, FLAGS) \
+    NATSSettings##TYPE NAME = { &NATSSettingsImpl ::data_##TYPE , &NATSSettingsImpl :: position_##NAME };
 
 namespace NATSSetting
 {
@@ -75,8 +77,6 @@ NATSSettings::NATSSettings(NATSSettings && settings) noexcept : impl(std::make_u
 }
 
 NATSSettings::~NATSSettings() = default;
-
-NATS_SETTINGS_SUPPORTED_TYPES(NATSSettings, IMPLEMENT_SETTING_SUBSCRIPT_OPERATOR)
 
 void NATSSettings::loadFromQuery(ASTStorage & storage_def)
 {

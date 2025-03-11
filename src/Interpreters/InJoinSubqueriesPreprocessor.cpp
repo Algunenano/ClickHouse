@@ -18,8 +18,8 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsDistributedProductMode distributed_product_mode;
-    extern const SettingsBool prefer_global_in_and_join;
+    extern SettingsDistributedProductMode distributed_product_mode;
+    extern SettingsBool prefer_global_in_and_join;
 }
 
 namespace ErrorCodes

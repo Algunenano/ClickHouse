@@ -40,8 +40,8 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsBool check_query_single_value_result;
-    extern const SettingsMaxThreads max_threads;
+    extern SettingsBool check_query_single_value_result;
+    extern SettingsMaxThreads max_threads;
 }
 
 namespace ErrorCodes

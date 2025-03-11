@@ -14,8 +14,8 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsBool group_by_use_nulls;
-    extern const SettingsBool optimize_group_by_function_keys;
+    extern SettingsBool group_by_use_nulls;
+    extern SettingsBool optimize_group_by_function_keys;
 }
 
 class OptimizeGroupByFunctionKeysVisitor : public InDepthQueryTreeVisitorWithContext<OptimizeGroupByFunctionKeysVisitor>

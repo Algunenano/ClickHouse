@@ -22,8 +22,8 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsBool insert_deduplicate;
-    extern const SettingsUInt64 max_insert_delayed_streams_for_parallel_write;
+    extern SettingsBool insert_deduplicate;
+    extern SettingsUInt64 max_insert_delayed_streams_for_parallel_write;
 }
 
 struct MergeTreeSink::DelayedChunk

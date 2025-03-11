@@ -32,14 +32,17 @@ namespace ErrorCodes
     DECLARE(Milliseconds, background_insert_max_sleep_time_ms, 0, "Default - distributed_background_insert_max_sleep_time_ms", 0) ALIAS(monitor_max_sleep_time_ms) \
     DECLARE(Bool, flush_on_detach, true, "Flush data to remote nodes on DETACH/DROP/server shutdown", 0) \
 
-DECLARE_SETTINGS_TRAITS(DistributedSettingsTraits, LIST_OF_DISTRIBUTED_SETTINGS)
+DECLARE_SETTINGS_TRAITS(DistributedSettingsTraits, LIST_OF_DISTRIBUTED_SETTINGS, DISTRIBUTED_SETTINGS_SUPPORTED_TYPES)
 IMPLEMENT_SETTINGS_TRAITS(DistributedSettingsTraits, LIST_OF_DISTRIBUTED_SETTINGS)
 
 struct DistributedSettingsImpl : public BaseSettings<DistributedSettingsTraits>
 {
 };
 
-#define INITIALIZE_SETTING_EXTERN(TYPE, NAME, DEFAULT, DESCRIPTION, FLAGS) DistributedSettings##TYPE NAME = &DistributedSettingsImpl ::NAME;
+DISTRIBUTED_SETTINGS_SUPPORTED_TYPES(DistributedSettings, IMPLEMENT_SETTING_SUBSCRIPT_OPERATOR)
+
+#define INITIALIZE_SETTING_EXTERN(TYPE, NAME, DEFAULT, DESCRIPTION, FLAGS) \
+    DistributedSettings##TYPE NAME = { &DistributedSettingsImpl ::data_##TYPE , &DistributedSettingsImpl :: position_##NAME };
 
 namespace DistributedSetting
 {
@@ -63,8 +66,6 @@ DistributedSettings::DistributedSettings(DistributedSettings && settings) noexce
 }
 
 DistributedSettings::~DistributedSettings() = default;
-
-DISTRIBUTED_SETTINGS_SUPPORTED_TYPES(DistributedSettings, IMPLEMENT_SETTING_SUBSCRIPT_OPERATOR)
 
 void DistributedSettings::loadFromConfig(const String & config_elem, const Poco::Util::AbstractConfiguration & config)
 {

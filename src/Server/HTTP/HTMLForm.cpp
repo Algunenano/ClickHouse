@@ -21,9 +21,9 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsUInt64 http_max_fields;
-    extern const SettingsUInt64 http_max_field_name_size;
-    extern const SettingsUInt64 http_max_field_value_size;
+    extern SettingsUInt64 http_max_fields;
+    extern SettingsUInt64 http_max_field_name_size;
+    extern SettingsUInt64 http_max_field_value_size;
 }
 
 namespace ErrorCodes

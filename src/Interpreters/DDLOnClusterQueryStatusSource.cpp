@@ -13,7 +13,7 @@ namespace DB
 {
 namespace Setting
 {
-extern const SettingsDistributedDDLOutputMode distributed_ddl_output_mode;
+extern SettingsDistributedDDLOutputMode distributed_ddl_output_mode;
 }
 
 namespace ErrorCodes

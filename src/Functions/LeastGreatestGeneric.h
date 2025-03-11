@@ -15,7 +15,7 @@ namespace DB
 
 namespace Setting
 {
-    extern const SettingsBool least_greatest_legacy_null_behavior;
+    extern SettingsBool least_greatest_legacy_null_behavior;
 }
 
 namespace ErrorCodes

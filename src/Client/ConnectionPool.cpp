@@ -7,7 +7,7 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsMilliseconds connection_pool_max_wait_ms;
+    extern SettingsMilliseconds connection_pool_max_wait_ms;
 }
 
 ConnectionPoolPtr ConnectionPoolFactory::get(

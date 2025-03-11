@@ -67,24 +67,24 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsBool aggregate_functions_null_for_empty;
-    extern const SettingsBool any_join_distinct_right_table_keys;
-    extern const SettingsString count_distinct_implementation;
-    extern const SettingsBool enable_order_by_all;
-    extern const SettingsBool enable_positional_arguments;
-    extern const SettingsJoinStrictness join_default_strictness;
-    extern const SettingsBool legacy_column_name_of_tuple_literal;
-    extern const SettingsBool normalize_function_names;
-    extern const SettingsBool optimize_if_chain_to_multiif;
-    extern const SettingsBool optimize_group_by_function_keys;
-    extern const SettingsUInt64 optimize_min_equality_disjunction_chain_length;
-    extern const SettingsBool optimize_move_to_prewhere;
-    extern const SettingsBool optimize_multiif_to_if;
-    extern const SettingsBool optimize_normalize_count_variants;
-    extern const SettingsBool optimize_respect_aliases;
-    extern const SettingsBool optimize_trivial_count_query;
-    extern const SettingsBool rewrite_count_distinct_if_with_count_distinct_implementation;
-    extern const SettingsBool transform_null_in;
+    extern SettingsBool aggregate_functions_null_for_empty;
+    extern SettingsBool any_join_distinct_right_table_keys;
+    extern SettingsString count_distinct_implementation;
+    extern SettingsBool enable_order_by_all;
+    extern SettingsBool enable_positional_arguments;
+    extern SettingsJoinStrictness join_default_strictness;
+    extern SettingsBool legacy_column_name_of_tuple_literal;
+    extern SettingsBool normalize_function_names;
+    extern SettingsBool optimize_if_chain_to_multiif;
+    extern SettingsBool optimize_group_by_function_keys;
+    extern SettingsUInt64 optimize_min_equality_disjunction_chain_length;
+    extern SettingsBool optimize_move_to_prewhere;
+    extern SettingsBool optimize_multiif_to_if;
+    extern SettingsBool optimize_normalize_count_variants;
+    extern SettingsBool optimize_respect_aliases;
+    extern SettingsBool optimize_trivial_count_query;
+    extern SettingsBool rewrite_count_distinct_if_with_count_distinct_implementation;
+    extern SettingsBool transform_null_in;
 }
 
 namespace ErrorCodes

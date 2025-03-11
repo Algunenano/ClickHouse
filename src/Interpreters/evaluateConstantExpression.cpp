@@ -53,8 +53,8 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsBool normalize_function_names;
-    extern const SettingsBool allow_experimental_analyzer;
+    extern SettingsBool normalize_function_names;
+    extern SettingsBool allow_experimental_analyzer;
 }
 
 namespace ErrorCodes

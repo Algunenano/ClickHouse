@@ -24,7 +24,7 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsMilliseconds kafka_max_wait_ms;
+    extern SettingsMilliseconds kafka_max_wait_ms;
 }
 
 namespace ErrorCodes

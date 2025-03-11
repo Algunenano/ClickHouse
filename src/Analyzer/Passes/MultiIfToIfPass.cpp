@@ -10,9 +10,9 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsBool allow_experimental_variant_type;
-    extern const SettingsBool optimize_multiif_to_if;
-    extern const SettingsBool use_variant_as_common_type;
+    extern SettingsBool allow_experimental_variant_type;
+    extern SettingsBool optimize_multiif_to_if;
+    extern SettingsBool use_variant_as_common_type;
 }
 
 namespace

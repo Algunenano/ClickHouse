@@ -37,8 +37,8 @@ namespace DB
 
 namespace TimeSeriesSetting
 {
-    extern const TimeSeriesSettingsBool filter_by_min_time_and_max_time;
-    extern const TimeSeriesSettingsMap tags_to_columns;
+    extern TimeSeriesSettingsBool filter_by_min_time_and_max_time;
+    extern TimeSeriesSettingsMap tags_to_columns;
 }
 
 namespace ErrorCodes
@@ -48,7 +48,7 @@ namespace ErrorCodes
 
 namespace Setting
 {
-    extern const SettingsBool allow_experimental_analyzer;
+    extern SettingsBool allow_experimental_analyzer;
 }
 
 namespace

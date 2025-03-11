@@ -52,24 +52,24 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsString additional_result_filter;
-    extern const SettingsUInt64 max_bytes_to_read;
-    extern const SettingsUInt64 max_bytes_to_read_leaf;
-    extern const SettingsSeconds max_estimated_execution_time;
-    extern const SettingsUInt64 max_execution_speed;
-    extern const SettingsUInt64 max_execution_speed_bytes;
-    extern const SettingsSeconds max_execution_time;
-    extern const SettingsUInt64 max_query_size;
-    extern const SettingsUInt64 max_rows_to_read;
-    extern const SettingsUInt64 max_rows_to_read_leaf;
-    extern const SettingsUInt64 min_execution_speed;
-    extern const SettingsUInt64 min_execution_speed_bytes;
-    extern const SettingsUInt64 max_parser_backtracks;
-    extern const SettingsUInt64 max_parser_depth;
-    extern const SettingsOverflowMode read_overflow_mode;
-    extern const SettingsOverflowMode read_overflow_mode_leaf;
-    extern const SettingsSeconds timeout_before_checking_execution_speed;
-    extern const SettingsOverflowMode timeout_overflow_mode;
+    extern SettingsString additional_result_filter;
+    extern SettingsUInt64 max_bytes_to_read;
+    extern SettingsUInt64 max_bytes_to_read_leaf;
+    extern SettingsSeconds max_estimated_execution_time;
+    extern SettingsUInt64 max_execution_speed;
+    extern SettingsUInt64 max_execution_speed_bytes;
+    extern SettingsSeconds max_execution_time;
+    extern SettingsUInt64 max_query_size;
+    extern SettingsUInt64 max_rows_to_read;
+    extern SettingsUInt64 max_rows_to_read_leaf;
+    extern SettingsUInt64 min_execution_speed;
+    extern SettingsUInt64 min_execution_speed_bytes;
+    extern SettingsUInt64 max_parser_backtracks;
+    extern SettingsUInt64 max_parser_depth;
+    extern SettingsOverflowMode read_overflow_mode;
+    extern SettingsOverflowMode read_overflow_mode_leaf;
+    extern SettingsSeconds timeout_before_checking_execution_speed;
+    extern SettingsOverflowMode timeout_overflow_mode;
 }
 
 namespace ErrorCodes

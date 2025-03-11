@@ -18,11 +18,11 @@ namespace DB
 
 namespace MergeTreeSetting
 {
-    extern const MergeTreeSettingsBool allow_remote_fs_zero_copy_replication;
-    extern const MergeTreeSettingsBool detach_not_byte_identical_parts;
-    extern const MergeTreeSettingsSeconds lock_acquire_timeout_for_background_operations;
-    extern const MergeTreeSettingsUInt64 prefer_fetch_merged_part_size_threshold;
-    extern const MergeTreeSettingsSeconds prefer_fetch_merged_part_time_threshold;
+    extern MergeTreeSettingsBool allow_remote_fs_zero_copy_replication;
+    extern MergeTreeSettingsBool detach_not_byte_identical_parts;
+    extern MergeTreeSettingsSeconds lock_acquire_timeout_for_background_operations;
+    extern MergeTreeSettingsUInt64 prefer_fetch_merged_part_size_threshold;
+    extern MergeTreeSettingsSeconds prefer_fetch_merged_part_time_threshold;
 }
 
 ReplicatedMergeMutateTaskBase::PrepareResult MutateFromLogEntryTask::prepare()

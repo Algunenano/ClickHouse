@@ -35,10 +35,10 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsBool allow_experimental_analyzer;
-    extern const SettingsBool query_plan_read_in_order;
-    extern const SettingsBool optimize_read_in_order;
-    extern const SettingsBool optimize_read_in_window_order;
+    extern SettingsBool allow_experimental_analyzer;
+    extern SettingsBool query_plan_read_in_order;
+    extern SettingsBool optimize_read_in_order;
+    extern SettingsBool optimize_read_in_window_order;
 }
 }
 

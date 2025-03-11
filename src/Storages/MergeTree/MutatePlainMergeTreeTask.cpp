@@ -11,7 +11,7 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsBool enable_sharing_sets_for_mutations;
+    extern SettingsBool enable_sharing_sets_for_mutations;
 }
 
 namespace ErrorCodes

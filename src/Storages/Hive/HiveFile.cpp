@@ -26,9 +26,9 @@ namespace DB
 
 namespace HiveSetting
 {
-    extern const HiveSettingsBool enable_orc_file_minmax_index;
-    extern const HiveSettingsBool enable_orc_stripe_minmax_index;
-    extern const HiveSettingsBool enable_parquet_rowgroup_minmax_index;
+    extern HiveSettingsBool enable_orc_file_minmax_index;
+    extern HiveSettingsBool enable_orc_stripe_minmax_index;
+    extern HiveSettingsBool enable_parquet_rowgroup_minmax_index;
 }
 
 namespace ErrorCodes

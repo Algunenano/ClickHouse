@@ -27,7 +27,7 @@ namespace DB
 
 namespace MergeTreeSetting
 {
-    extern const MergeTreeSettingsString columns_to_prewarm_mark_cache;
+    extern MergeTreeSettingsString columns_to_prewarm_mark_cache;
 }
 
 namespace ErrorCodes

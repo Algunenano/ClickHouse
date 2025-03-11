@@ -47,15 +47,17 @@ namespace ErrorCodes
     DECLARE(UInt64, bypass_cache_threshold, FILECACHE_BYPASS_THRESHOLD, "Undocumented. Not recommended for use", 0) \
     DECLARE(Bool, write_cache_per_user_id_directory, false, "Private setting", 0)
 
-DECLARE_SETTINGS_TRAITS(FileCacheSettingsTraits, LIST_OF_FILE_CACHE_SETTINGS)
+DECLARE_SETTINGS_TRAITS(FileCacheSettingsTraits, LIST_OF_FILE_CACHE_SETTINGS, FILE_CACHE_SETTINGS_SUPPORTED_TYPES)
 IMPLEMENT_SETTINGS_TRAITS(FileCacheSettingsTraits, LIST_OF_FILE_CACHE_SETTINGS)
 
 struct FileCacheSettingsImpl : public BaseSettings<FileCacheSettingsTraits>
 {
 };
 
+FILE_CACHE_SETTINGS_SUPPORTED_TYPES(FileCacheSettings, IMPLEMENT_SETTING_SUBSCRIPT_OPERATOR)
+
 #define INITIALIZE_SETTING_EXTERN(TYPE, NAME, DEFAULT, DESCRIPTION, FLAGS) \
-    FileCacheSettings##TYPE NAME = &FileCacheSettingsImpl ::NAME;
+    FileCacheSettings##TYPE NAME = { &FileCacheSettingsImpl ::data_##TYPE , &FileCacheSettingsImpl :: position_##NAME };
 
 namespace FileCacheSetting
 {
@@ -69,8 +71,6 @@ FileCacheSettings::FileCacheSettings() : impl(std::make_unique<FileCacheSettings
 }
 
 FileCacheSettings::~FileCacheSettings() = default;
-
-FILE_CACHE_SETTINGS_SUPPORTED_TYPES(FileCacheSettings, IMPLEMENT_SETTING_SUBSCRIPT_OPERATOR)
 
 
 FileCacheSettings::FileCacheSettings(const FileCacheSettings & settings)

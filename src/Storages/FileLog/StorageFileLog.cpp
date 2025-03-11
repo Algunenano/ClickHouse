@@ -38,22 +38,22 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsUInt64 max_block_size;
-    extern const SettingsUInt64 max_insert_block_size;
-    extern const SettingsMilliseconds stream_poll_timeout_ms;
-    extern const SettingsBool use_concurrency_control;
+    extern SettingsUInt64 max_block_size;
+    extern SettingsUInt64 max_insert_block_size;
+    extern SettingsMilliseconds stream_poll_timeout_ms;
+    extern SettingsBool use_concurrency_control;
 }
 
 namespace FileLogSetting
 {
-    extern const FileLogSettingsStreamingHandleErrorMode handle_error_mode;
-    extern const FileLogSettingsUInt64 max_block_size;
-    extern const FileLogSettingsMaxThreads max_threads;
-    extern const FileLogSettingsUInt64 poll_directory_watch_events_backoff_factor;
-    extern const FileLogSettingsMilliseconds poll_directory_watch_events_backoff_init;
-    extern const FileLogSettingsMilliseconds poll_directory_watch_events_backoff_max;
-    extern const FileLogSettingsUInt64 poll_max_batch_size;
-    extern const FileLogSettingsMilliseconds poll_timeout_ms;
+    extern FileLogSettingsStreamingHandleErrorMode handle_error_mode;
+    extern FileLogSettingsUInt64 max_block_size;
+    extern FileLogSettingsMaxThreads max_threads;
+    extern FileLogSettingsUInt64 poll_directory_watch_events_backoff_factor;
+    extern FileLogSettingsMilliseconds poll_directory_watch_events_backoff_init;
+    extern FileLogSettingsMilliseconds poll_directory_watch_events_backoff_max;
+    extern FileLogSettingsUInt64 poll_max_batch_size;
+    extern FileLogSettingsMilliseconds poll_timeout_ms;
 }
 
 namespace ErrorCodes

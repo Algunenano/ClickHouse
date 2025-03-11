@@ -21,7 +21,7 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsUInt64 function_range_max_elements_in_block;
+    extern SettingsUInt64 function_range_max_elements_in_block;
 }
 
 namespace ErrorCodes

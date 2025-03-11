@@ -17,7 +17,7 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsBool count_distinct_optimization;
+    extern SettingsBool count_distinct_optimization;
 }
 
 namespace

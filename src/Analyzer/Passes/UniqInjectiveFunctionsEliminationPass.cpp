@@ -16,7 +16,7 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsBool optimize_injective_functions_inside_uniq;
+    extern SettingsBool optimize_injective_functions_inside_uniq;
 }
 
 namespace

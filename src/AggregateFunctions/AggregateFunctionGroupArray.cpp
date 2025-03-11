@@ -35,8 +35,8 @@ struct Settings;
 
 namespace ServerSetting
 {
-    extern const ServerSettingsGroupArrayActionWhenLimitReached aggregate_function_group_array_action_when_limit_is_reached;
-    extern const ServerSettingsUInt64 aggregate_function_group_array_max_element_size;
+    extern ServerSettingsGroupArrayActionWhenLimitReached aggregate_function_group_array_action_when_limit_is_reached;
+    extern ServerSettingsUInt64 aggregate_function_group_array_max_element_size;
 }
 
 namespace ErrorCodes

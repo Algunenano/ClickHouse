@@ -32,25 +32,25 @@ namespace DB
 
 namespace QueryPlanSerializationSetting
 {
-    extern const QueryPlanSerializationSettingsUInt64 aggregation_in_order_max_block_bytes;
-    extern const QueryPlanSerializationSettingsBool aggregation_in_order_memory_bound_merging;
-    extern const QueryPlanSerializationSettingsBool aggregation_sort_result_by_bucket_number;
-    extern const QueryPlanSerializationSettingsBool collect_hash_table_stats_during_aggregation;
-    extern const QueryPlanSerializationSettingsBool compile_aggregate_expressions;
-    extern const QueryPlanSerializationSettingsBool empty_result_for_aggregation_by_empty_set;
-    extern const QueryPlanSerializationSettingsBool enable_software_prefetch_in_aggregation;
-    extern const QueryPlanSerializationSettingsOverflowModeGroupBy group_by_overflow_mode;
-    extern const QueryPlanSerializationSettingsUInt64 group_by_two_level_threshold_bytes;
-    extern const QueryPlanSerializationSettingsUInt64 group_by_two_level_threshold;
-    extern const QueryPlanSerializationSettingsUInt64 max_block_size;
-    extern const QueryPlanSerializationSettingsUInt64 max_bytes_before_external_group_by;
-    extern const QueryPlanSerializationSettingsUInt64 max_entries_for_hash_table_stats;
-    extern const QueryPlanSerializationSettingsUInt64 max_rows_to_group_by;
-    extern const QueryPlanSerializationSettingsUInt64 max_size_to_preallocate_for_aggregation;
-    extern const QueryPlanSerializationSettingsUInt64 min_count_to_compile_aggregate_expression;
-    extern const QueryPlanSerializationSettingsUInt64 min_free_disk_space_for_temporary_data;
-    extern const QueryPlanSerializationSettingsFloat min_hit_rate_to_use_consecutive_keys_optimization;
-    extern const QueryPlanSerializationSettingsBool optimize_group_by_constant_keys;
+    extern QueryPlanSerializationSettingsUInt64 aggregation_in_order_max_block_bytes;
+    extern QueryPlanSerializationSettingsBool aggregation_in_order_memory_bound_merging;
+    extern QueryPlanSerializationSettingsBool aggregation_sort_result_by_bucket_number;
+    extern QueryPlanSerializationSettingsBool collect_hash_table_stats_during_aggregation;
+    extern QueryPlanSerializationSettingsBool compile_aggregate_expressions;
+    extern QueryPlanSerializationSettingsBool empty_result_for_aggregation_by_empty_set;
+    extern QueryPlanSerializationSettingsBool enable_software_prefetch_in_aggregation;
+    extern QueryPlanSerializationSettingsOverflowModeGroupBy group_by_overflow_mode;
+    extern QueryPlanSerializationSettingsUInt64 group_by_two_level_threshold_bytes;
+    extern QueryPlanSerializationSettingsUInt64 group_by_two_level_threshold;
+    extern QueryPlanSerializationSettingsUInt64 max_block_size;
+    extern QueryPlanSerializationSettingsUInt64 max_bytes_before_external_group_by;
+    extern QueryPlanSerializationSettingsUInt64 max_entries_for_hash_table_stats;
+    extern QueryPlanSerializationSettingsUInt64 max_rows_to_group_by;
+    extern QueryPlanSerializationSettingsUInt64 max_size_to_preallocate_for_aggregation;
+    extern QueryPlanSerializationSettingsUInt64 min_count_to_compile_aggregate_expression;
+    extern QueryPlanSerializationSettingsUInt64 min_free_disk_space_for_temporary_data;
+    extern QueryPlanSerializationSettingsFloat min_hit_rate_to_use_consecutive_keys_optimization;
+    extern QueryPlanSerializationSettingsBool optimize_group_by_constant_keys;
 }
 
 namespace ErrorCodes

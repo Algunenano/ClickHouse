@@ -17,9 +17,9 @@ namespace DB
 
 namespace MergeTreeSetting
 {
-    extern const MergeTreeSettingsBool allow_remote_fs_zero_copy_replication;
-    extern const MergeTreeSettingsSeconds execute_merges_on_single_replica_time_threshold;
-    extern const MergeTreeSettingsSeconds remote_fs_execute_merges_on_single_replica_time_threshold;
+    extern MergeTreeSettingsBool allow_remote_fs_zero_copy_replication;
+    extern MergeTreeSettingsSeconds execute_merges_on_single_replica_time_threshold;
+    extern MergeTreeSettingsSeconds remote_fs_execute_merges_on_single_replica_time_threshold;
 }
 
 /// minimum interval (seconds) between checks if chosen replica finished the merge.

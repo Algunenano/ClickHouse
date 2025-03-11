@@ -54,15 +54,15 @@ namespace DB::ErrorCodes
 }
 namespace DB::FileCacheSetting
 {
-    extern const FileCacheSettingsString path;
-    extern const FileCacheSettingsUInt64 max_size;
-    extern const FileCacheSettingsUInt64 max_elements;
-    extern const FileCacheSettingsUInt64 max_file_segment_size;
-    extern const FileCacheSettingsUInt64 boundary_alignment;
-    extern const FileCacheSettingsString cache_policy;
-    extern const FileCacheSettingsDouble slru_size_ratio;
-    extern const FileCacheSettingsUInt64 load_metadata_threads;
-    extern const FileCacheSettingsBool load_metadata_asynchronously;
+    extern FileCacheSettingsString path;
+    extern FileCacheSettingsUInt64 max_size;
+    extern FileCacheSettingsUInt64 max_elements;
+    extern FileCacheSettingsUInt64 max_file_segment_size;
+    extern FileCacheSettingsUInt64 boundary_alignment;
+    extern FileCacheSettingsString cache_policy;
+    extern FileCacheSettingsDouble slru_size_ratio;
+    extern FileCacheSettingsUInt64 load_metadata_threads;
+    extern FileCacheSettingsBool load_metadata_asynchronously;
 }
 
 void printRanges(const auto & segments)

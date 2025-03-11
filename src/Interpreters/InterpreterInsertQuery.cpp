@@ -61,32 +61,32 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsBool allow_experimental_analyzer;
-    extern const SettingsBool distributed_foreground_insert;
-    extern const SettingsBool insert_null_as_default;
-    extern const SettingsBool optimize_trivial_insert_select;
-    extern const SettingsMaxThreads max_threads;
-    extern const SettingsUInt64 max_insert_threads;
-    extern const SettingsUInt64 min_insert_block_size_rows;
-    extern const SettingsUInt64 max_block_size;
-    extern const SettingsUInt64 preferred_block_size_bytes;
-    extern const SettingsUInt64 min_insert_block_size_bytes;
-    extern const SettingsString insert_deduplication_token;
-    extern const SettingsBool parallel_view_processing;
-    extern const SettingsBool use_concurrency_control;
-    extern const SettingsSeconds lock_acquire_timeout;
-    extern const SettingsUInt64 parallel_distributed_insert_select;
-    extern const SettingsBool enable_parsing_to_custom_serialization;
+    extern SettingsBool allow_experimental_analyzer;
+    extern SettingsBool distributed_foreground_insert;
+    extern SettingsBool insert_null_as_default;
+    extern SettingsBool optimize_trivial_insert_select;
+    extern SettingsMaxThreads max_threads;
+    extern SettingsUInt64 max_insert_threads;
+    extern SettingsUInt64 min_insert_block_size_rows;
+    extern SettingsUInt64 max_block_size;
+    extern SettingsUInt64 preferred_block_size_bytes;
+    extern SettingsUInt64 min_insert_block_size_bytes;
+    extern SettingsString insert_deduplication_token;
+    extern SettingsBool parallel_view_processing;
+    extern SettingsBool use_concurrency_control;
+    extern SettingsSeconds lock_acquire_timeout;
+    extern SettingsUInt64 parallel_distributed_insert_select;
+    extern SettingsBool enable_parsing_to_custom_serialization;
 }
 
 namespace MergeTreeSetting
 {
-    extern const MergeTreeSettingsBool add_implicit_sign_column_constraint_for_collapsing_engine;
+    extern MergeTreeSettingsBool add_implicit_sign_column_constraint_for_collapsing_engine;
 }
 
 namespace ServerSetting
 {
-    extern const ServerSettingsBool disable_insertion_and_mutation;
+    extern ServerSettingsBool disable_insertion_and_mutation;
 }
 
 namespace ErrorCodes

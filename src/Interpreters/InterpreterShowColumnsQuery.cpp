@@ -17,8 +17,8 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsBool mysql_map_fixed_string_to_text_in_show_columns;
-    extern const SettingsBool mysql_map_string_to_text_in_show_columns;
+    extern SettingsBool mysql_map_fixed_string_to_text_in_show_columns;
+    extern SettingsBool mysql_map_string_to_text_in_show_columns;
 }
 
 

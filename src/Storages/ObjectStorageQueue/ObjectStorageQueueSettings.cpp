@@ -48,15 +48,17 @@ namespace ErrorCodes
     OBJECT_STORAGE_QUEUE_RELATED_SETTINGS(M, ALIAS) \
     LIST_OF_ALL_FORMAT_SETTINGS(M, ALIAS)
 
-DECLARE_SETTINGS_TRAITS(ObjectStorageQueueSettingsTraits, LIST_OF_OBJECT_STORAGE_QUEUE_SETTINGS)
+DECLARE_SETTINGS_TRAITS(ObjectStorageQueueSettingsTraits, LIST_OF_OBJECT_STORAGE_QUEUE_SETTINGS, OBJECT_STORAGE_QUEUE_SETTINGS_SUPPORTED_TYPES)
 IMPLEMENT_SETTINGS_TRAITS(ObjectStorageQueueSettingsTraits, LIST_OF_OBJECT_STORAGE_QUEUE_SETTINGS)
 
 struct ObjectStorageQueueSettingsImpl : public BaseSettings<ObjectStorageQueueSettingsTraits>
 {
 };
 
+OBJECT_STORAGE_QUEUE_SETTINGS_SUPPORTED_TYPES(ObjectStorageQueueSettings, IMPLEMENT_SETTING_SUBSCRIPT_OPERATOR)
+
 #define INITIALIZE_SETTING_EXTERN(TYPE, NAME, DEFAULT, DESCRIPTION, FLAGS) \
-    ObjectStorageQueueSettings##TYPE NAME = &ObjectStorageQueueSettingsImpl ::NAME;
+    ObjectStorageQueueSettings##TYPE NAME = { &ObjectStorageQueueSettingsImpl ::data_##TYPE , & ObjectStorageQueueSettingsImpl :: position_##NAME};
 
 namespace ObjectStorageQueueSetting
 {
@@ -115,8 +117,6 @@ void ObjectStorageQueueSettings::dumpToSystemEngineSettingsColumns(
 }
 
 ObjectStorageQueueSettings::~ObjectStorageQueueSettings() = default;
-
-OBJECT_STORAGE_QUEUE_SETTINGS_SUPPORTED_TYPES(ObjectStorageQueueSettings, IMPLEMENT_SETTING_SUBSCRIPT_OPERATOR)
 
 
 void ObjectStorageQueueSettings::applyChanges(const SettingsChanges & changes)

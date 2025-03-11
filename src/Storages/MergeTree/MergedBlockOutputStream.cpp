@@ -17,7 +17,7 @@ namespace ErrorCodes
 
 namespace MergeTreeSetting
 {
-    extern const MergeTreeSettingsBool enable_index_granularity_compression;
+    extern MergeTreeSettingsBool enable_index_granularity_compression;
 }
 
 MergedBlockOutputStream::MergedBlockOutputStream(

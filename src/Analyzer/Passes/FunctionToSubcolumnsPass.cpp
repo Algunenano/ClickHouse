@@ -29,9 +29,9 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsBool group_by_use_nulls;
-    extern const SettingsBool join_use_nulls;
-    extern const SettingsBool optimize_functions_to_subcolumns;
+    extern SettingsBool group_by_use_nulls;
+    extern SettingsBool join_use_nulls;
+    extern SettingsBool optimize_functions_to_subcolumns;
 }
 
 namespace

@@ -17,8 +17,8 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsBool allow_archive_path_syntax;
-    extern const SettingsString rename_files_after_processing;
+    extern SettingsBool allow_archive_path_syntax;
+    extern SettingsString rename_files_after_processing;
 }
 
 namespace ErrorCodes

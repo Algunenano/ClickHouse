@@ -95,7 +95,7 @@ TEST(ReadBufferFromS3Test, RetainsSessionWhenPending)
     const auto client = std::make_shared<ClientFake>();
     DB::ReadSettings readSettings;
     readSettings.remote_fs_buffer_size = 2;
-    auto subject = DB::ReadBufferFromS3(client, "test_bucket", "test_key", "test_version_id", DB::S3::S3RequestSettings(), readSettings);
+    auto subject = DB::ReadBufferFromS3(client, "test_bucket", "test_key", "test_version_id", DB::S3RequestSettings(), readSettings);
 
     auto session = std::make_shared<CountedSession>();
     auto stream_buf = std::make_shared<StringHTTPBasicStreamBuf>("123456789");
@@ -115,7 +115,7 @@ TEST(ReadBufferFromS3Test, ReleaseSessionWhenStreamEof)
     const auto client = std::make_shared<ClientFake>();
     DB::ReadSettings readSettings;
     readSettings.remote_fs_buffer_size = 10;
-    auto subject = DB::ReadBufferFromS3(client, "test_bucket", "test_key", "test_version_id", DB::S3::S3RequestSettings(), readSettings);
+    auto subject = DB::ReadBufferFromS3(client, "test_bucket", "test_key", "test_version_id", DB::S3RequestSettings(), readSettings);
 
     auto session = std::make_shared<CountedSession>();
     const auto stream_buf = std::make_shared<StringHTTPBasicStreamBuf>("1234");
@@ -135,7 +135,7 @@ TEST(ReadBufferFromS3Test, ReleaseSessionWhenReadUntilPosition)
     const auto client = std::make_shared<ClientFake>();
     DB::ReadSettings readSettings;
     readSettings.remote_fs_buffer_size = 2;
-    auto subject = DB::ReadBufferFromS3(client, "test_bucket", "test_key", "test_version_id", DB::S3::S3RequestSettings(), readSettings);
+    auto subject = DB::ReadBufferFromS3(client, "test_bucket", "test_key", "test_version_id", DB::S3RequestSettings(), readSettings);
 
     auto session = std::make_shared<CountedSession>();
     const auto stream_buf = std::make_shared<StringHTTPBasicStreamBuf>("123456");

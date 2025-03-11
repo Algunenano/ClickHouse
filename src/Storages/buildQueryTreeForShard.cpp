@@ -30,11 +30,11 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsDistributedProductMode distributed_product_mode;
-    extern const SettingsUInt64 min_external_table_block_size_rows;
-    extern const SettingsUInt64 min_external_table_block_size_bytes;
-    extern const SettingsBool parallel_replicas_prefer_local_join;
-    extern const SettingsBool prefer_global_in_and_join;
+    extern SettingsDistributedProductMode distributed_product_mode;
+    extern SettingsUInt64 min_external_table_block_size_rows;
+    extern SettingsUInt64 min_external_table_block_size_bytes;
+    extern SettingsBool parallel_replicas_prefer_local_join;
+    extern SettingsBool prefer_global_in_and_join;
 }
 
 namespace ErrorCodes

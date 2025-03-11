@@ -14,7 +14,7 @@ namespace DB
 
 namespace TimeSeriesSetting
 {
-    extern const TimeSeriesSettingsMap tags_to_columns;
+    extern TimeSeriesSettingsMap tags_to_columns;
 }
 
 namespace ErrorCodes

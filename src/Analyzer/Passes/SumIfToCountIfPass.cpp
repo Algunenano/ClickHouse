@@ -16,8 +16,8 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsBool aggregate_functions_null_for_empty;
-    extern const SettingsBool optimize_rewrite_sum_if_to_count_if;
+    extern SettingsBool aggregate_functions_null_for_empty;
+    extern SettingsBool optimize_rewrite_sum_if_to_count_if;
 }
 
 namespace

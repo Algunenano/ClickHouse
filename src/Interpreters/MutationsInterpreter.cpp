@@ -52,18 +52,18 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsBool allow_experimental_analyzer;
-    extern const SettingsBool allow_nondeterministic_mutations;
-    extern const SettingsUInt64 max_block_size;
-    extern const SettingsBool use_concurrency_control;
-    extern const SettingsBool validate_mutation_query;
+    extern SettingsBool allow_experimental_analyzer;
+    extern SettingsBool allow_nondeterministic_mutations;
+    extern SettingsUInt64 max_block_size;
+    extern SettingsBool use_concurrency_control;
+    extern SettingsBool validate_mutation_query;
 }
 
 namespace MergeTreeSetting
 {
-    extern const MergeTreeSettingsUInt64 index_granularity_bytes;
-    extern const MergeTreeSettingsBool materialize_ttl_recalculate_only;
-    extern const MergeTreeSettingsBool ttl_only_drop_parts;
+    extern MergeTreeSettingsUInt64 index_granularity_bytes;
+    extern MergeTreeSettingsBool materialize_ttl_recalculate_only;
+    extern MergeTreeSettingsBool ttl_only_drop_parts;
 }
 
 namespace ErrorCodes

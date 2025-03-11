@@ -20,7 +20,7 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsString function_implementation;
+    extern SettingsString function_implementation;
 }
 
 namespace ErrorCodes

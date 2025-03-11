@@ -15,9 +15,9 @@ namespace ErrorCodes
 
 namespace MergeTreeSetting
 {
-    extern const MergeTreeSettingsUInt64 index_granularity;
-    extern const MergeTreeSettingsUInt64 index_granularity_bytes;
-    extern const MergeTreeSettingsBool use_const_adaptive_granularity;
+    extern MergeTreeSettingsUInt64 index_granularity;
+    extern MergeTreeSettingsUInt64 index_granularity_bytes;
+    extern MergeTreeSettingsBool use_const_adaptive_granularity;
 }
 
 size_t MergeTreeIndexGranularity::getRowsCountInRange(const MarkRange & range) const

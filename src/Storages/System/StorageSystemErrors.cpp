@@ -12,7 +12,7 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsBool system_events_show_zero_values;
+    extern SettingsBool system_events_show_zero_values;
 }
 
 ColumnsDescription StorageSystemErrors::getColumnsDescription()

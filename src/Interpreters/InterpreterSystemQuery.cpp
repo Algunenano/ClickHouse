@@ -98,17 +98,17 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsUInt64 keeper_max_retries;
-    extern const SettingsUInt64 keeper_retry_initial_backoff_ms;
-    extern const SettingsUInt64 keeper_retry_max_backoff_ms;
-    extern const SettingsSeconds lock_acquire_timeout;
-    extern const SettingsSeconds receive_timeout;
-    extern const SettingsMaxThreads max_threads;
+    extern SettingsUInt64 keeper_max_retries;
+    extern SettingsUInt64 keeper_retry_initial_backoff_ms;
+    extern SettingsUInt64 keeper_retry_max_backoff_ms;
+    extern SettingsSeconds lock_acquire_timeout;
+    extern SettingsSeconds receive_timeout;
+    extern SettingsMaxThreads max_threads;
 }
 
 namespace ServerSetting
 {
-    extern const ServerSettingsDouble cannot_allocate_thread_fault_injection_probability;
+    extern ServerSettingsDouble cannot_allocate_thread_fault_injection_probability;
 }
 
 namespace ErrorCodes

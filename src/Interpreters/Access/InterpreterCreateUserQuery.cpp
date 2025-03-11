@@ -27,7 +27,7 @@ namespace DB
 {
 namespace ServerSetting
 {
-    extern const ServerSettingsUInt64 max_authentication_methods_per_user;
+    extern ServerSettingsUInt64 max_authentication_methods_per_user;
 }
 
 namespace ErrorCodes

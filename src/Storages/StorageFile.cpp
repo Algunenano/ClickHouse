@@ -85,25 +85,25 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsBool allow_archive_path_syntax;
-    extern const SettingsBool engine_file_allow_create_multiple_files;
-    extern const SettingsBool engine_file_empty_if_not_exists;
-    extern const SettingsBool engine_file_skip_empty_files;
-    extern const SettingsBool engine_file_truncate_on_insert;
-    extern const SettingsSeconds lock_acquire_timeout;
-    extern const SettingsSeconds max_execution_time;
-    extern const SettingsMaxThreads max_parsing_threads;
-    extern const SettingsUInt64 max_read_buffer_size;
-    extern const SettingsBool optimize_count_from_files;
-    extern const SettingsUInt64 output_format_compression_level;
-    extern const SettingsUInt64 output_format_compression_zstd_window_log;
-    extern const SettingsBool parallelize_output_from_storages;
-    extern const SettingsSchemaInferenceMode schema_inference_mode;
-    extern const SettingsBool schema_inference_use_cache_for_file;
-    extern const SettingsLocalFSReadMethod storage_file_read_method;
-    extern const SettingsBool use_cache_for_count_from_files;
-    extern const SettingsInt64 zstd_window_log_max;
-    extern const SettingsBool enable_parsing_to_custom_serialization;
+    extern SettingsBool allow_archive_path_syntax;
+    extern SettingsBool engine_file_allow_create_multiple_files;
+    extern SettingsBool engine_file_empty_if_not_exists;
+    extern SettingsBool engine_file_skip_empty_files;
+    extern SettingsBool engine_file_truncate_on_insert;
+    extern SettingsSeconds lock_acquire_timeout;
+    extern SettingsSeconds max_execution_time;
+    extern SettingsMaxThreads max_parsing_threads;
+    extern SettingsUInt64 max_read_buffer_size;
+    extern SettingsBool optimize_count_from_files;
+    extern SettingsUInt64 output_format_compression_level;
+    extern SettingsUInt64 output_format_compression_zstd_window_log;
+    extern SettingsBool parallelize_output_from_storages;
+    extern SettingsSchemaInferenceMode schema_inference_mode;
+    extern SettingsBool schema_inference_use_cache_for_file;
+    extern SettingsLocalFSReadMethod storage_file_read_method;
+    extern SettingsBool use_cache_for_count_from_files;
+    extern SettingsInt64 zstd_window_log_max;
+    extern SettingsBool enable_parsing_to_custom_serialization;
 }
 
 namespace ErrorCodes

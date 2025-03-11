@@ -15,7 +15,7 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsBool geo_distance_returns_float64_on_float64_arguments;
+    extern SettingsBool geo_distance_returns_float64_on_float64_arguments;
 }
 
 namespace ErrorCodes

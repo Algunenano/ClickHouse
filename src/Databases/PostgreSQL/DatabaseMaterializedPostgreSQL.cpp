@@ -37,12 +37,12 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsUInt64 postgresql_connection_attempt_timeout;
+    extern SettingsUInt64 postgresql_connection_attempt_timeout;
 }
 
 namespace MaterializedPostgreSQLSetting
 {
-    extern const MaterializedPostgreSQLSettingsString materialized_postgresql_tables_list;
+    extern MaterializedPostgreSQLSettingsString materialized_postgresql_tables_list;
 }
 
 namespace ErrorCodes

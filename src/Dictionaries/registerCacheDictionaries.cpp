@@ -13,7 +13,7 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsBool dictionary_use_async_executor;
+    extern SettingsBool dictionary_use_async_executor;
 }
 
 namespace ErrorCodes

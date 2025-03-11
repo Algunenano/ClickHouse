@@ -23,12 +23,12 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsBool distributed_insert_skip_read_only_replicas;
+    extern SettingsBool distributed_insert_skip_read_only_replicas;
 }
 
 namespace DistributedSetting
 {
-    extern const DistributedSettingsBool fsync_after_insert;
+    extern DistributedSettingsBool fsync_after_insert;
 }
 
 namespace ErrorCodes

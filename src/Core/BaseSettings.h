@@ -1061,14 +1061,14 @@ struct DefineAliases
             [](const Field & value) -> Field { return static_cast<Field>(SettingField##TYPE{value}); }, \
             [](const Field & value) -> String { return SettingField##TYPE{value}.toString(); }, \
             [](const String & str) -> Field { SettingField##TYPE temp; temp.parseFromString(str); return static_cast<Field>(temp); }, \
-            [](Data & data, const Field & value) { data.data_##TYPE[data.position_##NAME] = value; }, \
-            [](const Data & data) -> Field { return static_cast<Field>(data.data_##TYPE[data.position_##NAME]); }, \
-            [](Data & data, const String & str) { data.data_##TYPE[data.position_##NAME].parseFromString(str); }, \
-            [](const Data & data) -> String { return data.data_##TYPE[data.position_##NAME].toString(); }, \
-            [](const Data & data) -> bool { return data.data_##TYPE[data.position_##NAME].changed; }, \
-            [](Data & data) { data.data_##TYPE[data.position_##NAME] = SettingField##TYPE{DEFAULT}; }, \
-            [](const Data & data, WriteBuffer & out) { data.data_##TYPE[data.position_##NAME].writeBinary(out); }, \
-            [](Data & data, ReadBuffer & in) { data.data_##TYPE[data.position_##NAME].readBinary(in); }, \
+            [](Data & data, const Field & value) { data.data_##TYPE[Data::position_##NAME] = value; }, \
+            [](const Data & data) -> Field { return static_cast<Field>(data.data_##TYPE[Data::position_##NAME]); }, \
+            [](Data & data, const String & str) { data.data_##TYPE[Data::position_##NAME].parseFromString(str); }, \
+            [](const Data & data) -> String { return data.data_##TYPE[Data::position_##NAME].toString(); }, \
+            [](const Data & data) -> bool { return data.data_##TYPE[Data::position_##NAME].changed; }, \
+            [](Data & data) { data.data_##TYPE[Data::position_##NAME] = SettingField##TYPE{DEFAULT}; }, \
+            [](const Data & data, WriteBuffer & out) { data.data_##TYPE[Data::position_##NAME].writeBinary(out); }, \
+            [](Data & data, ReadBuffer & in) { data.data_##TYPE[Data::position_##NAME].readBinary(in); }, \
             []() -> String { return SettingField##TYPE{DEFAULT}.toString(); } \
         });
 }

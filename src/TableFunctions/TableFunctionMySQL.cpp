@@ -25,14 +25,14 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsUInt64 external_storage_connect_timeout_sec;
-    extern const SettingsUInt64 external_storage_rw_timeout_sec;
+    extern SettingsUInt64 external_storage_connect_timeout_sec;
+    extern SettingsUInt64 external_storage_rw_timeout_sec;
 }
 
 namespace MySQLSetting
 {
-    extern const MySQLSettingsUInt64 connect_timeout;
-    extern const MySQLSettingsUInt64 read_write_timeout;
+    extern MySQLSettingsUInt64 connect_timeout;
+    extern MySQLSettingsUInt64 read_write_timeout;
 }
 
 namespace ErrorCodes

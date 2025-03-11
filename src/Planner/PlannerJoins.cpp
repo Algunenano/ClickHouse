@@ -52,22 +52,22 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsBool allow_experimental_join_condition;
-    extern const SettingsBool collect_hash_table_stats_during_joins;
-    extern const SettingsBool join_any_take_last_row;
-    extern const SettingsBool join_use_nulls;
-    extern const SettingsUInt64 max_size_to_preallocate_for_joins;
-    extern const SettingsMaxThreads max_threads;
-    extern const SettingsBool allow_general_join_planning;
-    extern const SettingsJoinAlgorithm join_algorithm;
-    extern const SettingsSeconds lock_acquire_timeout;
-    extern const SettingsNonZeroUInt64 grace_hash_join_initial_buckets;
-    extern const SettingsNonZeroUInt64 grace_hash_join_max_buckets;
+    extern SettingsBool allow_experimental_join_condition;
+    extern SettingsBool collect_hash_table_stats_during_joins;
+    extern SettingsBool join_any_take_last_row;
+    extern SettingsBool join_use_nulls;
+    extern SettingsUInt64 max_size_to_preallocate_for_joins;
+    extern SettingsMaxThreads max_threads;
+    extern SettingsBool allow_general_join_planning;
+    extern SettingsJoinAlgorithm join_algorithm;
+    extern SettingsSeconds lock_acquire_timeout;
+    extern SettingsNonZeroUInt64 grace_hash_join_initial_buckets;
+    extern SettingsNonZeroUInt64 grace_hash_join_max_buckets;
 }
 
 namespace ServerSetting
 {
-    extern const ServerSettingsUInt64 max_entries_for_hash_table_stats;
+    extern ServerSettingsUInt64 max_entries_for_hash_table_stats;
 }
 
 namespace ErrorCodes

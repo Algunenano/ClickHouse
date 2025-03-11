@@ -26,7 +26,7 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsBool cast_keep_nullable;
+    extern SettingsBool cast_keep_nullable;
 }
 
 namespace ErrorCodes

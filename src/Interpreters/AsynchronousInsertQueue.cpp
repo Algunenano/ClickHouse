@@ -62,28 +62,28 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsUInt64 allow_experimental_parallel_reading_from_replicas;
-    extern const SettingsBool allow_experimental_query_deduplication;
-    extern const SettingsDouble async_insert_busy_timeout_decrease_rate;
-    extern const SettingsDouble async_insert_busy_timeout_increase_rate;
-    extern const SettingsMilliseconds async_insert_busy_timeout_min_ms;
-    extern const SettingsMilliseconds async_insert_busy_timeout_max_ms;
-    extern const SettingsBool async_insert_deduplicate;
-    extern const SettingsUInt64 async_insert_max_data_size;
-    extern const SettingsUInt64 async_insert_max_query_number;
-    extern const SettingsMilliseconds async_insert_poll_timeout_ms;
-    extern const SettingsBool async_insert_use_adaptive_busy_timeout;
-    extern const SettingsBool empty_result_for_aggregation_by_empty_set;
-    extern const SettingsBool insert_allow_materialized_columns;
-    extern const SettingsString insert_deduplication_token;
-    extern const SettingsBool input_format_defaults_for_omitted_fields;
-    extern const SettingsUInt64 log_queries_cut_to_length;
-    extern const SettingsUInt64 max_columns_to_read;
-    extern const SettingsBool optimize_trivial_count_query;
-    extern const SettingsUInt64 parallel_replicas_count;
-    extern const SettingsString parallel_replicas_custom_key;
-    extern const SettingsUInt64 parallel_replicas_custom_key_range_lower;
-    extern const SettingsUInt64 parallel_replica_offset;
+    extern SettingsUInt64 allow_experimental_parallel_reading_from_replicas;
+    extern SettingsBool allow_experimental_query_deduplication;
+    extern SettingsDouble async_insert_busy_timeout_decrease_rate;
+    extern SettingsDouble async_insert_busy_timeout_increase_rate;
+    extern SettingsMilliseconds async_insert_busy_timeout_min_ms;
+    extern SettingsMilliseconds async_insert_busy_timeout_max_ms;
+    extern SettingsBool async_insert_deduplicate;
+    extern SettingsUInt64 async_insert_max_data_size;
+    extern SettingsUInt64 async_insert_max_query_number;
+    extern SettingsMilliseconds async_insert_poll_timeout_ms;
+    extern SettingsBool async_insert_use_adaptive_busy_timeout;
+    extern SettingsBool empty_result_for_aggregation_by_empty_set;
+    extern SettingsBool insert_allow_materialized_columns;
+    extern SettingsString insert_deduplication_token;
+    extern SettingsBool input_format_defaults_for_omitted_fields;
+    extern SettingsUInt64 log_queries_cut_to_length;
+    extern SettingsUInt64 max_columns_to_read;
+    extern SettingsBool optimize_trivial_count_query;
+    extern SettingsUInt64 parallel_replicas_count;
+    extern SettingsString parallel_replicas_custom_key;
+    extern SettingsUInt64 parallel_replicas_custom_key_range_lower;
+    extern SettingsUInt64 parallel_replica_offset;
 }
 
 namespace ErrorCodes

@@ -24,8 +24,8 @@ namespace DB
 
 namespace MergeTreeSetting
 {
-    extern const MergeTreeSettingsUInt64 min_absolute_delay_to_close;
-    extern const MergeTreeSettingsUInt64 min_relative_delay_to_close;
+    extern MergeTreeSettingsUInt64 min_absolute_delay_to_close;
+    extern MergeTreeSettingsUInt64 min_relative_delay_to_close;
 }
 
 ReplicasStatusHandler::ReplicasStatusHandler(IServer & server) : WithContext(server.context())

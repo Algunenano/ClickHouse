@@ -32,8 +32,8 @@
 
 namespace DB::S3RequestSetting
 {
-    extern const S3RequestSettingsUInt64 max_single_read_retries;
-    extern const S3RequestSettingsUInt64 max_unexpected_write_error_retries;
+    extern S3RequestSettingsUInt64 max_single_read_retries;
+    extern S3RequestSettingsUInt64 max_unexpected_write_error_retries;
 }
 
 /*
@@ -75,7 +75,7 @@ void doReadRequest(std::shared_ptr<const DB::S3::Client> client, const DB::S3::U
     UInt64 max_single_read_retries = 1;
 
     DB::ReadSettings read_settings;
-    DB::S3::S3RequestSettings request_settings;
+    DB::S3RequestSettings request_settings;
     request_settings[DB::S3RequestSetting::max_single_read_retries] = max_single_read_retries;
     DB::ReadBufferFromS3 read_buffer(
         client,
@@ -94,7 +94,7 @@ void doWriteRequest(std::shared_ptr<const DB::S3::Client> client, const DB::S3::
 {
     UInt64 max_unexpected_write_error_retries = 1;
 
-    DB::S3::S3RequestSettings request_settings;
+    DB::S3RequestSettings request_settings;
     request_settings[DB::S3RequestSetting::max_unexpected_write_error_retries] = max_unexpected_write_error_retries;
     DB::WriteBufferFromS3 write_buffer(
         client,

@@ -21,11 +21,11 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsUInt64 read_backoff_max_throughput;
-    extern const SettingsUInt64 read_backoff_min_concurrency;
-    extern const SettingsMilliseconds read_backoff_min_interval_between_events_ms;
-    extern const SettingsUInt64 read_backoff_min_events;
-    extern const SettingsMilliseconds read_backoff_min_latency_ms;
+    extern SettingsUInt64 read_backoff_max_throughput;
+    extern SettingsUInt64 read_backoff_min_concurrency;
+    extern SettingsMilliseconds read_backoff_min_interval_between_events_ms;
+    extern SettingsUInt64 read_backoff_min_events;
+    extern SettingsMilliseconds read_backoff_min_latency_ms;
 }
 
 namespace ErrorCodes

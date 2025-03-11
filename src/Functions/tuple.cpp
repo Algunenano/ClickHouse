@@ -6,7 +6,7 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsBool enable_named_columns_in_function_tuple;
+    extern SettingsBool enable_named_columns_in_function_tuple;
 }
 
 FunctionPtr FunctionTuple::create(DB::ContextPtr context)

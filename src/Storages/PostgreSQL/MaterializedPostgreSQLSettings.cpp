@@ -33,14 +33,16 @@ namespace ErrorCodes
     DECLARE(UInt64, materialized_postgresql_backoff_factor, 2, "Poll backoff factor", 0) \
     DECLARE(Bool, materialized_postgresql_use_unique_replication_consumer_identifier, false, "Should a unique consumer be registered for table replication", 0) \
 
-DECLARE_SETTINGS_TRAITS(MaterializedPostgreSQLSettingsTraits, LIST_OF_MATERIALIZED_POSTGRESQL_SETTINGS)
+DECLARE_SETTINGS_TRAITS(MaterializedPostgreSQLSettingsTraits, LIST_OF_MATERIALIZED_POSTGRESQL_SETTINGS, MATERIALIZED_POSTGRESQL_SETTINGS_SUPPORTED_TYPES)
 IMPLEMENT_SETTINGS_TRAITS(MaterializedPostgreSQLSettingsTraits, LIST_OF_MATERIALIZED_POSTGRESQL_SETTINGS)
 
 struct MaterializedPostgreSQLSettingsImpl : public BaseSettings<MaterializedPostgreSQLSettingsTraits>
 {
 };
 
-#define INITIALIZE_SETTING_EXTERN(TYPE, NAME, DEFAULT, DESCRIPTION, FLAGS) MaterializedPostgreSQLSettings##TYPE NAME = &MaterializedPostgreSQLSettingsImpl ::NAME;
+MATERIALIZED_POSTGRESQL_SETTINGS_SUPPORTED_TYPES(MaterializedPostgreSQLSettings, IMPLEMENT_SETTING_SUBSCRIPT_OPERATOR)
+#define INITIALIZE_SETTING_EXTERN(TYPE, NAME, DEFAULT, DESCRIPTION, FLAGS) \
+    MaterializedPostgreSQLSettings ##TYPE NAME = { &MaterializedPostgreSQLSettingsImpl ::data_##TYPE , &MaterializedPostgreSQLSettingsImpl :: position_##NAME };
 
 namespace MaterializedPostgreSQLSetting
 {
@@ -64,8 +66,6 @@ MaterializedPostgreSQLSettings::MaterializedPostgreSQLSettings(MaterializedPostg
 }
 
 MaterializedPostgreSQLSettings::~MaterializedPostgreSQLSettings() = default;
-
-MATERIALIZED_POSTGRESQL_SETTINGS_SUPPORTED_TYPES(MaterializedPostgreSQLSettings, IMPLEMENT_SETTING_SUBSCRIPT_OPERATOR)
 
 void MaterializedPostgreSQLSettings::applyChange(const SettingChange & change)
 {

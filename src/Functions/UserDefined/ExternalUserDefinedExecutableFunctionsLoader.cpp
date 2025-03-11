@@ -16,7 +16,7 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsSeconds max_execution_time;
+    extern SettingsSeconds max_execution_time;
 }
 
 namespace ErrorCodes

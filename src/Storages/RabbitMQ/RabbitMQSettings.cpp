@@ -53,14 +53,17 @@ namespace ErrorCodes
     OBSOLETE_RABBITMQ_SETTINGS(M, ALIAS)    \
     LIST_OF_ALL_FORMAT_SETTINGS(M, ALIAS)   \
 
-DECLARE_SETTINGS_TRAITS(RabbitMQSettingsTraits, LIST_OF_RABBITMQ_SETTINGS)
+DECLARE_SETTINGS_TRAITS(RabbitMQSettingsTraits, LIST_OF_RABBITMQ_SETTINGS, RABBITMQ_SETTINGS_SUPPORTED_TYPES)
 IMPLEMENT_SETTINGS_TRAITS(RabbitMQSettingsTraits, LIST_OF_RABBITMQ_SETTINGS)
 
 struct RabbitMQSettingsImpl : public BaseSettings<RabbitMQSettingsTraits>
 {
 };
 
-#define INITIALIZE_SETTING_EXTERN(TYPE, NAME, DEFAULT, DESCRIPTION, FLAGS) RabbitMQSettings##TYPE NAME = &RabbitMQSettingsImpl ::NAME;
+RABBITMQ_SETTINGS_SUPPORTED_TYPES(RabbitMQSettings, IMPLEMENT_SETTING_SUBSCRIPT_OPERATOR)
+
+#define INITIALIZE_SETTING_EXTERN(TYPE, NAME, DEFAULT, DESCRIPTION, FLAGS) \
+    RabbitMQSettings##TYPE NAME = { &RabbitMQSettingsImpl ::data_##TYPE , &RabbitMQSettingsImpl :: position_##NAME };
 
 namespace RabbitMQSetting
 {
@@ -83,9 +86,6 @@ RabbitMQSettings::RabbitMQSettings(RabbitMQSettings && settings) noexcept
 }
 
 RabbitMQSettings::~RabbitMQSettings() = default;
-
-RABBITMQ_SETTINGS_SUPPORTED_TYPES(RabbitMQSettings, IMPLEMENT_SETTING_SUBSCRIPT_OPERATOR)
-
 
 void RabbitMQSettings::loadFromQuery(ASTStorage & storage_def)
 {

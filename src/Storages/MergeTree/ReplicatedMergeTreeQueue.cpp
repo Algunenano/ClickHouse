@@ -28,10 +28,10 @@ namespace DB
 
 namespace MergeTreeSetting
 {
-    extern const MergeTreeSettingsBool allow_remote_fs_zero_copy_replication;
-    extern const MergeTreeSettingsUInt64 max_bytes_to_merge_at_max_space_in_pool;
-    extern const MergeTreeSettingsUInt64 max_number_of_merges_with_ttl_in_pool;
-    extern const MergeTreeSettingsUInt64 replicated_max_mutations_in_one_entry;
+    extern MergeTreeSettingsBool allow_remote_fs_zero_copy_replication;
+    extern MergeTreeSettingsUInt64 max_bytes_to_merge_at_max_space_in_pool;
+    extern MergeTreeSettingsUInt64 max_number_of_merges_with_ttl_in_pool;
+    extern MergeTreeSettingsUInt64 replicated_max_mutations_in_one_entry;
 }
 
 namespace ErrorCodes

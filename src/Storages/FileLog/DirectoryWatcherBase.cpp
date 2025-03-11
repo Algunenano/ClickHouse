@@ -22,9 +22,9 @@ namespace ErrorCodes
 
 namespace FileLogSetting
 {
-    extern const FileLogSettingsUInt64 poll_directory_watch_events_backoff_factor;
-    extern const FileLogSettingsMilliseconds poll_directory_watch_events_backoff_init;
-    extern const FileLogSettingsMilliseconds poll_directory_watch_events_backoff_max;
+    extern FileLogSettingsUInt64 poll_directory_watch_events_backoff_factor;
+    extern FileLogSettingsMilliseconds poll_directory_watch_events_backoff_init;
+    extern FileLogSettingsMilliseconds poll_directory_watch_events_backoff_max;
 }
 
 static constexpr int buffer_size = 4096;

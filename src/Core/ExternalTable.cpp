@@ -29,7 +29,7 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsUInt64 http_max_multipart_form_data_size;
+    extern SettingsUInt64 http_max_multipart_form_data_size;
 }
 
 namespace ErrorCodes

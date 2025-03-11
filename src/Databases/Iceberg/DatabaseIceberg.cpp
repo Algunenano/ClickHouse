@@ -30,18 +30,18 @@ namespace DB
 {
 namespace DatabaseIcebergSetting
 {
-    extern const DatabaseIcebergSettingsDatabaseIcebergCatalogType catalog_type;
-    extern const DatabaseIcebergSettingsString warehouse;
-    extern const DatabaseIcebergSettingsString catalog_credential;
-    extern const DatabaseIcebergSettingsString auth_header;
-    extern const DatabaseIcebergSettingsString auth_scope;
-    extern const DatabaseIcebergSettingsString storage_endpoint;
-    extern const DatabaseIcebergSettingsString oauth_server_uri;
-    extern const DatabaseIcebergSettingsBool vended_credentials;
+    extern DatabaseIcebergSettingsDatabaseIcebergCatalogType catalog_type;
+    extern DatabaseIcebergSettingsString warehouse;
+    extern DatabaseIcebergSettingsString catalog_credential;
+    extern DatabaseIcebergSettingsString auth_header;
+    extern DatabaseIcebergSettingsString auth_scope;
+    extern DatabaseIcebergSettingsString storage_endpoint;
+    extern DatabaseIcebergSettingsString oauth_server_uri;
+    extern DatabaseIcebergSettingsBool vended_credentials;
 }
 namespace Setting
 {
-    extern const SettingsBool allow_experimental_database_iceberg;
+    extern SettingsBool allow_experimental_database_iceberg;
 }
 
 namespace ErrorCodes

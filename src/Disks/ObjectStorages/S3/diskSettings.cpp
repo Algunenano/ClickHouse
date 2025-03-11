@@ -28,30 +28,30 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsBool enable_s3_requests_logging;
-    extern const SettingsUInt64 s3_max_redirects;
-    extern const SettingsUInt64 s3_retry_attempts;
+    extern SettingsBool enable_s3_requests_logging;
+    extern SettingsUInt64 s3_max_redirects;
+    extern SettingsUInt64 s3_retry_attempts;
 }
 
 namespace S3AuthSetting
 {
-    extern const S3AuthSettingsString access_key_id;
-    extern const S3AuthSettingsUInt64 connect_timeout_ms;
-    extern const S3AuthSettingsBool disable_checksum;
-    extern const S3AuthSettingsUInt64 expiration_window_seconds;
-    extern const S3AuthSettingsBool gcs_issue_compose_request;
-    extern const S3AuthSettingsUInt64 http_keep_alive_max_requests;
-    extern const S3AuthSettingsUInt64 http_keep_alive_timeout;
-    extern const S3AuthSettingsUInt64 max_connections;
-    extern const S3AuthSettingsBool no_sign_request;
-    extern const S3AuthSettingsString region;
-    extern const S3AuthSettingsUInt64 request_timeout_ms;
-    extern const S3AuthSettingsString secret_access_key;
-    extern const S3AuthSettingsString server_side_encryption_customer_key_base64;
-    extern const S3AuthSettingsString session_token;
-    extern const S3AuthSettingsBool use_adaptive_timeouts;
-    extern const S3AuthSettingsBool use_environment_credentials;
-    extern const S3AuthSettingsBool use_insecure_imds_request;
+    extern S3AuthSettingsString access_key_id;
+    extern S3AuthSettingsUInt64 connect_timeout_ms;
+    extern S3AuthSettingsBool disable_checksum;
+    extern S3AuthSettingsUInt64 expiration_window_seconds;
+    extern S3AuthSettingsBool gcs_issue_compose_request;
+    extern S3AuthSettingsUInt64 http_keep_alive_max_requests;
+    extern S3AuthSettingsUInt64 http_keep_alive_timeout;
+    extern S3AuthSettingsUInt64 max_connections;
+    extern S3AuthSettingsBool no_sign_request;
+    extern S3AuthSettingsString region;
+    extern S3AuthSettingsUInt64 request_timeout_ms;
+    extern S3AuthSettingsString secret_access_key;
+    extern S3AuthSettingsString server_side_encryption_customer_key_base64;
+    extern S3AuthSettingsString session_token;
+    extern S3AuthSettingsBool use_adaptive_timeouts;
+    extern S3AuthSettingsBool use_environment_credentials;
+    extern S3AuthSettingsBool use_insecure_imds_request;
 }
 
 namespace ErrorCodes
@@ -68,8 +68,8 @@ std::unique_ptr<S3ObjectStorageSettings> getSettings(
 {
     const auto & settings = context->getSettingsRef();
 
-    auto auth_settings = S3::S3AuthSettings(config, settings, config_prefix);
-    auto request_settings = S3::S3RequestSettings(config, settings, config_prefix, "s3_", validate_settings);
+    auto auth_settings = S3AuthSettings(config, settings, config_prefix);
+    auto request_settings = S3RequestSettings(config, settings, config_prefix, "s3_", validate_settings);
 
     request_settings.proxy_resolver = DB::ProxyConfigurationResolverProvider::getFromOldSettingsFormat(
         ProxyConfiguration::protocolFromString(S3::URI(endpoint).uri.getScheme()), config_prefix, config);

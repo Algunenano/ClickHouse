@@ -24,11 +24,11 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsOverflowMode distinct_overflow_mode;
-    extern const SettingsUInt64 max_rows_in_distinct;
-    extern const SettingsUInt64 max_bytes_in_distinct;
-    extern const SettingsMaxThreads max_threads;
-    extern const SettingsBool optimize_distinct_in_order;
+    extern SettingsOverflowMode distinct_overflow_mode;
+    extern SettingsUInt64 max_rows_in_distinct;
+    extern SettingsUInt64 max_bytes_in_distinct;
+    extern SettingsMaxThreads max_threads;
+    extern SettingsBool optimize_distinct_in_order;
 }
 
 namespace ErrorCodes

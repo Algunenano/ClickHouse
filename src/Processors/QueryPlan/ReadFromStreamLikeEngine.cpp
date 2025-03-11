@@ -8,7 +8,7 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsBool stream_like_engine_allow_direct_select;
+    extern SettingsBool stream_like_engine_allow_direct_select;
 }
 
 namespace ErrorCodes

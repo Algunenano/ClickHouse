@@ -24,7 +24,7 @@ namespace DB
 {
 namespace Setting
 {
-extern const SettingsDialect dialect;
+extern SettingsDialect dialect;
 }
 
 namespace ErrorCodes

@@ -20,7 +20,7 @@ namespace DB
 
 namespace Setting
 {
-extern const SettingsBool log_processors_profiles;
+extern SettingsBool log_processors_profiles;
 }
 
 ColumnsDescription ProcessorProfileLogElement::getColumnsDescription()

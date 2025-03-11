@@ -41,10 +41,10 @@ namespace DB
 
 namespace MergeTreeSetting
 {
-    extern const MergeTreeSettingsBool allow_remote_fs_zero_copy_replication;
-    extern const MergeTreeSettingsBool enable_the_endpoint_id_with_zookeeper_name_prefix;
-    extern const MergeTreeSettingsBool fsync_part_directory;
-    extern const MergeTreeSettingsUInt64 min_compressed_bytes_to_fsync_after_fetch;
+    extern MergeTreeSettingsBool allow_remote_fs_zero_copy_replication;
+    extern MergeTreeSettingsBool enable_the_endpoint_id_with_zookeeper_name_prefix;
+    extern MergeTreeSettingsBool fsync_part_directory;
+    extern MergeTreeSettingsUInt64 min_compressed_bytes_to_fsync_after_fetch;
 }
 
 namespace ErrorCodes

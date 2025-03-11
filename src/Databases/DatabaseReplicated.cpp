@@ -58,26 +58,26 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsUInt64 database_replicated_allow_replicated_engine_arguments;
-    extern const SettingsBool database_replicated_always_detach_permanently;
-    extern const SettingsUInt64 max_parser_backtracks;
-    extern const SettingsUInt64 max_parser_depth;
-    extern const SettingsUInt64 max_query_size;
-    extern const SettingsDistributedDDLOutputMode distributed_ddl_output_mode;
-    extern const SettingsInt64 distributed_ddl_task_timeout;
-    extern const SettingsBool throw_on_unsupported_query_inside_transaction;
+    extern SettingsUInt64 database_replicated_allow_replicated_engine_arguments;
+    extern SettingsBool database_replicated_always_detach_permanently;
+    extern SettingsUInt64 max_parser_backtracks;
+    extern SettingsUInt64 max_parser_depth;
+    extern SettingsUInt64 max_query_size;
+    extern SettingsDistributedDDLOutputMode distributed_ddl_output_mode;
+    extern SettingsInt64 distributed_ddl_task_timeout;
+    extern SettingsBool throw_on_unsupported_query_inside_transaction;
 }
 
 namespace ServerSetting
 {
-    extern const ServerSettingsBool database_replicated_allow_detach_permanently;
-    extern const ServerSettingsUInt32 max_database_replicated_create_table_thread_pool_size;
+    extern ServerSettingsBool database_replicated_allow_detach_permanently;
+    extern ServerSettingsUInt32 max_database_replicated_create_table_thread_pool_size;
 }
 
 namespace DatabaseReplicatedSetting
 {
-    extern const DatabaseReplicatedSettingsString collection_name;
-    extern const DatabaseReplicatedSettingsFloat max_broken_tables_ratio;
+    extern DatabaseReplicatedSettingsString collection_name;
+    extern DatabaseReplicatedSettingsFloat max_broken_tables_ratio;
 }
 
 namespace ErrorCodes

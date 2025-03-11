@@ -13,8 +13,8 @@ namespace DB
 
 namespace ServerSetting
 {
-    extern const ServerSettingsString default_replica_name;
-    extern const ServerSettingsString default_replica_path;
+    extern ServerSettingsString default_replica_name;
+    extern ServerSettingsString default_replica_path;
 }
 
 namespace

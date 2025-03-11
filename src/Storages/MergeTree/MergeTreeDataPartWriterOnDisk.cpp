@@ -16,9 +16,9 @@ namespace DB
 {
 namespace MergeTreeSetting
 {
-    extern const MergeTreeSettingsUInt64 index_granularity;
-    extern const MergeTreeSettingsUInt64 index_granularity_bytes;
-    extern const MergeTreeSettingsUInt64 max_digestion_size_per_segment;
+    extern MergeTreeSettingsUInt64 index_granularity;
+    extern MergeTreeSettingsUInt64 index_granularity_bytes;
+    extern MergeTreeSettingsUInt64 max_digestion_size_per_segment;
 }
 
 namespace ErrorCodes

@@ -41,7 +41,7 @@ namespace ErrorCodes
 
 namespace Setting
 {
-    extern const SettingsBool use_concurrency_control;
+    extern SettingsBool use_concurrency_control;
 }
 
 namespace

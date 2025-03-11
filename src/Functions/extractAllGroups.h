@@ -19,7 +19,7 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsUInt64 regexp_max_matches_per_row;
+    extern SettingsUInt64 regexp_max_matches_per_row;
 }
 
 namespace ErrorCodes

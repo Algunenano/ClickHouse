@@ -62,7 +62,7 @@ namespace DB
 
 namespace ServerSetting
 {
-    extern const ServerSettingsBool prepare_system_log_tables_on_startup;
+    extern ServerSettingsBool prepare_system_log_tables_on_startup;
 }
 
 namespace ErrorCodes

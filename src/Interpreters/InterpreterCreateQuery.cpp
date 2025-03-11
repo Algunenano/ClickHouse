@@ -110,51 +110,51 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsBool allow_experimental_analyzer;
-    extern const SettingsBool allow_experimental_codecs;
-    extern const SettingsBool allow_experimental_database_materialized_postgresql;
-    extern const SettingsBool allow_experimental_full_text_index;
-    extern const SettingsBool allow_experimental_inverted_index;
-    extern const SettingsBool allow_experimental_statistics;
-    extern const SettingsBool allow_experimental_vector_similarity_index;
-    extern const SettingsBool allow_materialized_view_with_bad_select;
-    extern const SettingsBool allow_suspicious_codecs;
-    extern const SettingsBool compatibility_ignore_collation_in_create_table;
-    extern const SettingsBool compatibility_ignore_auto_increment_in_create_table;
-    extern const SettingsBool create_if_not_exists;
-    extern const SettingsFloat create_replicated_merge_tree_fault_injection_probability;
-    extern const SettingsBool database_atomic_wait_for_drop_and_detach_synchronously;
-    extern const SettingsUInt64 database_replicated_allow_explicit_uuid;
-    extern const SettingsBool database_replicated_allow_heavy_create;
-    extern const SettingsBool database_replicated_allow_only_replicated_engine;
-    extern const SettingsBool data_type_default_nullable;
-    extern const SettingsSQLSecurityType default_materialized_view_sql_security;
-    extern const SettingsSQLSecurityType default_normal_view_sql_security;
-    extern const SettingsDefaultTableEngine default_table_engine;
-    extern const SettingsDefaultTableEngine default_temporary_table_engine;
-    extern const SettingsString default_view_definer;
-    extern const SettingsUInt64 distributed_ddl_entry_format_version;
-    extern const SettingsBool enable_deflate_qpl_codec;
-    extern const SettingsBool enable_zstd_qat_codec;
-    extern const SettingsBool flatten_nested;
-    extern const SettingsBool fsync_metadata;
-    extern const SettingsBool insert_allow_materialized_columns;
-    extern const SettingsSeconds lock_acquire_timeout;
-    extern const SettingsUInt64 max_parser_backtracks;
-    extern const SettingsUInt64 max_parser_depth;
-    extern const SettingsBool restore_replace_external_engines_to_null;
-    extern const SettingsBool restore_replace_external_table_functions_to_null;
-    extern const SettingsBool restore_replace_external_dictionary_source_to_null;
+    extern SettingsBool allow_experimental_analyzer;
+    extern SettingsBool allow_experimental_codecs;
+    extern SettingsBool allow_experimental_database_materialized_postgresql;
+    extern SettingsBool allow_experimental_full_text_index;
+    extern SettingsBool allow_experimental_inverted_index;
+    extern SettingsBool allow_experimental_statistics;
+    extern SettingsBool allow_experimental_vector_similarity_index;
+    extern SettingsBool allow_materialized_view_with_bad_select;
+    extern SettingsBool allow_suspicious_codecs;
+    extern SettingsBool compatibility_ignore_collation_in_create_table;
+    extern SettingsBool compatibility_ignore_auto_increment_in_create_table;
+    extern SettingsBool create_if_not_exists;
+    extern SettingsFloat create_replicated_merge_tree_fault_injection_probability;
+    extern SettingsBool database_atomic_wait_for_drop_and_detach_synchronously;
+    extern SettingsUInt64 database_replicated_allow_explicit_uuid;
+    extern SettingsBool database_replicated_allow_heavy_create;
+    extern SettingsBool database_replicated_allow_only_replicated_engine;
+    extern SettingsBool data_type_default_nullable;
+    extern SettingsSQLSecurityType default_materialized_view_sql_security;
+    extern SettingsSQLSecurityType default_normal_view_sql_security;
+    extern SettingsDefaultTableEngine default_table_engine;
+    extern SettingsDefaultTableEngine default_temporary_table_engine;
+    extern SettingsString default_view_definer;
+    extern SettingsUInt64 distributed_ddl_entry_format_version;
+    extern SettingsBool enable_deflate_qpl_codec;
+    extern SettingsBool enable_zstd_qat_codec;
+    extern SettingsBool flatten_nested;
+    extern SettingsBool fsync_metadata;
+    extern SettingsBool insert_allow_materialized_columns;
+    extern SettingsSeconds lock_acquire_timeout;
+    extern SettingsUInt64 max_parser_backtracks;
+    extern SettingsUInt64 max_parser_depth;
+    extern SettingsBool restore_replace_external_engines_to_null;
+    extern SettingsBool restore_replace_external_table_functions_to_null;
+    extern SettingsBool restore_replace_external_dictionary_source_to_null;
 }
 
 namespace ServerSetting
 {
-    extern const ServerSettingsBool ignore_empty_sql_security_in_create_view_query;
-    extern const ServerSettingsUInt64 max_database_num_to_throw;
-    extern const ServerSettingsUInt64 max_dictionary_num_to_throw;
-    extern const ServerSettingsUInt64 max_table_num_to_throw;
-    extern const ServerSettingsUInt64 max_replicated_table_num_to_throw;
-    extern const ServerSettingsUInt64 max_view_num_to_throw;
+    extern ServerSettingsBool ignore_empty_sql_security_in_create_view_query;
+    extern ServerSettingsUInt64 max_database_num_to_throw;
+    extern ServerSettingsUInt64 max_dictionary_num_to_throw;
+    extern ServerSettingsUInt64 max_table_num_to_throw;
+    extern ServerSettingsUInt64 max_replicated_table_num_to_throw;
+    extern ServerSettingsUInt64 max_view_num_to_throw;
 }
 
 namespace ErrorCodes
@@ -2022,7 +2022,7 @@ bool InterpreterCreateQuery::doCreateTable(ASTCreateQuery & create,
 
 void InterpreterCreateQuery::throwIfTooManyEntities(ASTCreateQuery & create, StoragePtr storage) const
 {
-    auto check_and_throw = [&](auto setting, CurrentMetrics::Metric metric, String setting_name, String entity_name)
+    auto check_and_throw = [&](ServerSettingsUInt64 setting, CurrentMetrics::Metric metric, String setting_name, String entity_name)
         {
             UInt64 num_limit = getContext()->getGlobalContext()->getServerSettings()[setting];
             UInt64 attached_count = CurrentMetrics::get(metric);

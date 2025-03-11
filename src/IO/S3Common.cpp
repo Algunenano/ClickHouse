@@ -59,10 +59,10 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsUInt64 s3_max_get_burst;
-    extern const SettingsUInt64 s3_max_get_rps;
-    extern const SettingsUInt64 s3_max_put_burst;
-    extern const SettingsUInt64 s3_max_put_rps;
+    extern SettingsUInt64 s3_max_get_burst;
+    extern SettingsUInt64 s3_max_get_rps;
+    extern SettingsUInt64 s3_max_put_burst;
+    extern SettingsUInt64 s3_max_put_rps;
 }
 
 namespace ErrorCodes

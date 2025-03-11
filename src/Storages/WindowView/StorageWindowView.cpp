@@ -69,16 +69,16 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsBool allow_experimental_analyzer;
-    extern const SettingsBool allow_experimental_window_view;
-    extern const SettingsBool insert_null_as_default;
-    extern const SettingsSeconds lock_acquire_timeout;
-    extern const SettingsUInt64 min_insert_block_size_bytes;
-    extern const SettingsUInt64 min_insert_block_size_rows;
-    extern const SettingsBool use_concurrency_control;
-    extern const SettingsSeconds wait_for_window_view_fire_signal_timeout;
-    extern const SettingsSeconds window_view_clean_interval;
-    extern const SettingsSeconds window_view_heartbeat_interval;
+    extern SettingsBool allow_experimental_analyzer;
+    extern SettingsBool allow_experimental_window_view;
+    extern SettingsBool insert_null_as_default;
+    extern SettingsSeconds lock_acquire_timeout;
+    extern SettingsUInt64 min_insert_block_size_bytes;
+    extern SettingsUInt64 min_insert_block_size_rows;
+    extern SettingsBool use_concurrency_control;
+    extern SettingsSeconds wait_for_window_view_fire_signal_timeout;
+    extern SettingsSeconds window_view_clean_interval;
+    extern SettingsSeconds window_view_heartbeat_interval;
 }
 
 namespace ErrorCodes

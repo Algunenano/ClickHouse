@@ -45,41 +45,41 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsUInt64 max_insert_block_size;
-    extern const SettingsUInt64 output_format_avro_rows_in_file;
-    extern const SettingsMilliseconds stream_flush_interval_ms;
-    extern const SettingsBool stream_like_engine_allow_direct_select;
+    extern SettingsUInt64 max_insert_block_size;
+    extern SettingsUInt64 output_format_avro_rows_in_file;
+    extern SettingsMilliseconds stream_flush_interval_ms;
+    extern SettingsBool stream_like_engine_allow_direct_select;
 }
 
 namespace RabbitMQSetting
 {
-    extern const RabbitMQSettingsString rabbitmq_address;
-    extern const RabbitMQSettingsBool rabbitmq_commit_on_select;
-    extern const RabbitMQSettingsUInt64 rabbitmq_empty_queue_backoff_end_ms;
-    extern const RabbitMQSettingsUInt64 rabbitmq_empty_queue_backoff_start_ms;
-    extern const RabbitMQSettingsUInt64 rabbitmq_empty_queue_backoff_step_ms;
-    extern const RabbitMQSettingsString rabbitmq_exchange_name;
-    extern const RabbitMQSettingsString rabbitmq_exchange_type;
-    extern const RabbitMQSettingsUInt64 rabbitmq_flush_interval_ms;
-    extern const RabbitMQSettingsString rabbitmq_format;
-    extern const RabbitMQSettingsStreamingHandleErrorMode rabbitmq_handle_error_mode;
-    extern const RabbitMQSettingsString rabbitmq_host_port;
-    extern const RabbitMQSettingsUInt64 rabbitmq_max_block_size;
-    extern const RabbitMQSettingsUInt64 rabbitmq_max_rows_per_message;
-    extern const RabbitMQSettingsUInt64 rabbitmq_num_consumers;
-    extern const RabbitMQSettingsUInt64 rabbitmq_num_queues;
-    extern const RabbitMQSettingsString rabbitmq_password;
-    extern const RabbitMQSettingsBool rabbitmq_persistent;
-    extern const RabbitMQSettingsString rabbitmq_queue_base;
-    extern const RabbitMQSettingsBool rabbitmq_queue_consume;
-    extern const RabbitMQSettingsString rabbitmq_queue_settings_list;
-    extern const RabbitMQSettingsString rabbitmq_routing_key_list;
-    extern const RabbitMQSettingsString rabbitmq_schema;
-    extern const RabbitMQSettingsBool rabbitmq_secure;
-    extern const RabbitMQSettingsUInt64 rabbitmq_skip_broken_messages;
-    extern const RabbitMQSettingsString rabbitmq_username;
-    extern const RabbitMQSettingsString rabbitmq_vhost;
-    extern const RabbitMQSettingsBool reject_unhandled_messages;
+    extern RabbitMQSettingsString rabbitmq_address;
+    extern RabbitMQSettingsBool rabbitmq_commit_on_select;
+    extern RabbitMQSettingsUInt64 rabbitmq_empty_queue_backoff_end_ms;
+    extern RabbitMQSettingsUInt64 rabbitmq_empty_queue_backoff_start_ms;
+    extern RabbitMQSettingsUInt64 rabbitmq_empty_queue_backoff_step_ms;
+    extern RabbitMQSettingsString rabbitmq_exchange_name;
+    extern RabbitMQSettingsString rabbitmq_exchange_type;
+    extern RabbitMQSettingsUInt64 rabbitmq_flush_interval_ms;
+    extern RabbitMQSettingsString rabbitmq_format;
+    extern RabbitMQSettingsStreamingHandleErrorMode rabbitmq_handle_error_mode;
+    extern RabbitMQSettingsString rabbitmq_host_port;
+    extern RabbitMQSettingsUInt64 rabbitmq_max_block_size;
+    extern RabbitMQSettingsUInt64 rabbitmq_max_rows_per_message;
+    extern RabbitMQSettingsUInt64 rabbitmq_num_consumers;
+    extern RabbitMQSettingsUInt64 rabbitmq_num_queues;
+    extern RabbitMQSettingsString rabbitmq_password;
+    extern RabbitMQSettingsBool rabbitmq_persistent;
+    extern RabbitMQSettingsString rabbitmq_queue_base;
+    extern RabbitMQSettingsBool rabbitmq_queue_consume;
+    extern RabbitMQSettingsString rabbitmq_queue_settings_list;
+    extern RabbitMQSettingsString rabbitmq_routing_key_list;
+    extern RabbitMQSettingsString rabbitmq_schema;
+    extern RabbitMQSettingsBool rabbitmq_secure;
+    extern RabbitMQSettingsUInt64 rabbitmq_skip_broken_messages;
+    extern RabbitMQSettingsString rabbitmq_username;
+    extern RabbitMQSettingsString rabbitmq_vhost;
+    extern RabbitMQSettingsBool reject_unhandled_messages;
 }
 
 static const uint32_t QUEUE_SIZE = 100000;

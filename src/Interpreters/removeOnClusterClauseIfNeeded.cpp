@@ -26,9 +26,9 @@ namespace DB
 {
 namespace Setting
 {
-    extern const SettingsBool ignore_on_cluster_for_replicated_named_collections_queries;
-    extern const SettingsBool ignore_on_cluster_for_replicated_access_entities_queries;
-    extern const SettingsBool ignore_on_cluster_for_replicated_udf_queries;
+    extern SettingsBool ignore_on_cluster_for_replicated_named_collections_queries;
+    extern SettingsBool ignore_on_cluster_for_replicated_access_entities_queries;
+    extern SettingsBool ignore_on_cluster_for_replicated_udf_queries;
 }
 
 static bool isUserDefinedFunctionQuery(const ASTPtr & query)

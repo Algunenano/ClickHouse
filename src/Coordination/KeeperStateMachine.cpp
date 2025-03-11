@@ -48,10 +48,10 @@ namespace DB
 
 namespace CoordinationSetting
 {
-    extern const CoordinationSettingsBool compress_snapshots_with_zstd_format;
-    extern const CoordinationSettingsMilliseconds dead_session_check_period_ms;
-    extern const CoordinationSettingsUInt64 min_request_size_for_cache;
-    extern const CoordinationSettingsUInt64 snapshots_to_keep;
+    extern CoordinationSettingsBool compress_snapshots_with_zstd_format;
+    extern CoordinationSettingsMilliseconds dead_session_check_period_ms;
+    extern CoordinationSettingsUInt64 min_request_size_for_cache;
+    extern CoordinationSettingsUInt64 snapshots_to_keep;
 }
 
 namespace ErrorCodes
