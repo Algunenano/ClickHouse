@@ -629,7 +629,6 @@ ColumnsDescription InterpreterCreateQuery::getColumnsDescription(
         getDefaultExpressionInfoInto(col_decl, column_names_and_types.back().type, default_expr_info);
     }
 
-    Block defaults_sample_block;
     /// Set missing types and wrap default_expression's in a conversion-function if necessary.
     /// We try to avoid that validation while restoring from a backup because it might be slow or troublesome
     /// (for example, a default expression can contain dictGet() and that dictionary can access remote servers or
@@ -637,7 +636,7 @@ ColumnsDescription InterpreterCreateQuery::getColumnsDescription(
     if (!default_expr_info.expr_list->children.empty()
         && (default_expr_info.has_columns_with_default_without_type || (mode <= LoadingStrictnessLevel::CREATE)))
     {
-        defaults_sample_block = validateColumnsDefaultsAndGetSampleBlock(default_expr_info.expr_list, column_names_and_types, context_);
+        validateColumnsDefaults(default_expr_info.expr_list, column_names_and_types, context_);
     }
 
     bool skip_checks = LoadingStrictnessLevel::SECONDARY_CREATE <= mode;
@@ -678,15 +677,10 @@ ColumnsDescription InterpreterCreateQuery::getColumnsDescription(
 
             ASTPtr default_expr = col_decl.default_expression->clone();
 
-            if (col_decl.type)
-                column.type = name_type_it->type;
-            else
-            {
-                column.type = defaults_sample_block.getByName(column.name).type;
-                /// set nullability for case of column declaration w/o type but with default expression
-                if ((col_decl.null_modifier && *col_decl.null_modifier) || make_columns_nullable)
-                    column.type = makeNullable(column.type);
-            }
+            column.type = name_type_it->type;
+            /// set nullability for case of column declaration w/o type but with default expression
+            if ((!col_decl.type) && ((col_decl.null_modifier && *col_decl.null_modifier) || make_columns_nullable))
+                column.type = makeNullable(column.type);
 
             column.default_desc.kind = columnDefaultKindFromString(col_decl.default_specifier);
             column.default_desc.expression = default_expr;

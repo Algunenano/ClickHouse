@@ -3,6 +3,7 @@
 #include <memory>
 #include <Compression/CompressionFactory.h>
 #include <Core/Defines.h>
+#include <Core/Settings.h>
 #include <DataTypes/DataTypeArray.h>
 #include <DataTypes/DataTypeFactory.h>
 #include <DataTypes/DataTypeNested.h>
@@ -48,6 +49,11 @@ namespace ErrorCodes
     extern const int CANNOT_PARSE_TEXT;
     extern const int THERE_IS_NO_DEFAULT_VALUE;
     extern const int LOGICAL_ERROR;
+}
+
+namespace Setting
+{
+extern const SettingsBool allow_experimental_analyzer;
 }
 
 ColumnDescription::ColumnDescription(String name_, DataTypePtr type_)
@@ -1004,9 +1010,7 @@ void getDefaultExpressionInfoInto(const ASTColumnDeclaration & col_decl, const D
     }
 }
 
-namespace
-{
-std::optional<Block> validateColumnsDefaultsAndGetSampleBlockImpl(ASTPtr default_expr_list, const NamesAndTypesList & all_columns, ContextPtr context, bool get_sample_block)
+void validateColumnsDefaults(ASTPtr default_expr_list, const NamesAndTypesList & all_columns, ContextPtr context)
 {
     for (const auto & child : default_expr_list->children)
         if (child->as<ASTSelectQuery>() || child->as<ASTSelectWithUnionQuery>() || child->as<ASTSubquery>())
@@ -1020,10 +1024,8 @@ std::optional<Block> validateColumnsDefaultsAndGetSampleBlockImpl(ASTPtr default
             if (action.node->type == ActionsDAG::ActionType::ARRAY_JOIN)
                 throw Exception(ErrorCodes::THERE_IS_NO_DEFAULT_VALUE, "Unsupported default value that requires ARRAY JOIN action");
 
-        if (!get_sample_block)
-            return {};
-
-        return actions->getSampleBlock();
+        /// Just for validation
+        [[maybe_unused]] auto block = actions->getSampleBlock();
     }
     catch (Exception & ex)
     {
@@ -1031,19 +1033,4 @@ std::optional<Block> validateColumnsDefaultsAndGetSampleBlockImpl(ASTPtr default
         throw;
     }
 }
-}
-
-void validateColumnsDefaults(ASTPtr default_expr_list, const NamesAndTypesList & all_columns, ContextPtr context)
-{
-    /// Do not execute the default expressions as they might be heavy, e.g.: access remote servers, etc.
-    validateColumnsDefaultsAndGetSampleBlockImpl(default_expr_list, all_columns, context, /*get_sample_block=*/false);
-}
-
-Block validateColumnsDefaultsAndGetSampleBlock(ASTPtr default_expr_list, const NamesAndTypesList & all_columns, ContextPtr context)
-{
-    auto result = validateColumnsDefaultsAndGetSampleBlockImpl(default_expr_list, all_columns, context, /*get_sample_block=*/true);
-    chassert(result.has_value());
-    return std::move(*result);
-}
-
 }

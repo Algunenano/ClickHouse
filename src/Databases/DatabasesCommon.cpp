@@ -90,7 +90,7 @@ void validateCreateQuery(const ASTCreateQuery & query, ContextPtr context)
     }
 
     if (default_expr_info.expr_list)
-        validateColumnsDefaultsAndGetSampleBlock(default_expr_info.expr_list, columns_desc.getAll(), context);
+        validateColumnsDefaults(default_expr_info.expr_list, columns_desc.getAll(), context);
 
     if (columns.indices)
     {

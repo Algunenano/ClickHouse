@@ -1776,7 +1776,7 @@ void AlterCommands::validate(const StoragePtr & table, ContextPtr context) const
     if (!is_parameterized_view && all_columns.empty())
         throw Exception(ErrorCodes::BAD_ARGUMENTS, "Cannot DROP or CLEAR all columns");
 
-    validateColumnsDefaultsAndGetSampleBlock(default_expr_list, all_columns.getAll(), context);
+    validateColumnsDefaults(default_expr_list, all_columns.getAll(), context);
 }
 
 bool AlterCommands::hasNonReplicatedAlterCommand() const

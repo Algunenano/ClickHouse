@@ -283,6 +283,4 @@ void getDefaultExpressionInfoInto(const ASTColumnDeclaration & col_decl, const D
 /// don't have strange constructions in default expression like SELECT query or
 /// arrayJoin function.
 void validateColumnsDefaults(ASTPtr default_expr_list, const NamesAndTypesList & all_columns, ContextPtr context);
-Block validateColumnsDefaultsAndGetSampleBlock(ASTPtr default_expr_list, const NamesAndTypesList & all_columns, ContextPtr context);
-
 }
