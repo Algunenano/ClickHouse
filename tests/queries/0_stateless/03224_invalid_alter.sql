@@ -6,6 +6,7 @@ CREATE TABLE test
     str String,
     column_with_codec String CODEC(ZSTD),
     column_with_alias String MATERIALIZED concat(str, 'a' AS a),
+    invalid_column String MATERIALIZED concat(str, 'b' AS a)
 )
 ENGINE = MergeTree()
 ORDER BY tuple();

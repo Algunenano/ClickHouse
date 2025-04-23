@@ -1,6 +1,10 @@
 #include <Storages/ColumnsDescription.h>
 
-#include <memory>
+#include <Analyzer/ArrayJoinNode.h>
+#include <Analyzer/Passes/QueryAnalysisPass.h>
+#include <Analyzer/QueryTreeBuilder.h>
+#include <Analyzer/QueryTreePassManager.h>
+#include <Analyzer/TableNode.h>
 #include <Compression/CompressionFactory.h>
 #include <Core/Defines.h>
 #include <Core/Settings.h>
@@ -33,14 +37,26 @@
 #include <Parsers/ExpressionListParsers.h>
 #include <Parsers/ParserCreateQuery.h>
 #include <Parsers/parseQuery.h>
+#include <Planner/Planner.h>
 #include <Storages/IStorage.h>
+#include <Storages/StorageDummy.h>
 #include <Common/Exception.h>
 #include <Common/randomSeed.h>
 #include <Common/typeid_cast.h>
 
+#include <memory>
+
+#include <boost/proto/traits.hpp>
+#include <Common/logger_useful.h>
+#include "Analyzer/MatcherNode.h"
 
 namespace DB
 {
+
+namespace Setting
+{
+extern const SettingsBool allow_experimental_analyzer;
+}
 
 namespace ErrorCodes
 {
@@ -988,26 +1004,42 @@ void getDefaultExpressionInfoInto(const ASTColumnDeclaration & col_decl, const D
     if (!col_decl.default_expression)
         return;
 
-    /** For columns with explicitly-specified type create two expressions:
-    * 1. default_expression aliased as column name with _tmp suffix
-    * 2. conversion of expression (1) to explicitly-specified type alias as column name
-    */
+    /// For columns with explicitly-specified type create a conversion of expression of the default value to the column name
     if (col_decl.type)
     {
         const auto & final_column_name = col_decl.name;
-        const auto tmp_column_name = final_column_name + "_tmp_alter" + toString(randomSeed());
         const auto * data_type_ptr = data_type.get();
-
-        info.expr_list->children.emplace_back(setAlias(
-            addTypeConversionToAST(std::make_shared<ASTIdentifier>(tmp_column_name), data_type_ptr->getName()), final_column_name));
-
-        info.expr_list->children.emplace_back(setAlias(col_decl.default_expression->clone(), tmp_column_name));
+        info.expr_list->children.emplace_back(
+            setAlias(addTypeConversionToAST(col_decl.default_expression->clone(), data_type_ptr->getName()), final_column_name));
     }
     else
     {
         info.has_columns_with_default_without_type = true;
         info.expr_list->children.emplace_back(setAlias(col_decl.default_expression->clone(), col_decl.name));
     }
+}
+
+namespace
+{
+void throwOnArrayJoinOrMatcher(const QueryTreeNodePtr & node)
+{
+    if (!node)
+        return;
+
+    if (node->as<ArrayJoinNode>())
+        throw Exception(
+            ErrorCodes::THERE_IS_NO_DEFAULT_VALUE, "Unsupported ARRAY JOIN value ({}) in default column", node->formatASTForErrorMessage());
+
+    // if (node->as<MatcherNode>())
+    //     throw Exception(ErrorCodes::THERE_IS_NO_DEFAULT_VALUE, "Unsupported MATCHER value ({}) in default column", node->formatASTForErrorMessage());
+
+    for (const auto & child : node->getChildren())
+    {
+        if (child)
+            throwOnArrayJoinOrMatcher(child);
+    }
+}
+
 }
 
 void validateColumnsDefaults(ASTPtr default_expr_list, const NamesAndTypesList & all_columns, ContextPtr context)
@@ -1018,6 +1050,36 @@ void validateColumnsDefaults(ASTPtr default_expr_list, const NamesAndTypesList &
 
     try
     {
+        if (context->getSettingsRef()[Setting::allow_experimental_analyzer])
+        {
+            const auto * expr_list = default_expr_list->as<ASTExpressionList>();
+            if (!expr_list)
+                throw Exception(
+                    ErrorCodes::LOGICAL_ERROR, "Unexpected default expression list: {}", default_expr_list->formatForErrorMessage());
+
+            QueryTreeNodePtr tree = buildQueryTree(default_expr_list, context);
+            throwOnArrayJoinOrMatcher(tree);
+
+            QueryTreePassManager query_tree_pass_manager(context);
+
+            ColumnsDescription fake_column_descriptions;
+            NameSet fake_name_set;
+            for (const auto & column : all_columns)
+            {
+                if (column.type)
+                    fake_column_descriptions.add(ColumnDescription(column.name, column.type));
+            }
+
+            bool only_analyze = true;
+
+            auto fake_storage = std::make_shared<StorageDummy>(StorageID{"dummy", "dummy"}, fake_column_descriptions);
+            auto fake_table_expression = std::make_shared<TableNode>(std::move(fake_storage), context);
+
+            query_tree_pass_manager.addPass(std::make_unique<QueryAnalysisPass>(fake_table_expression, only_analyze));
+            query_tree_pass_manager.run(tree);
+            return;
+        }
+
         auto syntax_analyzer_result = TreeRewriter(context).analyze(default_expr_list, all_columns, {}, {}, false, /* allow_self_aliases = */ false);
         const auto actions = ExpressionAnalyzer(default_expr_list, syntax_analyzer_result, context).getActions(true);
         for (const auto & action : actions->getActions())
