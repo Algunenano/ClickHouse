@@ -100,7 +100,7 @@ bool ExecutingGraph::addEdges(uint64_t node)
     return was_edge_added;
 }
 
-ExecutingGraph::UpdateNodeStatus ExecutingGraph::expandPipeline(std::stack<uint64_t> & stack, uint64_t pid)
+ExecutingGraph::UpdateNodeStatus ExecutingGraph::expandPipeline(ProcessorStack & stack, uint64_t pid)
 {
     auto & cur_node = *nodes[pid];
     Processors new_processors;
@@ -187,7 +187,7 @@ ExecutingGraph::UpdateNodeStatus ExecutingGraph::expandPipeline(std::stack<uint6
 
 void ExecutingGraph::initializeExecution(Queue & queue, Queue & async_queue)
 {
-    std::stack<uint64_t> stack;
+    ProcessorStack stack;
 
     /// Add childless processors to stack.
     uint64_t num_processors = nodes.size();
@@ -213,8 +213,8 @@ void ExecutingGraph::initializeExecution(Queue & queue, Queue & async_queue)
 
 ExecutingGraph::UpdateNodeStatus ExecutingGraph::updateNode(uint64_t pid, Queue & queue, Queue & async_queue)
 {
-    std::stack<Edge *> updated_edges;
-    std::stack<uint64_t> updated_processors;
+    EdgeStack updated_edges;
+    ProcessorStack updated_processors;
     updated_processors.push(pid);
 
     std::shared_lock read_lock(nodes_mutex);

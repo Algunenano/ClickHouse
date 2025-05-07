@@ -153,6 +153,9 @@ public:
     void cancel(bool cancel_all_processors = true);
 
 private:
+    using EdgeStack = std::stack<Edge *, std::vector<Edge *>>;
+    using ProcessorStack = std::stack<uint64_t, std::vector<uint64_t>>;
+
     /// Add single edge to edges list. Check processor is known.
     Edge & addEdge(Edges & edges, Edge edge, const IProcessor * from, const IProcessor * to);
 
@@ -162,7 +165,7 @@ private:
 
     /// Update graph after processor (pid) returned ExpandPipeline status.
     /// All new nodes and nodes with updated ports are pushed into stack.
-    UpdateNodeStatus expandPipeline(std::stack<uint64_t> & stack, uint64_t pid);
+    UpdateNodeStatus expandPipeline(ProcessorStack & stack, uint64_t pid);
 
     std::shared_ptr<Processors> processors;
     std::vector<bool> source_processors;
