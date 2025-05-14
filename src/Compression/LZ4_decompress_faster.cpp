@@ -646,42 +646,36 @@ bool decompress(
     if (source_size == 0 || dest_size == 0)
         return true;
 
+    size_t best_variant = statistics.select(4);
+
+    auto decompress_with_best_variant = [&] -> bool
+    {
+        if (best_variant == 0)
+            return decompressImpl<16, true>(source, dest, source_size, dest_size);
+        if (best_variant == 1)
+            return decompressImpl<16, false>(source, dest, source_size, dest_size);
+        if (best_variant == 2)
+            return decompressImpl<8, true>(source, dest, source_size, dest_size);
+        if (best_variant == 3)
+            return decompressImpl<32, false>(source, dest, source_size, dest_size);
+
+        return decompressImpl<32, true>(source, dest, source_size, dest_size);
+    };
+
     /// Don't run timer if the block is too small.
     if (dest_size >= 32768)
     {
-        size_t variant_size = 4;
-#if USE_MULTITARGET_CODE && !defined(MEMORY_SANITIZER)
-        /// best_variant == 4 only valid when AVX512VBMI available
-        if (isArchSupported(DB::TargetArch::AVX512VBMI))
-            variant_size = 5;
-#endif
-        size_t best_variant = statistics.select(variant_size);
-
-        /// Run the selected method and measure time.
-
         Stopwatch watch;
-        bool success = true;
-        if (best_variant == 0)
-            success = decompressImpl<16, true>(source, dest, source_size, dest_size);
-        if (best_variant == 1)
-            success = decompressImpl<16, false>(source, dest, source_size, dest_size);
-        if (best_variant == 2)
-            success = decompressImpl<8, true>(source, dest, source_size, dest_size);
-        if (best_variant == 3)
-            success = decompressImpl<32, false>(source, dest, source_size, dest_size);
-        if (best_variant == 4)
-            success = decompressImpl<32, true>(source, dest, source_size, dest_size);
-
+        bool success = decompress_with_best_variant();
         watch.stop();
 
         /// Update performance statistics.
-
         statistics.data[best_variant].update(watch.elapsedSeconds(), dest_size);
 
         return success;
     }
 
-    return decompressImpl<8, false>(source, dest, source_size, dest_size);
+    return decompress_with_best_variant();
 }
 
 
