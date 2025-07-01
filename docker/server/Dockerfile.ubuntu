@@ -5,7 +5,7 @@ FROM ubuntu:22.04
 ARG DEBIAN_FRONTEND=noninteractive
 
 # ARG for quick switch to a given ubuntu mirror
-ARG apt_archive="https://archive.ubuntu.com"
+ARG apt_archive="http://archive.ubuntu.com"
 
 # We shouldn't use `apt upgrade` to not change the upstream image. It's updated biweekly
 
@@ -119,9 +119,6 @@ RUN clickhouse local -q 'SELECT 1' >/dev/null 2>&1 && exit 0 || : \
     && apt-get autoremove --purge -yq dirmngr gnupg2 \
     && chmod ugo+Xrw -R /etc/clickhouse-server /etc/clickhouse-client
 # The last chmod is here to make the next one is No-op in docker official library Dockerfile
-
-# Cleanup
-RUN rm -rf /var/lib/apt/lists/* /var/cache/debconf /tmp/*
 
 # post install
 # we need to allow "others" access to clickhouse folder, because docker container
