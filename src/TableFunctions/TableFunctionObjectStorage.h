@@ -87,7 +87,7 @@ struct IcebergAzureDefinition
 struct IcebergLocalDefinition
 {
     static constexpr auto name = "icebergLocal";
-    static constexpr auto storage_type_name = "Local";
+    static constexpr auto storage_type_name = "IcebergLocal";
 };
 
 struct IcebergHDFSDefinition
@@ -117,7 +117,7 @@ struct DeltaLakeAzureDefinition
 struct DeltaLakeLocalDefinition // New definition for local Delta Lake
 {
     static constexpr auto name = "deltaLakeLocal";
-    static constexpr auto storage_type_name = "Local";
+    static constexpr auto storage_type_name = "DeltaLakeLocal";
 };
 
 struct HudiDefinition
