@@ -120,9 +120,6 @@ static void * memcpy_trivial(void * __restrict dst_, const void * __restrict src
     return ret;
 }
 
-extern "C" void * memcpy_jart(void * dst, const void * src, size_t size);
-extern "C" void MemCpy(void * dst, const void * src, size_t size);
-
 void * memcpy_fast_sse(void * dst, const void * src, size_t size);
 void * memcpy_fast_avx(void * dst, const void * src, size_t size);
 void * memcpy_tiny(void * dst, const void * src, size_t size);
@@ -855,7 +852,6 @@ uint64_t dispatchMemcpyVariants(size_t memcpy_variant, uint8_t * dst, uint8_t * 
     VARIANT(2, memcpy_trivial)
     VARIANT(3, memcpy_libc_old)
     VARIANT(4, memcpy_erms)
-    VARIANT(5, MemCpy)
     VARIANT(6, memcpySSE2)
     VARIANT(7, memcpySSE2Unrolled2)
     VARIANT(8, memcpySSE2Unrolled4)
@@ -918,9 +914,9 @@ int main(int argc, char ** argv)
 for size in 4096 16384 50000 65536 100000 1000000 10000000 100000000; do
     for threads in 1 2 4 $(($(nproc) / 2)) $(nproc); do
         for distribution in 1 2 3 4 5; do
-            for variant in {1..13} {21..29}; do
+            for variant in {1..4} {6..13} {21..29}; do
                 for i in {1..10}; do
-                    ./memcpy-bench --tsv --size $size --variant $variant --threads $threads --distribution $distribution;
+                    )" << argv[0] << R"( --tsv --size $size --variant $variant --threads $threads --distribution $distribution;
                 done;
             done;
         done;
