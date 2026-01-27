@@ -10,15 +10,20 @@
  * Thus, it's allowed to call functions inside these namespaces only after
  * checking platform in runtime (see isArchSupported() below).
  *
- * If compiler is not gcc/clang or target isn't x86_64 or ENABLE_MULTITARGET_CODE
- * was set to OFF in cmake, all code inside these macros will be removed and
- * USE_MULTITARGET_CODE will be set to 0. Use #if USE_MULTITARGET_CODE whenever you
- * use anything from this namespaces.
+ * If compiler is not gcc/clang or target isn't x86_64 or aarch64, or ENABLE_MULTITARGET_CODE
+ * was set to OFF in cmake, all code inside these macros will be removed. Use platform-specific
+ * #if USE_MULTITARGET_CODE_$ARCH:
+ * - USE_MULTITARGET_CODE_X86: set to 1 on x86_64 when multitarget is enabled
+ * - USE_MULTITARGET_CODE_ARM: set to 1 on aarch64 when multitarget is enabled
+ *
+ * Supported architectures:
+ * - x86_64: SSE42, AVX, AVX2, AVX512F, AVX512BW, AVX512VL, AVX512VBMI, AVX512VBMI2, AVX512BF16
+ * - aarch64: NEON (default), NEONAES (NEON+AES), SVE, SVE2, SVE2AES (SVE2+AES)
  *
  * For similarities there is a macros DECLARE_DEFAULT_CODE, which wraps code
  * into the namespace TargetSpecific::Default but doesn't specify any additional
- * copile options. Functions and classes inside this macros are available regardless
- * of USE_MUTLITARGE_CODE.
+ * compile options. Functions and classes inside this macros are available regardless
+ * of USE_MUTLITARGET_CODE.
  *
  * Example of usage:
  *
@@ -35,9 +40,12 @@
  * ) // DECLARE_AVX2_SPECIFIC_CODE
  *
  * int func() {
- * #if USE_MULTITARGET_CODE
+ * #if USE_MULTITARGET_CODE_X86
  *     if (isArchSupported(TargetArch::AVX2))
  *         return TargetSpecific::AVX2::funcImpl();
+ * #elif USE_MULTITARGET_CODE_ARM
+ *     if (isArchSupported(TargetArch::SVE2))
+ *         return TargetSpecific::SVE2::funcImpl();
  * #endif
  *     return TargetSpecific::Default::funcImpl();
  * }
@@ -90,6 +98,11 @@ enum class TargetArch : UInt32
     AMXTILE = (1 << 10),
     AMXINT8 = (1 << 11),
     GenuineIntel = (1 << 12), /// Not an instruction set, but a CPU vendor.
+    NEON = (1 << 13), /// ARM NEON
+    NEONAES = (1 << 14), /// ARM NEON with AES extensions
+    SVE = (1 << 15), /// ARM SVE
+    SVE2 = (1 << 16), /// ARM SVE2
+    SVE2AES = (1 << 17), /// ARM SVE2 with AES extensions
 };
 
 /// Runtime detection.
@@ -107,9 +120,19 @@ String toString(TargetArch arch);
 #endif
 
 #if ENABLE_MULTITARGET_CODE && defined(__GNUC__) && defined(__x86_64__)
+#   define USE_MULTITARGET_CODE_X86 1
+#else
+#   define USE_MULTITARGET_CODE_X86 0
+#endif
+
+#if ENABLE_MULTITARGET_CODE && defined(__GNUC__) && defined(__aarch64__)
+#   define USE_MULTITARGET_CODE_ARM 1
+#else
+#   define USE_MULTITARGET_CODE_ARM 0
+#endif
 
 /// NOLINTNEXTLINE
-#define USE_MULTITARGET_CODE 1
+#if USE_MULTITARGET_CODE_X86
 
 #define AVX512BF16_FUNCTION_SPECIFIC_ATTRIBUTE __attribute__((target("sse,sse2,sse3,ssse3,sse4.2,popcnt,avx,avx2,avx512f,avx512bw,avx512vl,avx512vbmi,avx512vbmi2,avx512bf16")))
 #define AVX512VBMI2_FUNCTION_SPECIFIC_ATTRIBUTE __attribute__((target("sse,sse2,sse3,ssse3,sse4.2,popcnt,avx,avx2,avx512f,avx512bw,avx512vl,avx512vbmi,avx512vbmi2")))
@@ -122,6 +145,20 @@ String toString(TargetArch arch);
 #define SSE42_FUNCTION_SPECIFIC_ATTRIBUTE __attribute__((target("sse,sse2,sse3,ssse3,sse4.2,popcnt")))
 #define DEFAULT_FUNCTION_SPECIFIC_ATTRIBUTE
 
+#endif // USE_MULTITARGET_CODE_X86
+
+#if USE_MULTITARGET_CODE_ARM
+
+#define SVE2AES_FUNCTION_SPECIFIC_ATTRIBUTE __attribute__((target("sve,sve2,sve2-aes")))
+#define SVE2_FUNCTION_SPECIFIC_ATTRIBUTE __attribute__((target("sve,sve2")))
+#define SVE_FUNCTION_SPECIFIC_ATTRIBUTE __attribute__((target("sve")))
+#define NEONAES_FUNCTION_SPECIFIC_ATTRIBUTE __attribute__((target("crypto")))
+#define NEON_FUNCTION_SPECIFIC_ATTRIBUTE __attribute__((target("simd")))
+#define DEFAULT_FUNCTION_SPECIFIC_ATTRIBUTE
+
+#endif // USE_MULTITARGET_CODE_ARM
+
+#if USE_MULTITARGET_CODE_X86
 #   define BEGIN_AVX512BF16_SPECIFIC_CODE \
         _Pragma("clang attribute push(__attribute__((target(\"sse,sse2,sse3,ssse3,sse4.2,popcnt,avx,avx2,avx512f,avx512bw,avx512vl,avx512vbmi,avx512vbmi2,avx512bf16\"))),apply_to=function)")
 #   define BEGIN_AVX512VBMI2_SPECIFIC_CODE \
@@ -142,12 +179,31 @@ String toString(TargetArch arch);
         _Pragma("clang attribute push(__attribute__((target(\"sse,sse2,sse3,ssse3,sse4.2,popcnt\"))),apply_to=function)")
 #   define END_TARGET_SPECIFIC_CODE \
         _Pragma("clang attribute pop")
+#endif // USE_MULTITARGET_CODE_X86
+
+#if USE_MULTITARGET_CODE_ARM
+#   define BEGIN_SVE2AES_SPECIFIC_CODE \
+        _Pragma("clang attribute push(__attribute__((target(\"sve,sve2,sve2-aes\"))),apply_to=function)")
+#   define BEGIN_SVE2_SPECIFIC_CODE \
+        _Pragma("clang attribute push(__attribute__((target(\"sve,sve2\"))),apply_to=function)")
+#   define BEGIN_SVE_SPECIFIC_CODE \
+        _Pragma("clang attribute push(__attribute__((target(\"sve\"))),apply_to=function)")
+#   define BEGIN_NEONAES_SPECIFIC_CODE \
+        _Pragma("clang attribute push(__attribute__((target(\"crypto\"))),apply_to=function)")
+#   define BEGIN_NEON_SPECIFIC_CODE \
+        _Pragma("clang attribute push(__attribute__((target(\"simd\"))),apply_to=function)")
+#   define END_TARGET_SPECIFIC_CODE \
+        _Pragma("clang attribute pop")
+#endif // USE_MULTITARGET_CODE_ARM
 
 /* Clang shows warning when there aren't any objects to apply pragma.
  * To prevent this warning we define this function inside every macros with pragmas.
  */
+#if USE_MULTITARGET_CODE_X86 || USE_MULTITARGET_CODE_ARM
 #   define DUMMY_FUNCTION_DEFINITION [[maybe_unused]] void _dummy_function_definition();
+#endif
 
+#if USE_MULTITARGET_CODE_X86
 
 #define DECLARE_SSE42_SPECIFIC_CODE(...) \
 BEGIN_SSE42_SPECIFIC_CODE \
@@ -232,9 +288,7 @@ END_TARGET_SPECIFIC_CODE
 
 #else
 
-#define USE_MULTITARGET_CODE 0
-
-/* Multitarget code is disabled, just delete target-specific code.
+/* x86 multitarget code is disabled, just delete x86 target-specific code.
  */
 #define DECLARE_SSE42_SPECIFIC_CODE(...)
 #define DECLARE_AVX_SPECIFIC_CODE(...)
@@ -246,7 +300,66 @@ END_TARGET_SPECIFIC_CODE
 #define DECLARE_AVX512VBMI2_SPECIFIC_CODE(...)
 #define DECLARE_AVX512BF16_SPECIFIC_CODE(...)
 
-#endif
+#endif // USE_MULTITARGET_CODE_X86
+
+#if USE_MULTITARGET_CODE_ARM
+
+#define DECLARE_NEON_SPECIFIC_CODE(...) \
+BEGIN_NEON_SPECIFIC_CODE \
+namespace TargetSpecific::NEON { \
+    DUMMY_FUNCTION_DEFINITION \
+    using namespace DB::TargetSpecific::NEON; \
+    __VA_ARGS__ \
+} \
+END_TARGET_SPECIFIC_CODE
+
+#define DECLARE_NEONAES_SPECIFIC_CODE(...) \
+BEGIN_NEONAES_SPECIFIC_CODE \
+namespace TargetSpecific::NEONAES { \
+    DUMMY_FUNCTION_DEFINITION \
+    using namespace DB::TargetSpecific::NEONAES; \
+    __VA_ARGS__ \
+} \
+END_TARGET_SPECIFIC_CODE
+
+#define DECLARE_SVE_SPECIFIC_CODE(...) \
+BEGIN_SVE_SPECIFIC_CODE \
+namespace TargetSpecific::SVE { \
+    DUMMY_FUNCTION_DEFINITION \
+    using namespace DB::TargetSpecific::SVE; \
+    __VA_ARGS__ \
+} \
+END_TARGET_SPECIFIC_CODE
+
+#define DECLARE_SVE2_SPECIFIC_CODE(...) \
+BEGIN_SVE2_SPECIFIC_CODE \
+namespace TargetSpecific::SVE2 { \
+    DUMMY_FUNCTION_DEFINITION \
+    using namespace DB::TargetSpecific::SVE2; \
+    __VA_ARGS__ \
+} \
+END_TARGET_SPECIFIC_CODE
+
+#define DECLARE_SVE2AES_SPECIFIC_CODE(...) \
+BEGIN_SVE2AES_SPECIFIC_CODE \
+namespace TargetSpecific::SVE2AES { \
+    DUMMY_FUNCTION_DEFINITION \
+    using namespace DB::TargetSpecific::SVE2AES; \
+    __VA_ARGS__ \
+} \
+END_TARGET_SPECIFIC_CODE
+
+#else
+
+/* ARM multitarget code is disabled, just delete ARM target-specific code.
+ */
+#define DECLARE_NEON_SPECIFIC_CODE(...)
+#define DECLARE_NEONAES_SPECIFIC_CODE(...)
+#define DECLARE_SVE_SPECIFIC_CODE(...)
+#define DECLARE_SVE2_SPECIFIC_CODE(...)
+#define DECLARE_SVE2AES_SPECIFIC_CODE(...)
+
+#endif // USE_MULTITARGET_CODE_ARM
 
 #define DECLARE_DEFAULT_CODE(...) \
 namespace TargetSpecific::Default { \
@@ -255,7 +368,7 @@ namespace TargetSpecific::Default { \
 }
 
 /// NOLINTNEXTLINE
-#define DECLARE_MULTITARGET_CODE(...) \
+#define DECLARE_MULTITARGET_CODE_X86(...) \
 DECLARE_DEFAULT_CODE         (__VA_ARGS__) \
 DECLARE_SSE42_SPECIFIC_CODE  (__VA_ARGS__) \
 DECLARE_AVX_SPECIFIC_CODE    (__VA_ARGS__) \
@@ -266,6 +379,25 @@ DECLARE_AVX512VL_SPECIFIC_CODE    (__VA_ARGS__) \
 DECLARE_AVX512VBMI_SPECIFIC_CODE  (__VA_ARGS__) \
 DECLARE_AVX512VBMI2_SPECIFIC_CODE (__VA_ARGS__) \
 DECLARE_AVX512BF16_SPECIFIC_CODE (__VA_ARGS__)
+
+/// NOLINTNEXTLINE
+#define DECLARE_MULTITARGET_CODE_ARM(...) \
+DECLARE_DEFAULT_CODE         (__VA_ARGS__) \
+DECLARE_NEON_SPECIFIC_CODE   (__VA_ARGS__) \
+DECLARE_NEONAES_SPECIFIC_CODE(__VA_ARGS__) \
+DECLARE_SVE_SPECIFIC_CODE    (__VA_ARGS__) \
+DECLARE_SVE2_SPECIFIC_CODE   (__VA_ARGS__) \
+DECLARE_SVE2AES_SPECIFIC_CODE(__VA_ARGS__)
+
+#if defined(__aarch64__)
+/// NOLINTNEXTLINE
+#define DECLARE_MULTITARGET_CODE(...) \
+    DECLARE_MULTITARGET_CODE_ARM(__VA_ARGS__)
+#else
+/// NOLINTNEXTLINE
+#define DECLARE_MULTITARGET_CODE(...) \
+    DECLARE_MULTITARGET_CODE_X86(__VA_ARGS__)
+#endif
 
 DECLARE_DEFAULT_CODE(
     constexpr auto BuildArch = TargetArch::Default; /// NOLINT
@@ -306,6 +438,26 @@ DECLARE_AVX512VBMI2_SPECIFIC_CODE(
 DECLARE_AVX512BF16_SPECIFIC_CODE(
     constexpr auto BuildArch = TargetArch::AVX512BF16; /// NOLINT
 ) // DECLARE_AVX512BF16_SPECIFIC_CODE
+
+DECLARE_NEON_SPECIFIC_CODE(
+    constexpr auto BuildArch = TargetArch::NEON; /// NOLINT
+) // DECLARE_NEON_SPECIFIC_CODE
+
+DECLARE_NEONAES_SPECIFIC_CODE(
+    constexpr auto BuildArch = TargetArch::NEONAES; /// NOLINT
+) // DECLARE_NEONAES_SPECIFIC_CODE
+
+DECLARE_SVE_SPECIFIC_CODE(
+    constexpr auto BuildArch = TargetArch::SVE; /// NOLINT
+) // DECLARE_SVE_SPECIFIC_CODE
+
+DECLARE_SVE2_SPECIFIC_CODE(
+    constexpr auto BuildArch = TargetArch::SVE2; /// NOLINT
+) // DECLARE_SVE2_SPECIFIC_CODE
+
+DECLARE_SVE2AES_SPECIFIC_CODE(
+    constexpr auto BuildArch = TargetArch::SVE2AES; /// NOLINT
+) // DECLARE_SVE2AES_SPECIFIC_CODE
 
 /** Runtime Dispatch helpers for class members.
   *
@@ -353,7 +505,7 @@ DECLARE_AVX512BF16_SPECIFIC_CODE(
 /// Function body
 #define MULTITARGET_FUNCTION_BODY(...) __VA_ARGS__
 
-#if ENABLE_MULTITARGET_CODE && defined(__GNUC__) && defined(__x86_64__)
+#if USE_MULTITARGET_CODE_X86
 
 /// NOLINTNEXTLINE
 #define MULTITARGET_FUNCTION_AVX2_SSE42(FUNCTION_HEADER, name, FUNCTION_BODY) \
@@ -449,5 +601,37 @@ FUNCTION_BODY \
     FUNCTION_BODY \
 
 #endif
+
+#if USE_MULTITARGET_CODE_ARM
+
+/// NOLINTNEXTLINE
+#define MULTITARGET_FUNCTION_SVE2_SVE(FUNCTION_HEADER, name, FUNCTION_BODY) \
+FUNCTION_HEADER \
+\
+SVE2_FUNCTION_SPECIFIC_ATTRIBUTE \
+name##SVE2 \
+FUNCTION_BODY \
+\
+FUNCTION_HEADER \
+\
+SVE_FUNCTION_SPECIFIC_ATTRIBUTE \
+name##SVE \
+FUNCTION_BODY \
+\
+FUNCTION_HEADER \
+\
+name \
+FUNCTION_BODY \
+
+#else
+/// NOLINTNEXTLINE
+#define MULTITARGET_FUNCTION_SVE2_SVE(FUNCTION_HEADER, name, FUNCTION_BODY) \
+FUNCTION_HEADER \
+\
+name \
+FUNCTION_BODY \
+
+#endif
+
 
 }

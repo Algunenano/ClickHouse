@@ -181,7 +181,7 @@ struct NumComparisonImpl
 
     static void NO_INLINE vectorVector(const ContainerA & a, const ContainerB & b, PaddedPODArray<UInt8> & c)
     {
-#if USE_MULTITARGET_CODE
+#if USE_MULTITARGET_CODE_X86
         if (isArchSupported(TargetArch::AVX512BW))
         {
             vectorVectorImplAVX512BW(a, b, c);
@@ -230,7 +230,7 @@ struct NumComparisonImpl
 
     static void NO_INLINE vectorConstant(const ContainerA & a, B b, PaddedPODArray<UInt8> & c)
     {
-#if USE_MULTITARGET_CODE
+#if USE_MULTITARGET_CODE_X86
         if (isArchSupported(TargetArch::AVX512BW))
         {
             vectorConstantImplAVX512BW(a, b, c);

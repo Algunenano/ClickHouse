@@ -6,6 +6,11 @@
 #include <cpuid.h>
 #endif
 
+#if defined(__aarch64__) && defined(__linux__)
+#include <sys/auxv.h>
+#include <asm/hwcap.h>
+#endif
+
 #include <cstring>
 
 #ifdef OS_LINUX
@@ -336,6 +341,81 @@ inline bool haveGenuineIntel() noexcept
 #endif
 }
 
+/// ARM feature detection
+#if defined(__aarch64__)
+
+inline bool haveNEON() noexcept
+{
+#if defined(__linux__)
+    // NEON is mandatory in ARMv8-A, so it's always available on aarch64
+    return true;
+#else
+    return true;
+#endif
+}
+
+inline bool haveNEONAES() noexcept
+{
+#if defined(__linux__)
+    unsigned long hwcaps = getauxval(AT_HWCAP);
+    return (hwcaps & HWCAP_AES) != 0;
+#else
+    return false;
+#endif
+}
+
+inline bool haveSVE() noexcept
+{
+#if defined(__linux__)
+    unsigned long hwcaps = getauxval(AT_HWCAP);
+#if defined(HWCAP_SVE)
+    return (hwcaps & HWCAP_SVE) != 0;
+#else
+    return false;
+#endif
+#else
+    return false;
+#endif
+}
+
+inline bool haveSVE2() noexcept
+{
+#if defined(__linux__)
+    unsigned long hwcaps2 = getauxval(AT_HWCAP2);
+#if defined(HWCAP2_SVE2)
+    return (hwcaps2 & HWCAP2_SVE2) != 0;
+#else
+    return false;
+#endif
+#else
+    return false;
+#endif
+}
+
+inline bool haveSVE2AES() noexcept
+{
+#if defined(__linux__)
+    unsigned long hwcaps2 = getauxval(AT_HWCAP2);
+#if defined(HWCAP2_SVE2) && defined(HWCAP2_SVEAES)
+    return (hwcaps2 & HWCAP2_SVE2) != 0 && (hwcaps2 & HWCAP2_SVEAES) != 0;
+#else
+    return false;
+#endif
+#else
+    return false;
+#endif
+}
+
+#else
+
+inline bool haveNEON() noexcept { return false; }
+inline bool haveNEONAES() noexcept { return false; }
+inline bool haveSVE() noexcept { return false; }
+inline bool haveSVE2() noexcept { return false; }
+inline bool haveSVE2AES() noexcept { return false; }
+
+#endif
+
 #define CPU_ID_ENUMERATE(OP) \
     OP(SSE) \
     OP(SSE2) \
@@ -377,7 +457,12 @@ inline bool haveGenuineIntel() noexcept
     OP(AMXBF16) \
     OP(AMXTILE) \
     OP(AMXINT8) \
-    OP(GenuineIntel)
+    OP(GenuineIntel) \
+    OP(NEON) \
+    OP(NEONAES) \
+    OP(SVE) \
+    OP(SVE2) \
+    OP(SVE2AES)
 
 struct CPUFlagsCache
 {

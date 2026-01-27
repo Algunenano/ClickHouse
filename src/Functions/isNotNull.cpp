@@ -149,7 +149,7 @@ private:
 
     static void NO_INLINE vector(const PaddedPODArray<UInt8> & null_map, PaddedPODArray<UInt8> & res)
     {
-#if USE_MULTITARGET_CODE
+#if USE_MULTITARGET_CODE_X86
         if (isArchSupported(TargetArch::AVX2))
         {
             vectorImplAVX2(null_map, res);

@@ -839,7 +839,7 @@ public:
         selector.registerImplementation<TargetArch::Default,
             TargetSpecific::Default::FunctionIntHash<Impl, Name>>();
 
-    #if USE_MULTITARGET_CODE
+    #if USE_MULTITARGET_CODE_X86
         selector.registerImplementation<TargetArch::AVX2,
             TargetSpecific::AVX2::FunctionIntHash<Impl, Name>>();
         selector.registerImplementation<TargetArch::AVX512F,
@@ -1523,7 +1523,7 @@ public:
         selector
             .registerImplementation<TargetArch::Default, TargetSpecific::Default::FunctionAnyHash<Impl, Keyed, KeyType, KeyColumnsType>>();
 
-#if USE_MULTITARGET_CODE
+#if USE_MULTITARGET_CODE_X86
         selector.registerImplementation<TargetArch::AVX2, TargetSpecific::AVX2::FunctionAnyHash<Impl, Keyed, KeyType, KeyColumnsType>>();
         selector
             .registerImplementation<TargetArch::AVX512F, TargetSpecific::AVX512F::FunctionAnyHash<Impl, Keyed, KeyType, KeyColumnsType>>();

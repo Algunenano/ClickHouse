@@ -106,7 +106,7 @@ struct AggregateFunctionSumData
     template <typename Value>
     void NO_INLINE addMany(const Value * __restrict ptr, size_t start, size_t end)
     {
-#if USE_MULTITARGET_CODE
+#if USE_MULTITARGET_CODE_X86
         if (isArchSupported(TargetArch::AVX512BW))
         {
             addManyImplAVX512BW(ptr, start, end);
@@ -223,7 +223,7 @@ struct AggregateFunctionSumData
     template <typename Value, bool add_if_zero>
     void NO_INLINE addManyConditionalInternal(const Value * __restrict ptr, const UInt8 * __restrict condition_map, size_t start, size_t end)
     {
-#if USE_MULTITARGET_CODE
+#if USE_MULTITARGET_CODE_X86
         if (isArchSupported(TargetArch::AVX512BW))
         {
             addManyConditionalInternalImplAVX512BW<Value, add_if_zero>(ptr, condition_map, start, end);

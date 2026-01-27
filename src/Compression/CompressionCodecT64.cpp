@@ -432,7 +432,7 @@ void), reverseTransposeImpl, MULTITARGET_FUNCTION_BODY((const char * src, T * bu
 template <typename T, bool full = false>
 ALWAYS_INLINE void reverseTranspose(const char * src, T * buf, UInt32 num_bits, UInt32 tail = 64)
 {
-#if USE_MULTITARGET_CODE
+#if USE_MULTITARGET_CODE_X86
     if (isArchSupported(TargetArch::AVX512BW))
     {
         reverseTransposeImplAVX512BW<T, full>(src, buf, num_bits, tail);

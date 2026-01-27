@@ -16,7 +16,7 @@
 #include <base/BFloat16.h>
 #include <base/types.h>
 
-#if USE_MULTITARGET_CODE
+#if USE_MULTITARGET_CODE_X86
 #    include <immintrin.h>
 #endif
 
@@ -572,7 +572,7 @@ DECLARE_AVX512VL_SPECIFIC_CODE(
 template <typename T>
 void SerializationQBit::untransposeBitPlane(const UInt8 * __restrict src, T * __restrict dst, size_t stride_len, T bit_mask)
 {
-#if USE_MULTITARGET_CODE
+#if USE_MULTITARGET_CODE_X86
     if constexpr (std::is_same_v<T, UInt64>)
     {
         if (isArchSupported(TargetArch::AVX512F))

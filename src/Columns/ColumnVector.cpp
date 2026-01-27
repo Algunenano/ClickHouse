@@ -36,7 +36,7 @@
 
 #include "config.h"
 
-#if USE_MULTITARGET_CODE
+#if USE_MULTITARGET_CODE_X86
 #    include <immintrin.h>
 #endif
 
@@ -327,7 +327,7 @@ void ColumnVector<T>::compareColumn(
         return;
     }
 
-#if USE_MULTITARGET_CODE
+#if USE_MULTITARGET_CODE_X86
     if (isArchSupported(TargetArch::AVX512BW))
     {
         compareColumnImplAVX512BW<T>(data, value, compare_results, direction, nan_direction_hint);
@@ -852,7 +852,7 @@ ColumnPtr ColumnVector<T>::filter(const IColumn::Filter & filt, ssize_t result_s
     static constexpr size_t SIMD_ELEMENTS = 64;
     const UInt8 * filt_end_aligned = filt_pos + size / SIMD_ELEMENTS * SIMD_ELEMENTS;
 
-#if USE_MULTITARGET_CODE
+#if USE_MULTITARGET_CODE_X86
     static constexpr bool VBMI2_CAPABLE = sizeof(T) == 1 || sizeof(T) == 2 || sizeof(T) == 4 || sizeof(T) == 8;
     if (VBMI2_CAPABLE && isArchSupported(TargetArch::AVX512VBMI2))
         TargetSpecific::AVX512VBMI2::doFilterAligned<T, Container, SIMD_ELEMENTS>(filt_pos, filt_end_aligned, data_pos, res_data);
@@ -1324,7 +1324,7 @@ ColumnPtr ColumnVector<T>::indexImpl(const PaddedPODArray<Type> & indexes, size_
 
     auto res = this->create(limit);
     typename Self::Container & res_data = res->getData();
-#if USE_MULTITARGET_CODE
+#if USE_MULTITARGET_CODE_X86
     if constexpr (sizeof(T) == 1 && sizeof(Type) == 1)
     {
         /// VBMI optimization only applicable for (U)Int8 types

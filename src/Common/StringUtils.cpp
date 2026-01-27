@@ -2,7 +2,7 @@
 
 #include <Common/TargetSpecific.h>
 
-#if USE_MULTITARGET_CODE
+#if USE_MULTITARGET_CODE_X86
 #include <immintrin.h>
 #endif
 
@@ -77,7 +77,7 @@ static bool isAllASCII(const UInt8 * data, size_t size)
 
 bool isAllASCII(const UInt8 * data, size_t size)
 {
-#if USE_MULTITARGET_CODE
+#if USE_MULTITARGET_CODE_X86
     if (isArchSupported(DB::TargetArch::AVX2))
         return TargetSpecific::AVX2::isAllASCII(data, size);
     if (isArchSupported(DB::TargetArch::SSE42))

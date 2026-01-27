@@ -109,7 +109,7 @@ public:
     {
         selector.registerImplementation<TargetArch::Default, Parent>();
 
-#if USE_MULTITARGET_CODE
+#if USE_MULTITARGET_CODE_X86
         using ParentAVX2 = TargetSpecific::AVX2::FunctionDateTimeToUUIDv7Base;
         selector.registerImplementation<TargetArch::AVX2, ParentAVX2>();
 #endif

@@ -26,7 +26,7 @@
 #include <emmintrin.h>
 #endif
 
-#if USE_MULTITARGET_CODE
+#if USE_MULTITARGET_CODE_X86
 #include <immintrin.h>
 #endif
 
@@ -805,7 +805,7 @@ size_t numZerosInTail(const UInt8 * begin, const UInt8 * end)
 
 size_t MergeTreeRangeReader::ReadResult::numZerosInTail(const UInt8 * begin, const UInt8 * end)
 {
-#if USE_MULTITARGET_CODE
+#if USE_MULTITARGET_CODE_X86
     /// check if cpu support avx512 dynamically, haveAVX512BW contains check of haveAVX512F
     if (isArchSupported(TargetArch::AVX512BW))
         return TargetSpecific::AVX512BW::numZerosInTail(begin, end);
@@ -1475,7 +1475,7 @@ static ColumnPtr combineFilters(ColumnPtr first, ColumnPtr second)
     auto & first_data = typeid_cast<ColumnUInt8 *>(mut_first.get())->getData();
     const auto * second_data = second_descr.data->data();
 
-#if USE_MULTITARGET_CODE
+#if USE_MULTITARGET_CODE_X86
     if (isArchSupported(TargetArch::AVX512VBMI2))
     {
         TargetSpecific::AVX512VBMI2::combineFiltersImpl(first_data.begin(), first_data.end(), second_data);

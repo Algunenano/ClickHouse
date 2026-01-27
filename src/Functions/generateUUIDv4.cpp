@@ -71,7 +71,7 @@ public:
         selector.registerImplementation<TargetArch::Default,
             TargetSpecific::Default::FunctionGenerateUUIDv4>();
 
-#if USE_MULTITARGET_CODE
+#if USE_MULTITARGET_CODE_X86
         selector.registerImplementation<TargetArch::AVX2,
             TargetSpecific::AVX2::FunctionGenerateUUIDv4>();
 #endif

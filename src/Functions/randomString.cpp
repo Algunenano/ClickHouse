@@ -97,7 +97,7 @@ public:
         selector.registerImplementation<TargetArch::Default,
             FunctionRandomStringImpl<TargetSpecific::Default::RandImpl>>();
 
-    #if USE_MULTITARGET_CODE
+    #if USE_MULTITARGET_CODE_X86
         selector.registerImplementation<TargetArch::AVX2,
             FunctionRandomStringImpl<TargetSpecific::AVX2::RandImpl>>();
     #endif

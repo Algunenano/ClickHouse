@@ -52,7 +52,7 @@ struct UnaryOperationImpl
 
     static void NO_INLINE vector(const ArrayA & a, ArrayC & c)
     {
-#if USE_MULTITARGET_CODE
+#if USE_MULTITARGET_CODE_X86
         if (isArchSupported(TargetArch::AVX512BW))
         {
             vectorImplAVX512BW(a, c);
@@ -103,7 +103,7 @@ struct FixedStringUnaryOperationImpl
 
     static void NO_INLINE vector(const ColumnFixedString::Chars & a, ColumnFixedString::Chars & c)
     {
-#if USE_MULTITARGET_CODE
+#if USE_MULTITARGET_CODE_X86
         if (isArchSupported(TargetArch::AVX512BW))
         {
             vectorImplAVX512BW(a, c);
@@ -149,7 +149,7 @@ struct StringUnaryOperationReduceImpl
 
     static UInt64 NO_INLINE vector(const UInt8 * start, const UInt8 * end)
     {
-#if USE_MULTITARGET_CODE
+#if USE_MULTITARGET_CODE_X86
         if (isArchSupported(TargetArch::AVX512BW))
         {
             return vectorImplAVX512BW(start, end);

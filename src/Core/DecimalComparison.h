@@ -297,7 +297,7 @@ private:
     template <bool check_overflow, bool scale_left, bool scale_right>
     static void NO_INLINE vectorConstant(const ArrayA & a, B b, PaddedPODArray<UInt8> & c, CompareInt scale)
     {
-#if USE_MULTITARGET_CODE
+#if USE_MULTITARGET_CODE_X86
         if (isArchSupported(TargetArch::AVX512BW))
         {
             vectorConstantImplAVX512BW<check_overflow, scale_left, scale_right>(a, b, c, scale);

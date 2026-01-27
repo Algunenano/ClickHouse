@@ -5,7 +5,7 @@
 namespace DB
 {
 
-MULTITARGET_FUNCTION_AVX2_SSE42(
+MULTITARGET_FUNCTION_SVE2_SVE(
     MULTITARGET_FUNCTION_HEADER(template <iota_supported_types T> static void NO_INLINE),
     iotaImpl, MULTITARGET_FUNCTION_BODY((T * begin, size_t count, T first_value) /// NOLINT
     {
@@ -17,12 +17,12 @@ MULTITARGET_FUNCTION_AVX2_SSE42(
 template <iota_supported_types T>
 void iota(T * begin, size_t count, T first_value)
 {
-#if USE_MULTITARGET_CODE
-    if (isArchSupported(TargetArch::AVX2))
-        return iotaImplAVX2(begin, count, first_value);
+#if USE_MULTITARGET_CODE_ARM
+    if (isArchSupported(TargetArch::SVE2))
+        return iotaImplSVE2(begin, count, first_value);
 
-    if (isArchSupported(TargetArch::SSE42))
-        return iotaImplSSE42(begin, count, first_value);
+    if (isArchSupported(TargetArch::SVE))
+        return iotaImplSVE(begin, count, first_value);
 #endif
     return iotaImpl(begin, count, first_value);
 }
@@ -39,7 +39,7 @@ MULTITARGET_FUNCTION_AVX2_SSE42(
 template <iota_supported_types T>
 void iotaWithStep(T * begin, size_t count, T first_value, T step)
 {
-#if USE_MULTITARGET_CODE
+#if USE_MULTITARGET_CODE_X86
     if (isArchSupported(TargetArch::AVX2))
         return iotaWithStepImplAVX2(begin, count, first_value, step);
 

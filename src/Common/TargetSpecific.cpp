@@ -34,6 +34,16 @@ UInt32 getSupportedArchs()
         result |= static_cast<UInt32>(TargetArch::AMXINT8);
     if (CPU::CPUFlagsCache::have_GenuineIntel)
         result |= static_cast<UInt32>(TargetArch::GenuineIntel);
+    if (CPU::CPUFlagsCache::have_NEON)
+        result |= static_cast<UInt32>(TargetArch::NEON);
+    if (CPU::CPUFlagsCache::have_NEONAES)
+        result |= static_cast<UInt32>(TargetArch::NEONAES);
+    if (CPU::CPUFlagsCache::have_SVE)
+        result |= static_cast<UInt32>(TargetArch::SVE);
+    if (CPU::CPUFlagsCache::have_SVE2)
+        result |= static_cast<UInt32>(TargetArch::SVE2);
+    if (CPU::CPUFlagsCache::have_SVE2AES)
+        result |= static_cast<UInt32>(TargetArch::SVE2AES);
     return result;
 }
 
@@ -55,6 +65,11 @@ String toString(TargetArch arch)
         case TargetArch::AMXTILE: return "amxtile";
         case TargetArch::AMXINT8: return "amxint8";
         case TargetArch::GenuineIntel: return "GenuineIntel";
+        case TargetArch::NEON:    return "neon";
+        case TargetArch::NEONAES: return "neon+aes";
+        case TargetArch::SVE:     return "sve";
+        case TargetArch::SVE2:    return "sve2";
+        case TargetArch::SVE2AES: return "sve2+aes";
     }
 }
 

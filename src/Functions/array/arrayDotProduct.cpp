@@ -8,7 +8,7 @@
 #include <Functions/castTypeToEither.h>
 #include <Interpreters/Context_fwd.h>
 
-#if USE_MULTITARGET_CODE
+#if USE_MULTITARGET_CODE_X86
 #include <immintrin.h>
 #endif
 
@@ -76,7 +76,7 @@ struct DotProduct
         state.sum += other_state.sum;
     }
 
-#if USE_MULTITARGET_CODE
+#if USE_MULTITARGET_CODE_X86
     template <typename Type>
     AVX512_FUNCTION_SPECIFIC_ATTRIBUTE static void accumulateCombine(
         const Type * __restrict data_x,
@@ -347,7 +347,7 @@ private:
             ///   10 input types x 8 output types,
             /// - const/non-const inputs instead of non-const/non-const inputs
             /// - the most powerful SIMD instruction set (AVX-512F).
-#if USE_MULTITARGET_CODE
+#if USE_MULTITARGET_CODE_X86
             if constexpr ((std::is_same_v<ResultType, Float32> || std::is_same_v<ResultType, Float64>)
                             && std::is_same_v<ResultType, LeftType> && std::is_same_v<LeftType, RightType>)
             {

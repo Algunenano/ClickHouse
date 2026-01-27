@@ -51,6 +51,22 @@ if (ARCH_NATIVE)
     elseif (ARCH_AARCH64)
         GET_CPU_FEATURES (TEST_FEATURE_RESULT)
         TEST_CPU_FEATURE (${TEST_FEATURE_RESULT} aes ENABLE_AES)
+        TEST_CPU_FEATURE (${TEST_FEATURE_RESULT} neon ENABLE_NEON)
+        TEST_CPU_FEATURE (${TEST_FEATURE_RESULT} sve ENABLE_SVE)
+        TEST_CPU_FEATURE (${TEST_FEATURE_RESULT} sve2 ENABLE_SVE2)
+
+        # Set combined features based on individual feature detection
+        if (ENABLE_NEON AND ENABLE_AES)
+            set(ENABLE_NEON_AES ON)
+        else ()
+            set(ENABLE_NEON_AES OFF)
+        endif ()
+
+        if (ENABLE_SVE2 AND ENABLE_AES)
+            set(ENABLE_SVE2_AES ON)
+        else ()
+            set(ENABLE_SVE2_AES OFF)
+        endif ()
     endif ()
 
 elseif (ARCH_AARCH64)
@@ -97,9 +113,49 @@ elseif (ARCH_AARCH64)
         # [8]  https://developer.arm.com/documentation/102651/a/What-are-dot-product-intructions-
         # [9]  https://developer.arm.com/documentation/dui0801/g/A64-Data-Transfer-Instructions/LDAPR?lang=en
         # [10] https://github.com/aws/aws-graviton-getting-started/blob/main/README.md
-        set (COMPILER_FLAGS "${COMPILER_FLAGS} -march=armv8.2-a+simd+crypto+dotprod+ssbs+rcpc+bf16")
-        # Not adding `+v8.2a,+crypto` to rust because it complains about them being unstable
+
+        # Optional ARM instruction sets for multitarget code and specific operations
+        option (ENABLE_NEON "Use NEON instructions on aarch64" 1)
+        option (ENABLE_NEON_AES "Use NEON with AES instructions on aarch64 (depends on ENABLE_NEON)" 1)
+        option (ENABLE_SVE "Use SVE instructions on aarch64" 0)
+        option (ENABLE_SVE2 "Use SVE2 instructions on aarch64 (depends on ENABLE_SVE)" 0)
+        option (ENABLE_SVE2_AES "Use SVE2 with AES instructions on aarch64 (depends on ENABLE_SVE2)" 0)
+
+        # NEON is mandatory in ARMv8-A and already included in the base march via +simd
+        # The options below allow enabling additional instruction sets for the base build (not just multitarget dispatch)
+
+        # Build the march string with optional features
+        # Start with base features, crypto (AES) is added conditionally
+        set (ARM_MARCH_FLAGS "armv8.2-a+simd+dotprod+ssbs+rcpc+bf16")
         list(APPEND RUSTFLAGS_CPU "-C" "target_feature=+dotprod,+ssbs,+rcpc,+bf16")
+
+        if (ENABLE_NEON_AES)
+            set (ARM_MARCH_FLAGS "${ARM_MARCH_FLAGS}+crypto")
+            # Not adding `+crypto` to rust because it complains about it being unstable
+        endif ()
+
+        if (ENABLE_SVE)
+            set (ARM_MARCH_FLAGS "${ARM_MARCH_FLAGS}+sve")
+            list(APPEND RUSTFLAGS_CPU "-C" "target_feature=+sve")
+        endif ()
+
+        if (ENABLE_SVE2)
+            if (NOT ENABLE_SVE)
+                message(FATAL_ERROR "ENABLE_SVE2 requires ENABLE_SVE to be enabled")
+            endif ()
+            set (ARM_MARCH_FLAGS "${ARM_MARCH_FLAGS}+sve2")
+            list(APPEND RUSTFLAGS_CPU "-C" "target_feature=+sve2")
+        endif ()
+
+        if (ENABLE_SVE2_AES)
+            if (NOT ENABLE_SVE2)
+                message(FATAL_ERROR "ENABLE_SVE2_AES requires ENABLE_SVE2 to be enabled")
+            endif ()
+            set (ARM_MARCH_FLAGS "${ARM_MARCH_FLAGS}+sve2-aes")
+            list(APPEND RUSTFLAGS_CPU "-C" "target_feature=+sve2-aes")
+        endif ()
+
+        set (COMPILER_FLAGS "${COMPILER_FLAGS} -march=${ARM_MARCH_FLAGS}")
     endif ()
 
     # Best-effort check: The build generates and executes intermediate binaries, e.g. protoc and llvm-tablegen. If we build on ARM for ARM
