@@ -18,19 +18,42 @@
 
 // NOLINTBEGIN(*)
 
-/// Use same extended double for all platforms.
-/// `long double` has at least 64-bit mantissa on x86 (80-bit extended, LDBL_MANT_DIG=64)
-/// and on ARM (128-bit quad, LDBL_MANT_DIG=113). Only fall back to boost on platforms
-/// where `long double` has insufficient precision (e.g. LDBL_MANT_DIG=53).
-#if (LDBL_MANT_DIG >= 64)
-#define CONSTEXPR_FROM_DOUBLE constexpr
+/// Use same extended double for all platforms for numerical consistency.
+/// x86 has native 80-bit extended with 64-bit mantissa (LDBL_MANT_DIG=64).
+/// Other platforms (ARM with 128-bit quad) need to emulate 64-bit mantissa precision
+/// to ensure identical conversion results without pulling in boost multiprecision headers.
+#if (LDBL_MANT_DIG == 64)
+#    define CONSTEXPR_FROM_DOUBLE constexpr
 using FromDoubleIntermediateType = long double;
 #else
-#include <boost/math/special_functions/fpclassify.hpp>
-#include <boost/multiprecision/cpp_bin_float.hpp>
-/// `wide_integer_from_builtin` can't be constexpr with non-literal `cpp_bin_float_double_extended`
-#define CONSTEXPR_FROM_DOUBLE
-using FromDoubleIntermediateType = boost::multiprecision::cpp_bin_float_double_extended;
+#    define CONSTEXPR_FROM_DOUBLE
+using FromDoubleIntermediateType = long double;
+
+namespace detail
+{
+/// Round a long double to 64-bit mantissa precision to match x86 extended precision behavior.
+/// This extracts the value into 64-bit chunks similar to boost::multiprecision::cpp_bin_float.
+inline long double round_to_64bit_mantissa(long double value) noexcept
+{
+    if (!std::isfinite(value) || value == 0.0L)
+        return value;
+
+    // Extract mantissa and exponent
+    int exponent;
+    long double mantissa = std::frexp(value, &exponent);
+
+    // mantissa is now in range [0.5, 1.0) or (-1.0, -0.5]
+    // Scale to extract exactly 64 bits of precision
+    constexpr long double scale = static_cast<long double>(1ULL << 63) * 2.0L; // 2^64
+    long double scaled = std::round(mantissa * scale);
+
+    // Convert back to normalized mantissa with 64-bit precision
+    long double rounded_mantissa = scaled / scale;
+
+    // Reconstruct the original value with limited precision
+    return std::ldexp(rounded_mantissa, exponent);
+}
+}
 #endif
 
 namespace CityHash_v1_0_2 { struct uint128; }
@@ -378,32 +401,20 @@ struct integer<Bits, Signed>::_impl
         constexpr uint64_t max_int = std::numeric_limits<uint64_t>::max();
         static_assert(std::is_same_v<T, double> || std::is_same_v<T, FromDoubleIntermediateType>);
         /// Implementation specific behaviour on overflow (if we don't check here, stack overflow will triggered in bigint_cast).
-#if (LDBL_MANT_DIG >= 64)
         if (!std::isfinite(t))
         {
             self = 0;
             return;
         }
-#else
-        if constexpr (std::is_same_v<T, double>)
+
+        T alpha = t / static_cast<T>(max_int);
+#if (LDBL_MANT_DIG != 64)
+        // Round division result to 64-bit precision on platforms with higher precision
+        if constexpr (std::is_same_v<T, FromDoubleIntermediateType>)
         {
-            if (!std::isfinite(t))
-            {
-                self = 0;
-                return;
-            }
-        }
-        else
-        {
-            if (!boost::math::isfinite(t))
-            {
-                self = 0;
-                return;
-            }
+            alpha = detail::round_to_64bit_mantissa(alpha);
         }
 #endif
-
-        const T alpha = t / static_cast<T>(max_int);
 
         /** Here we have to use strict comparison.
           * The max_int is 2^64 - 1.
@@ -419,7 +430,17 @@ struct integer<Bits, Signed>::_impl
 
         self *= max_int;
 
-        self += static_cast<uint64_t>(t - floor(alpha) * static_cast<T>(max_int)); // += b_i
+        // Calculate remainder: t - floor(alpha) * max_int
+        // On platforms with >64-bit mantissa, round the multiplication to 64-bit precision
+        // to match x86's 80-bit extended behavior
+        T remainder_subtrahend = floor(alpha) * static_cast<T>(max_int);
+#if (LDBL_MANT_DIG != 64)
+        if constexpr (std::is_same_v<T, FromDoubleIntermediateType>)
+        {
+            remainder_subtrahend = detail::round_to_64bit_mantissa(remainder_subtrahend);
+        }
+#endif
+        self += static_cast<uint64_t>(t - remainder_subtrahend); // += b_i
     }
 
     CONSTEXPR_FROM_DOUBLE static void wide_integer_from_builtin(integer<Bits, Signed> & self, double rhs) noexcept
