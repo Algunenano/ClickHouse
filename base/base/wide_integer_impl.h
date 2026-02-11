@@ -418,7 +418,52 @@ struct integer<Bits, Signed>::_impl
             set_multiplier<double>(self, static_cast<double>(alpha));
 
         self *= max_int;
+
+#if (LDBL_MANT_DIG > 64)
+        /// On ARM with 128-bit quad precision (LDBL_MANT_DIG=113), the remainder calculation
+        /// produces different results than x86's 80-bit extended (LDBL_MANT_DIG=64) due to
+        /// excess precision in intermediate calculations. To emulate x86 behavior, we need to
+        /// round intermediate results to 64-bit mantissa precision.
+        if constexpr (!std::is_same_v<T, double>)
+        {
+            /// Helper to round a long double to 64-bit mantissa precision (emulating x86 80-bit extended)
+            auto round_to_64bit_mantissa = [](T value) -> T
+            {
+                if (value == 0.0L || !std::isfinite(value))
+                    return value;
+
+                /// Extract mantissa and exponent
+                int exponent;
+                T mantissa = frexp(value, &exponent); // mantissa in [0.5, 1), exponent such that value = mantissa * 2^exponent
+
+                /// mantissa has LDBL_MANT_DIG bits of precision (113 on ARM)
+                /// We want to round it to 64 bits to match x86
+                /// Scale to integer, round, scale back
+                constexpr int bits_to_keep = 64;
+                constexpr int bits_to_drop = LDBL_MANT_DIG - bits_to_keep; // 113 - 64 = 49 on ARM
+
+                /// Scale mantissa to integer range, round off lower bits, scale back
+                /// 2^bits_to_drop is the rounding unit
+                const T scale = scalbn(1.0L, bits_to_drop);
+                T scaled = mantissa * scalbn(1.0L, LDBL_MANT_DIG); // Scale to integer
+                scaled = floor(scaled / scale + 0.5L) * scale; // Round to bits_to_keep precision
+                mantissa = scaled / scalbn(1.0L, LDBL_MANT_DIG); // Scale back to [0.5, 1)
+
+                return ldexp(mantissa, exponent);
+            };
+
+            const T floored = floor(alpha);
+            const T product = round_to_64bit_mantissa(floored * static_cast<T>(max_int));
+            const T remainder = round_to_64bit_mantissa(t - product);
+            self += static_cast<uint64_t>(remainder);
+        }
+        else
+        {
+            self += static_cast<uint64_t>(t - floor(alpha) * static_cast<T>(max_int));
+        }
+#else
         self += static_cast<uint64_t>(t - floor(alpha) * static_cast<T>(max_int)); // += b_i
+#endif
     }
 
     CONSTEXPR_FROM_DOUBLE static void wide_integer_from_builtin(integer<Bits, Signed> & self, double rhs) noexcept
