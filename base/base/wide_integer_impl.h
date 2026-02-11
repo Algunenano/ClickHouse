@@ -22,6 +22,7 @@
 /// x86 has native 80-bit extended with 64-bit mantissa (LDBL_MANT_DIG=64).
 /// ARM has 128-bit quad with 113-bit mantissa - we emulate 64-bit precision via rounding
 /// to ensure identical conversion results across platforms without boost multiprecision headers.
+static_assert(LDBL_MANT_DIG >= 64, "long double must have at least 64 bits of mantissa for accurate wide integer conversions");
 using FromDoubleIntermediateType = long double;
 
 #if (LDBL_MANT_DIG != 64)
