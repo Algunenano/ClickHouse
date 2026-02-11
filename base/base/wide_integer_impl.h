@@ -436,6 +436,11 @@ struct integer<Bits, Signed>::_impl
                 int exponent;
                 T mantissa = frexp(value, &exponent); // mantissa in [0.5, 1), exponent such that value = mantissa * 2^exponent
 
+                /// Skip rounding for extreme exponents to avoid edge cases
+                /// where rounding might push values over integer type boundaries
+                if (exponent > 120 || exponent < -120)
+                    return value;
+
                 /// mantissa has LDBL_MANT_DIG bits of precision (113 on ARM)
                 /// We want to round it to 64 bits to match x86
                 /// Scale to integer, round, scale back
