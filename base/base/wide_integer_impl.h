@@ -18,16 +18,16 @@
 
 // NOLINTBEGIN(*)
 
-/// Use same extended double for all platforms for numerical consistency.
+/// Use long double for intermediate conversions from double to wide integers.
 /// x86 has native 80-bit extended with 64-bit mantissa (LDBL_MANT_DIG=64).
-/// Other platforms (ARM with 128-bit quad) need to emulate 64-bit mantissa precision
-/// to ensure identical conversion results without pulling in boost multiprecision headers.
+/// ARM has 128-bit quad with 113-bit mantissa - we emulate 64-bit precision via rounding
+/// to ensure identical conversion results across platforms without boost multiprecision headers.
+using FromDoubleIntermediateType = long double;
+
 #if (LDBL_MANT_DIG == 64)
 #    define CONSTEXPR_FROM_DOUBLE constexpr
-using FromDoubleIntermediateType = long double;
 #else
 #    define CONSTEXPR_FROM_DOUBLE
-using FromDoubleIntermediateType = long double;
 
 namespace detail
 {
