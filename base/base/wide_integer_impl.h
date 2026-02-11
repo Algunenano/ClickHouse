@@ -18,14 +18,29 @@
 
 // NOLINTBEGIN(*)
 
-/// Use long double for intermediate conversions from double to wide integers.
-/// x86 has native 80-bit extended with 64-bit mantissa (LDBL_MANT_DIG=64).
-/// ARM has 128-bit quad with 113-bit mantissa - we emulate 64-bit precision via rounding
-/// to ensure identical conversion results across platforms without boost multiprecision headers.
-static_assert(LDBL_MANT_DIG >= 64, "long double must have at least 64 bits of mantissa for accurate wide integer conversions");
+/// Cross-platform conversion from double to wide integers requires consistent rounding behavior.
+/// We target 64-bit mantissa precision (matching x86's 80-bit extended) on all platforms.
+///
+/// Platform-specific handling:
+/// 1. x86/x86_64 (LDBL_MANT_DIG == 64):
+///    - Native 80-bit extended precision with 64-bit mantissa
+///    - Use long double directly, no emulation needed
+///
+/// 2. ARM Linux, RISC-V, PowerPC, etc. (LDBL_MANT_DIG > 64, typically 113):
+///    - 128-bit quad precision with 113-bit mantissa
+///    - Use long double but round intermediate results to 64-bit precision
+///    - Emulation via round_to_64bit_mantissa() ensures identical results to x86
+///
+/// 3. macOS ARM64 (LDBL_MANT_DIG == 53):
+///    - long double == double (no extended precision available)
+///    - Cannot emulate 64-bit from 53-bit, so use boost::multiprecision
+///    - boost::cpp_bin_float_double_extended provides software-emulated 64-bit mantissa
+///
+#if (LDBL_MANT_DIG == 64)
+using FromDoubleIntermediateType = long double;
+#elif (LDBL_MANT_DIG > 64)
 using FromDoubleIntermediateType = long double;
 
-#if (LDBL_MANT_DIG != 64)
 namespace detail
 {
 /// Round a long double to 64-bit mantissa precision to match x86 extended precision behavior.
@@ -51,6 +66,11 @@ constexpr long double round_to_64bit_mantissa(long double value) noexcept
     return std::ldexp(rounded_mantissa, exponent);
 }
 }
+#else
+// Platforms where long double has insufficient precision (e.g., macOS ARM64 where LDBL_MANT_DIG=53)
+#    include <boost/math/special_functions/fpclassify.hpp>
+#    include <boost/multiprecision/cpp_bin_float.hpp>
+using FromDoubleIntermediateType = boost::multiprecision::cpp_bin_float_double_extended;
 #endif
 
 namespace CityHash_v1_0_2 { struct uint128; }
@@ -398,15 +418,34 @@ struct integer<Bits, Signed>::_impl
         constexpr uint64_t max_int = std::numeric_limits<uint64_t>::max();
         static_assert(std::is_same_v<T, double> || std::is_same_v<T, FromDoubleIntermediateType>);
         /// Implementation specific behaviour on overflow (if we don't check here, stack overflow will triggered in bigint_cast).
+#if (LDBL_MANT_DIG >= 64)
         if (!std::isfinite(t))
         {
             self = 0;
             return;
         }
+#else
+        if constexpr (std::is_same_v<T, double>)
+        {
+            if (!std::isfinite(t))
+            {
+                self = 0;
+                return;
+            }
+        }
+        else
+        {
+            if (!boost::math::isfinite(t))
+            {
+                self = 0;
+                return;
+            }
+        }
+#endif
 
         T alpha = t / static_cast<T>(max_int);
-#if (LDBL_MANT_DIG != 64)
-        // Round division result to 64-bit precision on platforms with higher precision
+#if (LDBL_MANT_DIG > 64)
+        // Round division result to 64-bit precision on platforms with higher precision (e.g., ARM Linux with 113-bit mantissa)
         if constexpr (std::is_same_v<T, FromDoubleIntermediateType>)
         {
             alpha = detail::round_to_64bit_mantissa(alpha);
@@ -431,7 +470,7 @@ struct integer<Bits, Signed>::_impl
         // On platforms with >64-bit mantissa, round the multiplication to 64-bit precision
         // to match x86's 80-bit extended behavior
         T remainder_subtrahend = floor(alpha) * static_cast<T>(max_int);
-#if (LDBL_MANT_DIG != 64)
+#if (LDBL_MANT_DIG > 64)
         if constexpr (std::is_same_v<T, FromDoubleIntermediateType>)
         {
             remainder_subtrahend = detail::round_to_64bit_mantissa(remainder_subtrahend);
@@ -440,7 +479,11 @@ struct integer<Bits, Signed>::_impl
         self += static_cast<uint64_t>(t - remainder_subtrahend); // += b_i
     }
 
-    constexpr static void wide_integer_from_builtin(integer<Bits, Signed> & self, double rhs) noexcept
+    /// Can only be constexpr when not using boost (boost types are not literal types)
+#if (LDBL_MANT_DIG >= 64)
+    constexpr
+#endif
+        static void wide_integer_from_builtin(integer<Bits, Signed> & self, double rhs) noexcept
     {
         constexpr int64_t max_int = std::numeric_limits<int64_t>::max();
         constexpr int64_t min_int = std::numeric_limits<int64_t>::lowest();
