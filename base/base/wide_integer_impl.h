@@ -24,16 +24,12 @@
 /// to ensure identical conversion results across platforms without boost multiprecision headers.
 using FromDoubleIntermediateType = long double;
 
-#if (LDBL_MANT_DIG == 64)
-#    define CONSTEXPR_FROM_DOUBLE constexpr
-#else
-#    define CONSTEXPR_FROM_DOUBLE
-
+#if (LDBL_MANT_DIG != 64)
 namespace detail
 {
 /// Round a long double to 64-bit mantissa precision to match x86 extended precision behavior.
 /// This extracts the value into 64-bit chunks similar to boost::multiprecision::cpp_bin_float.
-inline long double round_to_64bit_mantissa(long double value) noexcept
+constexpr long double round_to_64bit_mantissa(long double value) noexcept
 {
     if (!std::isfinite(value) || value == 0.0L)
         return value;
@@ -443,7 +439,7 @@ struct integer<Bits, Signed>::_impl
         self += static_cast<uint64_t>(t - remainder_subtrahend); // += b_i
     }
 
-    CONSTEXPR_FROM_DOUBLE static void wide_integer_from_builtin(integer<Bits, Signed> & self, double rhs) noexcept
+    constexpr static void wide_integer_from_builtin(integer<Bits, Signed> & self, double rhs) noexcept
     {
         constexpr int64_t max_int = std::numeric_limits<int64_t>::max();
         constexpr int64_t min_int = std::numeric_limits<int64_t>::lowest();
