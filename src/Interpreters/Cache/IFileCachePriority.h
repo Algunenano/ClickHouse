@@ -129,6 +129,11 @@ public:
 
         virtual void incrementSize(size_t size, const CacheStateGuard::Lock &) = 0;
 
+        /// Like `incrementSize`, but returns false instead of throwing when
+        /// the sub-queue cannot fit the requested size (e.g. because concurrent
+        /// reservations consumed the freed space between eviction and this call).
+        virtual bool tryIncrementSize(size_t size, const CacheStateGuard::Lock &) = 0;
+
         virtual void decrementSize(size_t size) = 0;
 
         virtual bool isValid(const CachePriorityGuard::WriteLock &) const = 0;

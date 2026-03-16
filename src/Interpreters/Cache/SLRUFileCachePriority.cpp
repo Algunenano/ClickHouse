@@ -827,6 +827,15 @@ void SLRUFileCachePriority::SLRUIterator::incrementSize(size_t size, const Cache
     check(lock);
 }
 
+bool SLRUFileCachePriority::SLRUIterator::tryIncrementSize(size_t size, const CacheStateGuard::Lock & lock)
+{
+    assertValid();
+    if (!lru_iterator.tryIncrementSize(size, lock))
+        return false;
+    check(lock);
+    return true;
+}
+
 void SLRUFileCachePriority::SLRUIterator::decrementSize(size_t size)
 {
     assertValid();

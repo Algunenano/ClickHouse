@@ -169,6 +169,8 @@ public:
 
     void incrementSize(size_t size, const CacheStateGuard::Lock &) override;
 
+    bool tryIncrementSize(size_t size, const CacheStateGuard::Lock &) override;
+
     void decrementSize(size_t size) override;
 
 private:

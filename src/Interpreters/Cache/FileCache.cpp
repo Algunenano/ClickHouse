@@ -1232,7 +1232,20 @@ bool FileCache::doTryReserve(
 
         main_priority_iterator->check(lock);
         eviction_candidates.afterEvictState(lock);
-        main_priority_iterator->incrementSize(size, lock);
+
+        /// Between `collectEvictionInfo` (which computed how much to evict under the
+        /// state lock) and here, the state lock was dropped for eviction I/O. During
+        /// that gap other threads may have acquired hold spaces or completed reserve
+        /// cycles that consumed the freed space in a sub-queue, so `incrementSize`
+        /// can legitimately find that there is no longer enough room.
+        /// Use `tryIncrementSize` to treat this as a transient reservation failure.
+        if (!main_priority_iterator->tryIncrementSize(size, lock))
+        {
+            if (main_priority_iterator && added_new_main_entry)
+                main_priority_iterator->invalidate();
+            failure_reason = "not enough space after eviction due to concurrent reservations";
+            return false;
+        }
 
         if (query_priority_iterator)
             query_priority_iterator->incrementSize(size, lock);

@@ -294,6 +294,13 @@ void SplitFileCachePriority::SplitIterator::incrementSize(
     iterator->incrementSize(size, lock);
 }
 
+bool SplitFileCachePriority::SplitIterator::tryIncrementSize(
+    size_t size,
+    const CacheStateGuard::Lock & lock)
+{
+    return iterator->tryIncrementSize(size, lock);
+}
+
 void SplitFileCachePriority::SplitIterator::decrementSize(size_t size)
 {
     iterator->decrementSize(size);

@@ -640,6 +640,19 @@ void LRUFileCachePriority::LRUIterator::incrementSize(
     size_t size,
     const CacheStateGuard::Lock & lock)
 {
+    if (!tryIncrementSize(size, lock))
+    {
+        auto entry_ptr = entry.lock();
+        throw Exception(ErrorCodes::LOGICAL_ERROR,
+                        "Cannot increment size by {} for entry {}. Current state: {}",
+                        size, entry_ptr->toString(), cache_priority->getStateInfoForLog(lock));
+    }
+}
+
+bool LRUFileCachePriority::LRUIterator::tryIncrementSize(
+    size_t size,
+    const CacheStateGuard::Lock & lock)
+{
     chassert(size);
     assertValid();
 
@@ -649,11 +662,7 @@ void LRUFileCachePriority::LRUIterator::incrementSize(
     size_t elements = entry_ptr->size > 0 ? 0 : 1;
 
     if (!cache_priority->canFit(size, elements, lock))
-    {
-        throw Exception(ErrorCodes::LOGICAL_ERROR,
-                        "Cannot increment size by {} for entry {}. Current state: {}",
-                        size, entry_ptr->toString(), cache_priority->getStateInfoForLog(lock));
-    }
+        return false;
 
     LOG_TEST(
         cache_priority->log,
@@ -664,6 +673,7 @@ void LRUFileCachePriority::LRUIterator::incrementSize(
     entry_ptr->size += size;
 
     cache_priority->check(lock);
+    return true;
 }
 
 void LRUFileCachePriority::LRUIterator::decrementSize(size_t size)
@@ -715,8 +725,8 @@ std::string LRUFileCachePriority::getStateInfoForLog(const CacheStateGuard::Lock
 {
     return fmt::format(
         "size: {}/{}, elements: {}/{}, hold size: {}, hold elements: {}, description: {}",
-        getSize(lock), max_size.load(), getElementsCount(lock),
-        total_hold_size.load(), total_hold_elements.load(), max_elements.load(), description);
+        getSize(lock), max_size.load(), getElementsCount(lock), max_elements.load(),
+        total_hold_size.load(), total_hold_elements.load(), description);
 }
 
 std::string LRUFileCachePriority::getApproxStateInfoForLog() const
