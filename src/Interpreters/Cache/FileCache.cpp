@@ -1247,8 +1247,14 @@ bool FileCache::doTryReserve(
             return false;
         }
 
-        if (query_priority_iterator)
-            query_priority_iterator->incrementSize(size, lock);
+        if (query_priority_iterator && !query_priority_iterator->tryIncrementSize(size, lock))
+        {
+            main_priority_iterator->decrementSize(size);
+            if (main_priority_iterator && added_new_main_entry)
+                main_priority_iterator->invalidate();
+            failure_reason = "not enough space after eviction due to concurrent reservations (query limit)";
+            return false;
+        }
     }
     catch (...)
     {
