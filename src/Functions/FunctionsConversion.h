@@ -2791,13 +2791,13 @@ struct ConvertDispatch
         }
         else if constexpr (IsDataTypeDecimalOrNumber<FromDataType> && IsDataTypeDecimalOrNumber<ToDataType>)
         {
-            using FromT = typename FromDataType::FieldType;
-            using ToT = typename ToDataType::FieldType;
+            using LeftT = typename FromDataType::FieldType;
+            using RightT = typename ToDataType::FieldType;
 
             static constexpr bool bad_left =
-                is_decimal<FromT> || is_floating_point<FromT> || is_big_int_v<FromT> || is_signed_v<FromT>;
+                is_decimal<LeftT> || is_floating_point<LeftT> || is_big_int_v<LeftT> || is_signed_v<LeftT>;
             static constexpr bool bad_right =
-                is_decimal<ToT> || is_floating_point<ToT> || is_big_int_v<ToT> || is_signed_v<ToT>;
+                is_decimal<RightT> || is_floating_point<RightT> || is_big_int_v<RightT> || is_signed_v<RightT>;
 
             if constexpr ((bad_left && std::is_same_v<ToDataType, DataTypeUUID>) ||
                           (bad_right && std::is_same_v<FromDataType, DataTypeUUID>))
