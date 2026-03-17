@@ -1868,8 +1868,11 @@ template <typename FromDataType, typename ToDataType, typename Name,
     FormatSettings::DateTimeOverflowBehavior date_time_overflow_behavior = default_date_time_overflow_behavior>
 struct ConvertImpl
 {
+    /// NO_INLINE: called from ConvertDispatch (one instantiation per type pair × OverflowBehavior).
+    /// Without NO_INLINE, LTO inlines the body into every switch case of callOnIndexAndDataType,
+    /// amplifying code size by ~30× (one copy per source type).
     template <typename Additions = void *>
-    static ColumnPtr NO_SANITIZE_UNDEFINED execute(
+    static NO_INLINE ColumnPtr NO_SANITIZE_UNDEFINED execute(
         const ColumnsWithTypeAndName & arguments, const DataTypePtr & result_type [[maybe_unused]], size_t input_rows_count,
         BehaviourOnErrorFromString from_string_tag [[maybe_unused]], const FunctionConvertSettings & settings, Additions additions = Additions())
     {
@@ -2705,6 +2708,119 @@ struct ConvertImpl
 };
 
 
+/// Wraps ConvertImpl::execute for all three DateTimeOverflowBehavior values behind a single
+/// NO_INLINE function. This prevents the 3-way overflow switch from being duplicated once per
+/// source type inside callOnIndexAndDataType. Used by ConvertDispatch below.
+template <typename FromDataType, typename ToDataType, typename Name, typename Additions = void *>
+NO_INLINE ColumnPtr convertWithOverflowDispatch(
+    const ColumnsWithTypeAndName & arguments,
+    const DataTypePtr & result_type,
+    size_t input_rows_count,
+    BehaviourOnErrorFromString from_string_tag,
+    const FunctionConvertSettings & settings,
+    FormatSettings::DateTimeOverflowBehavior overflow_behavior,
+    Additions additions = Additions())
+{
+    switch (overflow_behavior)
+    {
+        case FormatSettings::DateTimeOverflowBehavior::Throw:
+            return ConvertImpl<FromDataType, ToDataType, Name, FormatSettings::DateTimeOverflowBehavior::Throw>::execute(
+                arguments, result_type, input_rows_count, from_string_tag, settings, additions);
+        case FormatSettings::DateTimeOverflowBehavior::Ignore:
+            return ConvertImpl<FromDataType, ToDataType, Name, FormatSettings::DateTimeOverflowBehavior::Ignore>::execute(
+                arguments, result_type, input_rows_count, from_string_tag, settings, additions);
+        case FormatSettings::DateTimeOverflowBehavior::Saturate:
+            return ConvertImpl<FromDataType, ToDataType, Name, FormatSettings::DateTimeOverflowBehavior::Saturate>::execute(
+                arguments, result_type, input_rows_count, from_string_tag, settings, additions);
+    }
+    UNREACHABLE();
+}
+
+
+/// Wraps the full type-pair dispatch body for a given (FromDataType, ToDataType, Name) combination
+/// into a single NO_INLINE function. Without this, the lambda body — including smart-pointer
+/// reference-counting boilerplate and the DateTimeOverflowBehavior switch — is duplicated once
+/// per source type inside callOnIndexAndDataType (one per ~30 type cases), making each dispatch
+/// function ~4 KB in a debug build and ~37 KB under LTO. With this wrapper each switch case
+/// shrinks to just argument marshaling + one call, bringing dispatch functions to ~1.8 KB.
+template <typename FromDataType, typename ToDataType, typename Name>
+struct ConvertDispatch
+{
+    static NO_INLINE bool execute(
+        ColumnPtr & result_column,
+        const ColumnsWithTypeAndName & arguments,
+        const DataTypePtr & result_type,
+        size_t input_rows_count,
+        BehaviourOnErrorFromString from_string_tag,
+        const FunctionConvertSettings & settings)
+    {
+        if constexpr (IsDataTypeDecimal<ToDataType>)
+        {
+            if constexpr (std::is_same_v<ToDataType, DataTypeDateTime64> || std::is_same_v<ToDataType, DataTypeTime64>)
+            {
+                if (arguments.size() != 2 && arguments.size() != 3)
+                    throw Exception(ErrorCodes::TOO_FEW_ARGUMENTS_FOR_FUNCTION,
+                        "Function {} expects 2 or 3 arguments for DataTypeDateTime64.", Name::name);
+            }
+            else if (arguments.size() != 2)
+            {
+                throw Exception(ErrorCodes::TOO_FEW_ARGUMENTS_FOR_FUNCTION,
+                    "Function {} expects 2 arguments for Decimal.", Name::name);
+            }
+
+            const ColumnWithTypeAndName & scale_column = arguments[1];
+            UInt32 scale = extractToDecimalScale(scale_column);
+
+            result_column = convertWithOverflowDispatch<FromDataType, ToDataType, Name>(
+                arguments, result_type, input_rows_count, from_string_tag, settings,
+                settings.date_time_overflow_behavior, scale);
+        }
+        else if constexpr (IsDataTypeDateOrDateTimeOrTime<ToDataType> && std::is_same_v<FromDataType, DataTypeDateTime64>)
+        {
+            const auto * dt64 = assert_cast<const DataTypeDateTime64 *>(arguments[0].type.get());
+            result_column = convertWithOverflowDispatch<FromDataType, ToDataType, Name>(
+                arguments, result_type, input_rows_count, from_string_tag, settings,
+                settings.date_time_overflow_behavior, dt64->getScale());
+        }
+        else if constexpr ((IsDataTypeNumber<FromDataType>
+                            || IsDataTypeDateOrDateTimeOrTime<FromDataType>) && IsDataTypeDateOrDateTimeOrTime<ToDataType>)
+        {
+            result_column = convertWithOverflowDispatch<FromDataType, ToDataType, Name>(
+                arguments, result_type, input_rows_count, from_string_tag, settings,
+                settings.date_time_overflow_behavior);
+        }
+        else if constexpr (IsDataTypeDecimalOrNumber<FromDataType> && IsDataTypeDecimalOrNumber<ToDataType>)
+        {
+            using FromT = typename FromDataType::FieldType;
+            using ToT = typename ToDataType::FieldType;
+
+            static constexpr bool bad_left =
+                is_decimal<FromT> || is_floating_point<FromT> || is_big_int_v<FromT> || is_signed_v<FromT>;
+            static constexpr bool bad_right =
+                is_decimal<ToT> || is_floating_point<ToT> || is_big_int_v<ToT> || is_signed_v<ToT>;
+
+            if constexpr ((bad_left && std::is_same_v<ToDataType, DataTypeUUID>) ||
+                          (bad_right && std::is_same_v<FromDataType, DataTypeUUID>))
+            {
+                throw Exception(ErrorCodes::CANNOT_CONVERT_TYPE, "Wrong UUID conversion");
+            }
+            else
+            {
+                result_column = ConvertImpl<FromDataType, ToDataType, Name>::execute(
+                    arguments, result_type, input_rows_count, from_string_tag, settings);
+            }
+        }
+        else
+        {
+            result_column = ConvertImpl<FromDataType, ToDataType, Name>::execute(
+                arguments, result_type, input_rows_count, from_string_tag, settings);
+        }
+
+        return true;
+    }
+};
+
+
 /// Generic conversion of any type from String. Used for complex types: Array and Tuple or types with custom serialization.
 template <bool throw_on_error>
 struct ConvertImplGenericFromString
@@ -3201,95 +3317,8 @@ private:
             using Types = std::decay_t<decltype(types)>;
             using LeftDataType = typename Types::LeftType;
             using RightDataType = typename Types::RightType;
-
-            if constexpr (IsDataTypeDecimal<RightDataType>)
-            {
-                if constexpr (std::is_same_v<RightDataType, DataTypeDateTime64> || std::is_same_v<RightDataType, DataTypeTime64>)
-                {
-                    /// Account for optional timezone argument.
-                    if (arguments.size() != 2 && arguments.size() != 3)
-                        throw Exception(ErrorCodes::TOO_FEW_ARGUMENTS_FOR_FUNCTION, "Function {} expects 2 or 3 arguments for DataTypeDateTime64.", getName());
-                }
-                else if (arguments.size() != 2)
-                {
-                    throw Exception(ErrorCodes::TOO_FEW_ARGUMENTS_FOR_FUNCTION, "Function {} expects 2 arguments for Decimal.", getName());
-                }
-
-                const ColumnWithTypeAndName & scale_column = arguments[1];
-                UInt32 scale = extractToDecimalScale(scale_column);
-
-                switch (settings.date_time_overflow_behavior)
-                {
-                    case FormatSettings::DateTimeOverflowBehavior::Throw:
-                        result_column = ConvertImpl<LeftDataType, RightDataType, Name, FormatSettings::DateTimeOverflowBehavior::Throw>::execute(arguments, result_type, input_rows_count, from_string_tag, settings, scale);
-                        break;
-                    case FormatSettings::DateTimeOverflowBehavior::Ignore:
-                        result_column = ConvertImpl<LeftDataType, RightDataType, Name, FormatSettings::DateTimeOverflowBehavior::Ignore>::execute(arguments, result_type, input_rows_count, from_string_tag, settings, scale);
-                        break;
-                    case FormatSettings::DateTimeOverflowBehavior::Saturate:
-                        result_column = ConvertImpl<LeftDataType, RightDataType, Name, FormatSettings::DateTimeOverflowBehavior::Saturate>::execute(arguments, result_type, input_rows_count, from_string_tag, settings, scale);
-                        break;
-                }
-            }
-            else if constexpr (IsDataTypeDateOrDateTimeOrTime<RightDataType> && std::is_same_v<LeftDataType, DataTypeDateTime64>)
-            {
-                const auto * dt64 = assert_cast<const DataTypeDateTime64 *>(arguments[0].type.get());
-                switch (settings.date_time_overflow_behavior)
-                {
-                    case FormatSettings::DateTimeOverflowBehavior::Throw:
-                        result_column = ConvertImpl<LeftDataType, RightDataType, Name, FormatSettings::DateTimeOverflowBehavior::Throw>::execute(arguments, result_type, input_rows_count, from_string_tag, settings, dt64->getScale());
-                        break;
-                    case FormatSettings::DateTimeOverflowBehavior::Ignore:
-                        result_column = ConvertImpl<LeftDataType, RightDataType, Name, FormatSettings::DateTimeOverflowBehavior::Ignore>::execute(arguments, result_type, input_rows_count, from_string_tag, settings, dt64->getScale());
-                        break;
-                    case FormatSettings::DateTimeOverflowBehavior::Saturate:
-                        result_column = ConvertImpl<LeftDataType, RightDataType, Name, FormatSettings::DateTimeOverflowBehavior::Saturate>::execute(arguments, result_type, input_rows_count, from_string_tag, settings, dt64->getScale());
-                        break;
-                }
-            }
-            else if constexpr ((IsDataTypeNumber<LeftDataType>
-                                || IsDataTypeDateOrDateTimeOrTime<LeftDataType>)&&IsDataTypeDateOrDateTimeOrTime<RightDataType>)
-            {
-#define GENERATE_OVERFLOW_MODE_CASE(OVERFLOW_MODE) \
-    case FormatSettings::DateTimeOverflowBehavior::OVERFLOW_MODE: \
-        result_column = ConvertImpl<LeftDataType, RightDataType, Name, FormatSettings::DateTimeOverflowBehavior::OVERFLOW_MODE>::execute( \
-            arguments, result_type, input_rows_count, from_string_tag, settings); \
-        break;
-                switch (settings.date_time_overflow_behavior)
-                {
-                    GENERATE_OVERFLOW_MODE_CASE(Throw)
-                    GENERATE_OVERFLOW_MODE_CASE(Ignore)
-                    GENERATE_OVERFLOW_MODE_CASE(Saturate)
-                }
-
-#undef GENERATE_OVERFLOW_MODE_CASE
-            }
-            else if constexpr (IsDataTypeDecimalOrNumber<LeftDataType> && IsDataTypeDecimalOrNumber<RightDataType>)
-            {
-                using LeftT = typename LeftDataType::FieldType;
-                using RightT = typename RightDataType::FieldType;
-
-                static constexpr bool bad_left =
-                    is_decimal<LeftT> || is_floating_point<LeftT> || is_big_int_v<LeftT> || is_signed_v<LeftT>;
-                static constexpr bool bad_right =
-                    is_decimal<RightT> || is_floating_point<RightT> || is_big_int_v<RightT> || is_signed_v<RightT>;
-
-                /// Disallow int vs UUID conversion (but support int vs UInt128 conversion)
-                if constexpr ((bad_left && std::is_same_v<RightDataType, DataTypeUUID>) ||
-                              (bad_right && std::is_same_v<LeftDataType, DataTypeUUID>))
-                {
-                    throw Exception(ErrorCodes::CANNOT_CONVERT_TYPE, "Wrong UUID conversion");
-                }
-                else
-                {
-                    result_column = ConvertImpl<LeftDataType, RightDataType, Name>::execute(
-                        arguments, result_type, input_rows_count, from_string_tag, settings);
-                }
-            }
-            else
-                result_column = ConvertImpl<LeftDataType, RightDataType, Name>::execute(arguments, result_type, input_rows_count, from_string_tag, settings);
-
-            return true;
+            return ConvertDispatch<LeftDataType, RightDataType, Name>::execute(
+                result_column, arguments, result_type, input_rows_count, from_string_tag, settings);
         };
 
         if constexpr (mightBeDateTime<Name, ToDataType>())
