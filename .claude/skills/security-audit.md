@@ -198,7 +198,7 @@ Use `build/` vs `build_public/` to test private-only features vs public-only beh
 Testing approach:
 - **Use `<build>/programs/clickhouse local`** for quick format/codec/function tests — no server needed
 - **Use `<build>/programs/clickhouse server`** with custom configs for HTTP/TCP/RBAC tests
-- Use the prod config at `/mnt/ch/ch_data/config/prod-1/config.xml` when you need `query_log` and full features (DO NOT truncate/drop system tables)
+- Use the prod config at `/mnt/ch/ch_config/private-1/config.xml` when you need `query_log` and full features (DO NOT truncate/drop system tables)
 - **ASan** (`build_asan`) for memory corruption: heap overflow, OOB read/write, use-after-free
 - **UBSan** (`build_ubsan`) for undefined behavior: oversized shifts, signed overflow, null pointer
 - **TSan** (`build_tsan`) for race conditions: data races in concurrent access paths
