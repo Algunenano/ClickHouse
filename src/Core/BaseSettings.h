@@ -1071,66 +1071,75 @@ using AliasMap = std::unordered_map<std::string_view, std::string_view>;
             bool isImportant(size_t index) const { return field_infos[index].flags & BaseSettingsHelpers::Flags::IMPORTANT; } \
             SettingsTierType getTier(size_t index) const { return BaseSettingsHelpers::getTier(field_infos[index].flags); } \
             \
-            /* Value conversion utilities */ \
+            /* Value conversion utilities — use type-level ops (no Data instance needed) */ \
             Field castValueUtil(size_t index, const Field & value) const \
             { \
-                auto p = field_infos[index].create_default_function(); \
-                *p = value; \
-                return static_cast<Field>(*p); \
+                return field_infos[index].ops->cast_value(value); \
             } \
             String valueToStringUtil(size_t index, const Field & value) const \
             { \
-                auto p = field_infos[index].create_default_function(); \
-                *p = value; \
-                return p->toString(); \
+                return field_infos[index].ops->value_to_string(value); \
             } \
             Field stringToValueUtil(size_t index, const String & str) const \
             { \
-                auto p = field_infos[index].create_default_function(); \
-                p->parseFromString(str); \
-                return static_cast<Field>(*p); \
+                return field_infos[index].ops->string_to_value(str); \
             } \
             \
             /* Direct data access (by index) */ \
+            static void * fieldPtr(Data & data, size_t offset) \
+            { \
+                return reinterpret_cast<char *>(&data) + offset; \
+            } \
             void setValue(Data & data, size_t index, const Field & value) const \
             { \
-                *field_infos[index].get_data_function(data) = value; \
+                const auto & fi = field_infos[index]; \
+                fi.ops->assign_from_field(fieldPtr(data, fi.data_offset), value); \
             } \
             Field getValue(const Data & data, size_t index) const \
             { \
-                return static_cast<Field>(*field_infos[index].get_data_function(*const_cast<Data *>(&data))); \
+                const auto & fi = field_infos[index]; \
+                return fi.ops->to_field(fieldPtr(const_cast<Data &>(data), fi.data_offset)); \
             } \
             void setValueString(Data & data, size_t index, const String & str) const \
             { \
-                field_infos[index].get_data_function(data)->parseFromString(str); \
+                const auto & fi = field_infos[index]; \
+                fi.ops->parse_from_string(fieldPtr(data, fi.data_offset), str); \
             } \
             String getValueString(const Data & data, size_t index) const \
             { \
-                return field_infos[index].get_data_function(*const_cast<Data *>(&data))->toString(); \
+                const auto & fi = field_infos[index]; \
+                return fi.ops->to_string(fieldPtr(const_cast<Data &>(data), fi.data_offset)); \
             } \
             bool isValueChanged(const Data & data, size_t index) const \
             { \
-                return field_infos[index].get_data_function(*const_cast<Data *>(&data))->isChanged(); \
+                const auto & fi = field_infos[index]; \
+                return fi.ops->is_changed(fieldPtr(const_cast<Data &>(data), fi.data_offset)); \
             } \
             void resetValueToDefault(Data & data, size_t index) const \
             { \
-                auto p = field_infos[index].create_default_function(); \
-                *field_infos[index].get_data_function(*const_cast<Data *>(&data)) = static_cast<Field>(*p); \
-                field_infos[index].get_data_function(*const_cast<Data *>(&data))->setChanged(false); \
+                const auto & fi = field_infos[index]; \
+                void * ptr = fieldPtr(data, fi.data_offset); \
+                fi.ops->assign_from_field(ptr, fi.get_default().first); \
+                fi.ops->set_changed(ptr, false); \
             } \
             \
             /* Binary serialization (by index) */ \
             void writeBinary(const Data & data, size_t index, WriteBuffer & out) const \
             { \
-                field_infos[index].get_data_function(*const_cast<Data *>(&data))->writeBinary(out); \
+                const auto & fi = field_infos[index]; \
+                fi.ops->write_binary(fieldPtr(const_cast<Data &>(data), fi.data_offset), out); \
             } \
             void readBinary(Data & data, size_t index, ReadBuffer & in) const \
             { \
-                field_infos[index].get_data_function(data)->readBinary(in); \
+                const auto & fi = field_infos[index]; \
+                fi.ops->read_binary(fieldPtr(data, fi.data_offset), in); \
             } \
             \
             /* Default value as string */ \
-            String getDefaultValueString(size_t index) const { return field_infos[index].create_default_function()->toString(); } \
+            String getDefaultValueString(size_t index) const \
+            { \
+                return field_infos[index].get_default().second; \
+            } \
             \
         private: \
             Accessor(); \
@@ -1143,8 +1152,9 @@ using AliasMap = std::unordered_map<std::string_view, std::string_view>;
                 const std::string_view type; \
                 const std::string_view description; \
                 const UInt64 flags; \
-                SettingFieldBase * (*get_data_function)(Data &);                    /* Get pointer to setting in Data struct */ \
-                std::unique_ptr<SettingFieldBase> (*create_default_function)();     /* Create setting with default value */ \
+                const SettingFieldOps * ops;                                        /* Type-erased ops, shared per type */ \
+                size_t data_offset;                                                 /* offsetof(Data, NAME) */ \
+                std::pair<Field, String> (*get_default)();                          /* Default as Field + String (one lambda, no round-trip) */ \
             }; \
             \
             std::vector<FieldInfo> field_infos;                                     /* Metadata for all settings */ \
@@ -1226,9 +1236,13 @@ using AliasMap = std::unordered_map<std::string_view, std::string_view>;
         { \
             [[maybe_unused]] constexpr int IMPORTANT = 0x01; \
             Accessor res; \
+            /* offsetof on non-standard-layout types is well-defined in Clang */ \
+            _Pragma("clang diagnostic push") \
+            _Pragma("clang diagnostic ignored \"-Winvalid-offsetof\"") \
             /* Populate field_infos with one entry per setting */ \
             LIST_OF_SETTINGS_WITHOUT_PATH_MACRO(IMPLEMENT_SETTINGS_TRAITS_, IMPLEMENT_SETTINGS_TRAITS_) \
             LIST_OF_SETTINGS_WITH_PATH_MACRO(IMPLEMENT_SETTINGS_TRAITS_WITH_PATH_, IMPLEMENT_SETTINGS_TRAITS_WITH_PATH_) \
+            _Pragma("clang diagnostic pop") \
             /* Build name -> index map for fast lookups */ \
             for (size_t i = 0, size = res.field_infos.size(); i < size; ++i) \
             { \
@@ -1252,9 +1266,8 @@ using AliasMap = std::unordered_map<std::string_view, std::string_view>;
 
 
 /// Generate a FieldInfo entry for a setting without a config path.
-/// Creates two lambdas:
-/// 1. get_data_function: Returns pointer to the setting field in a Data struct
-/// 2. create_default_function: Creates a new setting field with default value
+/// Uses SettingFieldOps for type-erased dispatch (shared per type, not per setting).
+/// One lambda per setting (get_default_value). Data access uses offsetof.
 /// NOLINTNEXTLINE
 #define IMPLEMENT_SETTINGS_TRAITS_(TYPE, NAME, DEFAULT, DESCRIPTION, FLAGS, ...) \
     res.field_infos.emplace_back( \
@@ -1265,8 +1278,9 @@ using AliasMap = std::unordered_map<std::string_view, std::string_view>;
             #TYPE, \
             DESCRIPTION, \
             static_cast<UInt64>(FLAGS), \
-            [](Data & data) -> SettingFieldBase * { return &data.NAME; }, \
-            []() -> std::unique_ptr<SettingFieldBase> { return std::make_unique<SettingField##TYPE>(DEFAULT); }, \
+            &settingFieldOps<SettingField##TYPE>(), \
+            offsetof(Data, NAME), \
+            []() -> std::pair<Field, String> { SettingField##TYPE d(DEFAULT); return {static_cast<Field>(d), d.toString()}; }, \
         });
 
 /// Generate a FieldInfo entry for a setting with a config file path
@@ -1280,7 +1294,8 @@ using AliasMap = std::unordered_map<std::string_view, std::string_view>;
             #TYPE, \
             DESCRIPTION, \
             static_cast<UInt64>(FLAGS), \
-            [](Data & data) -> SettingFieldBase * { return &data.NAME; }, \
-            []() -> std::unique_ptr<SettingFieldBase> { return std::make_unique<SettingField##TYPE>(DEFAULT); }, \
+            &settingFieldOps<SettingField##TYPE>(), \
+            offsetof(Data, NAME), \
+            []() -> std::pair<Field, String> { SettingField##TYPE d(DEFAULT); return {static_cast<Field>(d), d.toString()}; }, \
         });
 }

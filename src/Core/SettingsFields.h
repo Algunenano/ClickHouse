@@ -14,28 +14,66 @@ class ReadBuffer;
 class WriteBuffer;
 
 
+/** Type-erased operation table for setting fields.
+  * One static instance per concrete SettingField type (not per setting).
+  * Used by the Accessor in BaseSettings.h for runtime dispatch without virtual methods.
+  */
+struct SettingFieldOps
+{
+    void (*assign_from_field)(void * setting, const Field & value);
+    Field (*to_field)(const void * setting);
+    bool (*is_changed)(const void * setting);
+    void (*set_changed)(void * setting, bool);
+    String (*to_string)(const void * setting);
+    void (*parse_from_string)(void * setting, const String & str);
+    void (*write_binary)(const void * setting, WriteBuffer & out);
+    void (*read_binary)(void * setting, ReadBuffer & in);
+    /// Type-level utilities (operate on temporaries, no Data instance needed)
+    Field (*cast_value)(const Field & value);
+    String (*value_to_string)(const Field & value);
+    Field (*string_to_value)(const String & str);
+};
+
+/// Named template functions for type-erased dispatch.
+/// Using named functions instead of lambdas avoids creating unique closure types per instantiation,
+/// which reduces compilation overhead.
+template <typename T> void sfAssignFromField(void * p, const Field & f) { *static_cast<T *>(p) = f; }
+template <typename T> Field sfToField(const void * p) { return static_cast<Field>(*static_cast<const T *>(p)); }
+template <typename T> bool sfIsChanged(const void * p) { return static_cast<const T *>(p)->isChanged(); }
+template <typename T> void sfSetChanged(void * p, bool v) { static_cast<T *>(p)->setChanged(v); }
+template <typename T> String sfToString(const void * p) { return static_cast<const T *>(p)->toString(); }
+template <typename T> void sfParseFromString(void * p, const String & s) { static_cast<T *>(p)->parseFromString(s); }
+template <typename T> void sfWriteBinary(const void * p, WriteBuffer & out) { static_cast<const T *>(p)->writeBinary(out); }
+template <typename T> void sfReadBinary(void * p, ReadBuffer & in) { static_cast<T *>(p)->readBinary(in); }
+template <typename T> Field sfCastValue(const Field & f) { T temp; temp = f; return static_cast<Field>(temp); }
+template <typename T> String sfValueToString(const Field & f) { T temp; temp = f; return temp.toString(); }
+template <typename T> Field sfStringToValue(const String & s) { T temp; temp.parseFromString(s); return static_cast<Field>(temp); }
+
+/// Generate a SettingFieldOps instance for a concrete SettingField type.
+/// Instantiated once per type (not per setting) — the static local is shared.
+template <typename T>
+const SettingFieldOps & settingFieldOps()
+{
+    static const SettingFieldOps ops =
+    {
+        &sfAssignFromField<T>, &sfToField<T>, &sfIsChanged<T>, &sfSetChanged<T>,
+        &sfToString<T>, &sfParseFromString<T>, &sfWriteBinary<T>, &sfReadBinary<T>,
+        &sfCastValue<T>, &sfValueToString<T>, &sfStringToValue<T>,
+    };
+    return ops;
+}
+
 /** One setting for any type.
   * Stores a value within itself, as well as a flag - whether the value was changed.
   * This is done so that you can send to the remote servers only changed settings (or explicitly specified in the config) values.
   * That is, if the configuration was not specified in the config and was not dynamically changed, it is not sent to the remote server,
   *  and the remote server will use its default value.
+  *
+  * Empty base class — concrete types provide their own methods with matching signatures.
+  * Type-erased dispatch is done through SettingFieldOps function pointers, not virtual methods.
   */
-
 struct SettingFieldBase
 {
-    virtual ~SettingFieldBase() = default;
-    virtual SettingFieldBase & operator=(const Field & f) = 0;
-
-    virtual bool isChanged() const = 0;
-    virtual void setChanged(bool changed_) = 0;
-
-    virtual explicit operator Field() const = 0;
-
-    virtual String toString() const = 0;
-    virtual void parseFromString(const String & str) = 0;
-
-    virtual void writeBinary(WriteBuffer & out) const = 0;
-    virtual void readBinary(ReadBuffer & in) = 0;
 };
 
 template <typename T>
@@ -53,11 +91,11 @@ struct SettingFieldNumber : SettingFieldBase
         : value(o.value), changed(o.changed)
     {}
 
-    bool isChanged() const override { return changed; }
-    void setChanged(bool changed_) override { changed = changed_; }
+    bool isChanged() const { return changed; }
+    void setChanged(bool changed_) { changed = changed_; }
 
-    virtual SettingFieldNumber & operator=(Type x);
-    SettingFieldNumber & operator=(const Field & f) override;
+    SettingFieldNumber & operator=(Type x);
+    SettingFieldNumber & operator=(const Field & f);
     SettingFieldNumber & operator=(const SettingFieldNumber & o)
     {
         if (this != &o)
@@ -69,13 +107,13 @@ struct SettingFieldNumber : SettingFieldBase
     }
 
     operator Type() const { return value; } /// NOLINT
-    explicit operator Field() const override { return value; }
+    explicit operator Field() const { return value; }
 
-    String toString() const override;
-    void parseFromString(const String & str) override;
+    String toString() const;
+    void parseFromString(const String & str);
 
-    void writeBinary(WriteBuffer & out) const override;
-    void readBinary(ReadBuffer & in) override;
+    void writeBinary(WriteBuffer & out) const;
+    void readBinary(ReadBuffer & in);
 };
 
 using SettingFieldUInt64 = SettingFieldNumber<UInt64>;
@@ -119,8 +157,7 @@ struct SettingAutoWrapper final : SettingFieldBase
             base = Base(f);
     }
 
-    SettingAutoWrapper & operator=(const Field & f) override
-    {
+    SettingAutoWrapper & operator=(const Field & f)    {
         changed = true;
         if (is_auto = isAuto(f); !is_auto)
             base = f;
@@ -138,22 +175,20 @@ struct SettingAutoWrapper final : SettingFieldBase
         return *this;
     }
 
-    bool isChanged() const override { return changed; }
-    void setChanged(bool changed_) override { changed = changed_; }
+    bool isChanged() const { return changed; }
+    void setChanged(bool changed_) { changed = changed_; }
 
-    explicit operator Field() const override { return is_auto ? Field(keyword) : Field(base); }
+    explicit operator Field() const { return is_auto ? Field(keyword) : Field(base); }
 
-    String toString() const override { return is_auto ? keyword : base.toString(); }
+    String toString() const { return is_auto ? keyword : base.toString(); }
 
-    void parseFromString(const String & str) override
-    {
+    void parseFromString(const String & str)    {
         changed = true;
         if (is_auto = isAuto(str); !is_auto)
             base.parseFromString(str);
     }
 
-    void writeBinary(WriteBuffer & out) const override
-    {
+    void writeBinary(WriteBuffer & out) const    {
         if (is_auto)
             Base().writeBinary(out); /// serialize default value
         else
@@ -166,7 +201,7 @@ struct SettingAutoWrapper final : SettingFieldBase
      * If they were changed they were requested to use explicit value instead of `auto`.
      * And so interactions between client-server, and server-server (distributed queries), should be OK.
      */
-    void readBinary(ReadBuffer & in) override { changed = true; is_auto = false; base.readBinary(in); }
+    void readBinary(ReadBuffer & in) { changed = true; is_auto = false; base.readBinary(in); }
 
     Type valueOr(Type default_value) const { return is_auto ? default_value : base.value; }
     std::optional<Type> valueOrNullopt() const { return is_auto ? std::optional<Type>(std::nullopt) : base.value; }
@@ -199,7 +234,7 @@ struct SettingFieldMaxThreads final : SettingFieldBase
     {}
 
     SettingFieldMaxThreads & operator=(UInt64 x) { is_auto = !x; value = is_auto ? getAuto() : x; changed = true; return *this; }
-    SettingFieldMaxThreads & operator=(const Field & f) override;
+    SettingFieldMaxThreads & operator=(const Field & f);
     SettingFieldMaxThreads & operator=(const SettingFieldMaxThreads & o)
     {
         if (this != &o)
@@ -211,18 +246,18 @@ struct SettingFieldMaxThreads final : SettingFieldBase
         return *this;
     }
 
-    bool isChanged() const override { return changed; }
-    void setChanged(bool changed_) override { changed = changed_; }
+    bool isChanged() const { return changed; }
+    void setChanged(bool changed_) { changed = changed_; }
 
     operator UInt64() const { return value; } /// NOLINT
-    explicit operator Field() const override { return value; }
+    explicit operator Field() const { return value; }
 
     /// Writes "auto(<number>)" instead of simple "<number>" if `is_auto == true`.
-    String toString() const override;
-    void parseFromString(const String & str) override;
+    String toString() const;
+    void parseFromString(const String & str);
 
-    void writeBinary(WriteBuffer & out) const override;
-    void readBinary(ReadBuffer & in) override;
+    void writeBinary(WriteBuffer & out) const;
+    void readBinary(ReadBuffer & in);
 
 private:
     static UInt64 getAuto();
@@ -256,7 +291,7 @@ struct SettingFieldTimespan final : SettingFieldBase
     SettingFieldTimespan & operator =(const Poco::Timespan & x) { value = x; changed = true; return *this; }
 
     SettingFieldTimespan & operator =(UInt64 x) { *this = Poco::Timespan{static_cast<Poco::Timespan::TimeDiff>(x * microseconds_per_unit)}; return *this; }
-    SettingFieldTimespan & operator =(const Field & f) override;
+    SettingFieldTimespan & operator =(const Field & f);
 
     SettingFieldTimespan & operator =(const SettingFieldTimespan & o)
     {
@@ -268,23 +303,23 @@ struct SettingFieldTimespan final : SettingFieldBase
         return *this;
     }
 
-    bool isChanged() const override { return changed; }
-    void setChanged(bool changed_) override { changed = changed_; }
+    bool isChanged() const { return changed; }
+    void setChanged(bool changed_) { changed = changed_; }
 
     operator Poco::Timespan() const { return value; } /// NOLINT
 
     explicit operator UInt64() const { return value.totalMicroseconds() / microseconds_per_unit; }
-    explicit operator Field() const override;
+    explicit operator Field() const;
 
     Poco::Timespan::TimeDiff totalMicroseconds() const { return value.totalMicroseconds(); }
     Poco::Timespan::TimeDiff totalMilliseconds() const { return value.totalMilliseconds(); }
     Poco::Timespan::TimeDiff totalSeconds() const { return value.totalSeconds(); }
 
-    String toString() const override;
-    void parseFromString(const String & str) override;
+    String toString() const;
+    void parseFromString(const String & str);
 
-    void writeBinary(WriteBuffer & out) const override;
-    void readBinary(ReadBuffer & in) override;
+    void writeBinary(WriteBuffer & out) const;
+    void readBinary(ReadBuffer & in);
 };
 
 using SettingFieldSeconds = SettingFieldTimespan<SettingFieldTimespanUnit::Second>;
@@ -310,7 +345,7 @@ struct SettingFieldString final : SettingFieldBase
     SettingFieldString & operator =(const String & str) { *this = std::string_view{str}; return *this; }
     SettingFieldString & operator =(String && str) { value = std::move(str); changed = true; return *this; }
     SettingFieldString & operator =(const char * str) { *this = std::string_view{str}; return *this; }
-    SettingFieldString & operator =(const Field & f) override { *this = f.safeGet<String>(); return *this; }
+    SettingFieldString & operator =(const Field & f) { *this = f.safeGet<String>(); return *this; }
     SettingFieldString & operator =(const SettingFieldString & o)
     {
         if (this != &o)
@@ -321,17 +356,17 @@ struct SettingFieldString final : SettingFieldBase
         return *this;
     }
 
-    bool isChanged() const override { return changed; }
-    void setChanged(bool changed_) override { changed = changed_; }
+    bool isChanged() const { return changed; }
+    void setChanged(bool changed_) { changed = changed_; }
 
     operator const String &() const { return value; } /// NOLINT
-    explicit operator Field() const override { return value; }
+    explicit operator Field() const { return value; }
 
-    String toString() const override { return value; }
-    void parseFromString(const String & str) override { *this = str; }
+    String toString() const { return value; }
+    void parseFromString(const String & str) { *this = str; }
 
-    void writeBinary(WriteBuffer & out) const override;
-    void readBinary(ReadBuffer & in) override;
+    void writeBinary(WriteBuffer & out) const;
+    void readBinary(ReadBuffer & in);
 };
 
 struct SettingFieldMap final : SettingFieldBase
@@ -348,7 +383,7 @@ public:
     {}
 
     SettingFieldMap & operator =(const Map & map) { value = map; changed = true; return *this; }
-    SettingFieldMap & operator =(const Field & f) override;
+    SettingFieldMap & operator =(const Field & f);
     SettingFieldMap & operator =(const SettingFieldMap & o)
     {
         if (this != &o)
@@ -359,17 +394,17 @@ public:
         return *this;
     }
 
-    bool isChanged() const override { return changed; }
-    void setChanged(bool changed_) override { changed = changed_; }
+    bool isChanged() const { return changed; }
+    void setChanged(bool changed_) { changed = changed_; }
 
     operator const Map &() const { return value; } /// NOLINT
-    explicit operator Field() const override { return value; }
+    explicit operator Field() const { return value; }
 
-    String toString() const override;
-    void parseFromString(const String & str) override;
+    String toString() const;
+    void parseFromString(const String & str);
 
-    void writeBinary(WriteBuffer & out) const override;
-    void readBinary(ReadBuffer & in) override;
+    void writeBinary(WriteBuffer & out) const;
+    void readBinary(ReadBuffer & in);
 };
 
 struct SettingFieldChar final : SettingFieldBase
@@ -385,7 +420,7 @@ public:
     {}
 
     SettingFieldChar & operator =(char c) { value = c; changed = true; return *this; }
-    SettingFieldChar & operator =(const Field & f) override;
+    SettingFieldChar & operator =(const Field & f);
     SettingFieldChar & operator =(const SettingFieldChar & o)
     {
         if (this != &o)
@@ -396,17 +431,17 @@ public:
         return *this;
     }
 
-    bool isChanged() const override { return changed; }
-    void setChanged(bool changed_) override { changed = changed_; }
+    bool isChanged() const { return changed; }
+    void setChanged(bool changed_) { changed = changed_; }
 
     operator char() const { return value; } /// NOLINT
-    explicit operator Field() const override { return toString(); }
+    explicit operator Field() const { return toString(); }
 
-    String toString() const override { return String(&value, 1); }
-    void parseFromString(const String & str) override;
+    String toString() const { return String(&value, 1); }
+    void parseFromString(const String & str);
 
-    void writeBinary(WriteBuffer & out) const override;
-    void readBinary(ReadBuffer & in) override;
+    void writeBinary(WriteBuffer & out) const;
+    void readBinary(ReadBuffer & in);
 };
 
 
@@ -426,7 +461,7 @@ struct SettingFieldURI final : SettingFieldBase
     SettingFieldURI & operator =(const Poco::URI & x) { value = x; changed = true; return *this; }
     SettingFieldURI & operator =(const String & str) { *this = Poco::URI{str}; return *this; }
     SettingFieldURI & operator =(const char * str) { *this = Poco::URI{str}; return *this; }
-    SettingFieldURI & operator =(const Field & f) override { *this = f.safeGet<String>(); return *this; }
+    SettingFieldURI & operator =(const Field & f) { *this = f.safeGet<String>(); return *this; }
     SettingFieldURI & operator =(const SettingFieldURI & o)
     {
         if (this != &o)
@@ -437,18 +472,18 @@ struct SettingFieldURI final : SettingFieldBase
         return *this;
     }
 
-    bool isChanged() const override { return changed; }
-    void setChanged(bool changed_) override { changed = changed_; }
+    bool isChanged() const { return changed; }
+    void setChanged(bool changed_) { changed = changed_; }
 
     operator const Poco::URI &() const { return value; } /// NOLINT
     explicit operator String() const { return toString(); }
-    explicit operator Field() const override { return toString(); }
+    explicit operator Field() const { return toString(); }
 
-    String toString() const override { return value.toString(); }
-    void parseFromString(const String & str) override { *this = str; }
+    String toString() const { return value.toString(); }
+    void parseFromString(const String & str) { *this = str; }
 
-    void writeBinary(WriteBuffer & out) const override;
-    void readBinary(ReadBuffer & in) override;
+    void writeBinary(WriteBuffer & out) const;
+    void readBinary(ReadBuffer & in);
 };
 
 
@@ -479,7 +514,7 @@ struct SettingFieldEnum final : SettingFieldBase
     {}
 
     SettingFieldEnum & operator =(EnumType x) { value = x; changed = true; return *this; }
-    SettingFieldEnum & operator =(const Field & f) override { *this = Traits::fromString(f.safeGet<String>()); return *this; }
+    SettingFieldEnum & operator =(const Field & f) { *this = Traits::fromString(f.safeGet<String>()); return *this; }
     SettingFieldEnum & operator =(const SettingFieldEnum & o)
     {
         if (this != &o)
@@ -490,17 +525,17 @@ struct SettingFieldEnum final : SettingFieldBase
         return *this;
     }
 
-    bool isChanged() const override { return changed; }
-    void setChanged(bool changed_) override { changed = changed_; }
+    bool isChanged() const { return changed; }
+    void setChanged(bool changed_) { changed = changed_; }
 
     operator EnumType() const { return value; } /// NOLINT
-    explicit operator Field() const override { return toString(); }
+    explicit operator Field() const { return toString(); }
 
-    String toString() const override { return Traits::toString(value); }
-    void parseFromString(const String & str) override { *this = Traits::fromString(str); }
+    String toString() const { return Traits::toString(value); }
+    void parseFromString(const String & str) { *this = Traits::fromString(str); }
 
-    void writeBinary(WriteBuffer & out) const override;
-    void readBinary(ReadBuffer & in) override;
+    void writeBinary(WriteBuffer & out) const;
+    void readBinary(ReadBuffer & in);
 };
 
 struct SettingFieldEnumHelpers
@@ -539,7 +574,7 @@ struct SettingFieldMultiEnum final : SettingFieldBase
     {}
 
     SettingFieldMultiEnum & operator= (ValueType x) { changed = true; value = x; return *this; }
-    SettingFieldMultiEnum & operator= (const Field & x) override { parseFromString(x.safeGet<String>()); return *this; }
+    SettingFieldMultiEnum & operator= (const Field & x) { parseFromString(x.safeGet<String>()); return *this; }
     SettingFieldMultiEnum & operator= (const SettingFieldMultiEnum & o)
     {
         if (this != &o)
@@ -550,11 +585,11 @@ struct SettingFieldMultiEnum final : SettingFieldBase
         return *this;
     }
 
-    bool isChanged() const override { return changed; }
-    void setChanged(bool changed_) override { changed = changed_; }
+    bool isChanged() const { return changed; }
+    void setChanged(bool changed_) { changed = changed_; }
 
     operator ValueType() const { return value; } /// NOLINT
-    explicit operator Field() const override { return toString(); }
+    explicit operator Field() const { return toString(); }
     operator MultiEnum<EnumType>() const /// NOLINT
     {
         MultiEnum<EnumType> res;
@@ -563,8 +598,7 @@ struct SettingFieldMultiEnum final : SettingFieldBase
         return res;
     }
 
-    String toString() const override
-    {
+    String toString() const    {
         constexpr String separator = ",";
         String result;
         for (const auto & v : value)
@@ -578,10 +612,10 @@ struct SettingFieldMultiEnum final : SettingFieldBase
 
         return result;
     }
-    void parseFromString(const String & str) override { *this = parseValueFromString(str); }
+    void parseFromString(const String & str) { *this = parseValueFromString(str); }
 
-    void writeBinary(WriteBuffer & out) const override;
-    void readBinary(ReadBuffer & in) override;
+    void writeBinary(WriteBuffer & out) const;
+    void readBinary(ReadBuffer & in);
 
 private:
     static ValueType parseValueFromString(const std::string_view str)
@@ -645,7 +679,7 @@ struct SettingFieldTimezone final : SettingFieldBase
     SettingFieldTimezone & operator =(const String & str) { *this = std::string_view{str}; return *this; }
     SettingFieldTimezone & operator =(String && str) { validateTimezone(str); value = std::move(str); changed = true; return *this; }
     SettingFieldTimezone & operator =(const char * str) { *this = std::string_view{str}; return *this; }
-    SettingFieldTimezone & operator =(const Field & f) override { *this = f.safeGet<String>(); return *this; }
+    SettingFieldTimezone & operator =(const Field & f) { *this = f.safeGet<String>(); return *this; }
     SettingFieldTimezone & operator =(const SettingFieldTimezone & o)
     {
         if (this != &o)
@@ -656,17 +690,17 @@ struct SettingFieldTimezone final : SettingFieldBase
         return *this;
     }
 
-    bool isChanged() const override { return changed; }
-    void setChanged(bool changed_) override { changed = changed_; }
+    bool isChanged() const { return changed; }
+    void setChanged(bool changed_) { changed = changed_; }
 
     operator const String &() const { return value; } /// NOLINT
-    explicit operator Field() const override { return value; }
+    explicit operator Field() const { return value; }
 
-    String toString() const override { return value; }
-    void parseFromString(const String & str) override { *this = str; }
+    String toString() const { return value; }
+    void parseFromString(const String & str) { *this = str; }
 
-    void writeBinary(WriteBuffer & out) const override;
-    void readBinary(ReadBuffer & in) override;
+    void writeBinary(WriteBuffer & out) const;
+    void readBinary(ReadBuffer & in);
 
 private:
     void validateTimezone(const std::string & tz_str);
@@ -683,7 +717,7 @@ struct SettingFieldCustom final : SettingFieldBase
         : value(o.value), changed(o.changed)
     {}
 
-    SettingFieldCustom & operator =(const Field & f) override { value = f; changed = true; return *this; }
+    SettingFieldCustom & operator =(const Field & f) { value = f; changed = true; return *this; }
     SettingFieldCustom & operator =(const SettingFieldCustom & o)
     {
         if (this != &o)
@@ -694,16 +728,16 @@ struct SettingFieldCustom final : SettingFieldBase
         return *this;
     }
 
-    bool isChanged() const override { return changed; }
-    void setChanged(bool changed_) override { changed = changed_; }
+    bool isChanged() const { return changed; }
+    void setChanged(bool changed_) { changed = changed_; }
 
-    explicit operator Field() const override { return value; }
+    explicit operator Field() const { return value; }
 
-    String toString() const override;
-    void parseFromString(const String & str) override;
+    String toString() const;
+    void parseFromString(const String & str);
 
-    void writeBinary(WriteBuffer & out) const override;
-    void readBinary(ReadBuffer & in) override;
+    void writeBinary(WriteBuffer & out) const;
+    void readBinary(ReadBuffer & in);
 };
 
 struct SettingFieldNonZeroUInt64 : public SettingFieldUInt64
@@ -712,10 +746,10 @@ public:
     explicit SettingFieldNonZeroUInt64(UInt64 x = 1);
     explicit SettingFieldNonZeroUInt64(const Field & f);
 
-    SettingFieldNonZeroUInt64 & operator=(UInt64 x) override;
-    SettingFieldNonZeroUInt64 & operator=(const Field & f) override;
+    SettingFieldNonZeroUInt64 & operator=(UInt64 x);
+    SettingFieldNonZeroUInt64 & operator=(const Field & f);
 
-    void parseFromString(const String & str) override;
+    void parseFromString(const String & str);
 
 private:
     void checkValueNonZero() const;
