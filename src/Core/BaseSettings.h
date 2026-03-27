@@ -1005,6 +1005,18 @@ using AliasMap = std::unordered_map<std::string_view, std::string_view>;
 #define DECLARE_SETTINGS_TRAITS_ALLOW_CUSTOM_SETTINGS(SETTINGS_TRAITS_NAME, LIST_OF_SETTINGS_MACRO) \
     DECLARE_SETTINGS_TRAITS_COMMON(SETTINGS_TRAITS_NAME, LIST_OF_SETTINGS_MACRO, SETTING_SKIP_TRAIT, 1)
 
+/// Generate traits using an externally-defined Data struct (e.g., from code generation).
+/// The Data struct must be defined before this macro is used.
+/// Same as DECLARE_SETTINGS_TRAITS_COMMON but uses `using Data = DATA_TYPE;` instead of
+/// generating Data from the settings list macros.
+/// NOLINTNEXTLINE
+#define DECLARE_SETTINGS_TRAITS_GENERATED(SETTINGS_TRAITS_NAME, LIST_OF_SETTINGS_MACRO, DATA_TYPE, ALLOW_CUSTOM_SETTINGS) \
+    struct SETTINGS_TRAITS_NAME \
+    { \
+        using Data = DATA_TYPE; \
+        DECLARE_SETTINGS_TRAITS_BODY_(SETTINGS_TRAITS_NAME, LIST_OF_SETTINGS_MACRO, SETTING_SKIP_TRAIT, ALLOW_CUSTOM_SETTINGS) \
+    };
+
 /// Generate traits with support for settings that have config file paths
 /// NOLINTNEXTLINE
 #define DECLARE_SETTINGS_TRAITS_WITH_PATH(SETTINGS_TRAITS_NAME, LIST_OF_SETTINGS_WITHOUT_PATH_MACRO, LIST_OF_SETTINGS_WITH_PATH_MACRO) \
@@ -1049,7 +1061,15 @@ using AliasMap = std::unordered_map<std::string_view, std::string_view>;
             LIST_OF_SETTINGS_WITHOUT_PATH_MACRO(DECLARE_SETTINGS_TRAITS_, DECLARE_SETTINGS_TRAITS_) \
             LIST_OF_SETTINGS_WITH_PATH_MACRO(DECLARE_SETTINGS_TRAITS_, DECLARE_SETTINGS_TRAITS_) \
         }; \
-        \
+        DECLARE_SETTINGS_TRAITS_BODY_(SETTINGS_TRAITS_NAME, LIST_OF_SETTINGS_WITHOUT_PATH_MACRO, LIST_OF_SETTINGS_WITH_PATH_MACRO, ALLOW_CUSTOM_SETTINGS) \
+    };
+
+/// Shared body for settings traits — everything after the Data definition.
+/// Used by both DECLARE_SETTINGS_TRAITS_COMMON (macro-generated Data)
+/// and DECLARE_SETTINGS_TRAITS_GENERATED (externally-defined Data).
+/// NOLINTNEXTLINE
+#define DECLARE_SETTINGS_TRAITS_BODY_( \
+    SETTINGS_TRAITS_NAME, LIST_OF_SETTINGS_WITHOUT_PATH_MACRO, LIST_OF_SETTINGS_WITH_PATH_MACRO, ALLOW_CUSTOM_SETTINGS) \
         /** Accessor: Provides runtime reflection and metadata access */ \
         class Accessor \
         { \
@@ -1189,8 +1209,7 @@ using AliasMap = std::unordered_map<std::string_view, std::string_view>;
             if (auto it = aliases_to_settings.find(name); it != aliases_to_settings.end()) \
                 return it->second; \
             return name; \
-        } \
-    };
+        }
 
 
 /// Skip this setting in the macro expansion (used for selective application)

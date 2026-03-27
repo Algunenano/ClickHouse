@@ -118,7 +118,13 @@ class WriteBuffer;
     M(CLASS_NAME, DeduplicateInsertMode) \
 
 
-COMMON_SETTINGS_SUPPORTED_TYPES(Settings, DECLARE_SETTING_TRAIT)
+/// Settings uses SettingIndex<T> (offset-based) instead of the default pointer-to-member.
+/// This enables a code-generated Data layout with typed arrays for optimal packing.
+#include <Core/SettingIndex.h>
+#define DECLARE_SETTING_TRAIT_GENERATED(CLASS_NAME, TYPE) using CLASS_NAME##TYPE = SettingIndex<SettingField##TYPE>;
+COMMON_SETTINGS_SUPPORTED_TYPES(Settings, DECLARE_SETTING_TRAIT_GENERATED)
+#undef DECLARE_SETTING_TRAIT_GENERATED
+
 struct Settings
 {
     Settings();

@@ -282,7 +282,29 @@ if (TARGET ch_contrib::ssh)
 endif()
 add_object_library(clickhouse_backups Backups)
 
+## Generate the typed-array settings Data layout.
+## The generator preprocesses gen_settings_extract.cpp to extract all setting definitions,
+## then groups them by type into arrays for cache-friendly access and compact storage.
+add_custom_command(
+    OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/Core/SettingsData.generated.h
+    COMMAND bash ${CMAKE_CURRENT_SOURCE_DIR}/Core/gen_settings_data.sh
+        ${CMAKE_CXX_COMPILER}
+        ${CMAKE_CURRENT_SOURCE_DIR}
+        ${CMAKE_CURRENT_BINARY_DIR}/Core
+    DEPENDS
+        ${CMAKE_CURRENT_SOURCE_DIR}/Core/gen_settings_data.sh
+        ${CMAKE_CURRENT_SOURCE_DIR}/Core/gen_settings_extract.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/Core/SettingsList.inc
+        ${CMAKE_CURRENT_SOURCE_DIR}/Core/FormatFactorySettings.h
+        ${CMAKE_CURRENT_SOURCE_DIR}/Core/SettingsObsoleteMacros.h
+    COMMENT "Generating SettingsData.generated.h (typed-array layout)"
+)
+## Settings.cpp includes the generated header — make it an explicit source dependency
+set_source_files_properties(Core/Settings.cpp PROPERTIES OBJECT_DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/Core/SettingsData.generated.h)
+
 add_object_library(clickhouse_core Core)
+## gen_settings_extract.cpp is only for preprocessing by the generator, not for compilation
+list (REMOVE_ITEM dbms_sources Core/gen_settings_extract.cpp)
 list (APPEND dbms_sources Common/ExceptionExt.cpp)
 
 add_object_library(clickhouse_core_mysql Core/MySQL)
