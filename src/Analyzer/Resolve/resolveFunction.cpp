@@ -738,6 +738,68 @@ ProjectionNames QueryAnalyzer::resolveFunction(QueryTreeNodePtr & node, Identifi
         }
     }
 
+    /** Convert bare function names used as arguments to lambda expressions.
+      * Example: arrayMap(toUpper, arr) is converted to arrayMap(x -> toUpper(x), arr).
+      * This allows passing a function name directly to higher-order functions instead of writing a lambda.
+      */
+    {
+        auto & argument_nodes = function_node_ptr->getArguments().getNodes();
+        size_t argument_nodes_size = argument_nodes.size();
+
+        for (size_t i = 0; i < argument_nodes_size; ++i)
+        {
+            auto * identifier_node = argument_nodes[i]->as<IdentifierNode>();
+            if (!identifier_node)
+                continue;
+
+            const auto & identifier = identifier_node->getIdentifier();
+            if (identifier.getPartsSize() != 1)
+                continue;
+
+            const auto & identifier_name = identifier.getFullName();
+
+            /// Check if the identifier resolves as a column or alias - if so, keep it as is.
+            auto expression_resolve_result = tryResolveIdentifier(
+                {identifier, IdentifierLookupContext::EXPRESSION}, scope, {});
+            if (expression_resolve_result.isResolved())
+                continue;
+
+            /// Check if it resolves as a lambda alias - if so, let the normal resolution handle it.
+            auto function_resolve_result = tryResolveIdentifier(
+                {identifier, IdentifierLookupContext::FUNCTION}, scope, {});
+            if (function_resolve_result.isResolved())
+                continue;
+
+            /// Check if the name is a known ordinary function.
+            if (!FunctionFactory::instance().has(identifier_name))
+                continue;
+
+            /// This is a bare function name used as an argument.
+            /// Wrap it in a lambda: f -> (x1, ..., xN) -> f(x1, ..., xN)
+            /// where N = number of other arguments (heuristic for higher-order array functions).
+            size_t lambda_arity = argument_nodes_size - 1;
+            if (lambda_arity == 0)
+                continue;
+
+            Names lambda_arg_names;
+            lambda_arg_names.reserve(lambda_arity);
+
+            auto func_call = std::make_shared<FunctionNode>(identifier_name);
+            auto & func_call_args = func_call->getArguments().getNodes();
+            func_call_args.reserve(lambda_arity);
+
+            for (size_t j = 0; j < lambda_arity; ++j)
+            {
+                String arg_name = "__function_ref_arg_" + std::to_string(j);
+                lambda_arg_names.push_back(arg_name);
+                func_call_args.push_back(std::make_shared<IdentifierNode>(Identifier{arg_name}));
+            }
+
+            argument_nodes[i] = std::make_shared<LambdaNode>(
+                std::move(lambda_arg_names), std::move(func_call), false /*is_operator*/);
+        }
+    }
+
     /// Resolve function arguments
     bool allow_table_expressions = is_special_function_in || is_special_function_exists;
     auto arguments_projection_names = resolveExpressionNodeList(
