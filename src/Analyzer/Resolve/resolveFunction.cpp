@@ -743,15 +743,19 @@ ProjectionNames QueryAnalyzer::resolveFunction(QueryTreeNodePtr & node, Identifi
       * but only when the parent function is a higher-order function that accepts lambdas.
       * Example: arrayMap(toUpper, arr) is converted to arrayMap(x -> toUpper(x), arr).
       *
+      * The transformation is gated by `getLambdaArgumentTypes`: non-higher-order functions
+      * throw `ILLEGAL_TYPE_OF_ARGUMENT` in the default `getLambdaArgumentTypesImpl`, so
+      * the probe reliably rejects them (e.g. `plus(negate, 1)` is never rewritten).
+      *
       * The lambda arity is determined as follows:
-      * 1. If the inner function has a fixed number of arguments, use that.
-      * 2. Otherwise (variadic), probe the parent function with decreasing arities.
+      * 1. If the inner function has a fixed number of arguments, use that arity exclusively.
+      *    If the parent rejects it (e.g. arity mismatch due to tuple-destructuring that
+      *    `Array(Nothing)` probes cannot detect), skip the transformation entirely —
+      *    the user should write an explicit lambda in such cases.
+      * 2. Otherwise (variadic inner function, arity == 0), probe the parent function with
+      *    decreasing arities from `argument_nodes_size - 1` down to 1.
       * In both cases, the arity is validated against the parent function
       * via `getLambdaArgumentTypes` with synthetic `Array(Nothing)` arguments.
-      *
-      * Note: for arrays of tuples (e.g. `arrayMap(plus, [(1,2),(3,4)])`), the `Array(Nothing)`
-      * probe cannot detect tuple-destructuring, so the transformation may not apply.
-      * The user should write an explicit lambda in such cases.
       */
     {
         auto & argument_nodes = function_node_ptr->getArguments().getNodes();
@@ -807,14 +811,17 @@ ProjectionNames QueryAnalyzer::resolveFunction(QueryTreeNodePtr & node, Identifi
                             auto inner_resolver = FunctionFactory::instance().tryGet(identifier_name, scope.context);
                             size_t inner_arity = inner_resolver ? inner_resolver->getNumberOfArguments() : 0;
 
-                            if (inner_arity > 0 && probe_parent_accepts_arity(inner_arity))
+                            if (inner_arity > 0)
                             {
-                                lambda_arity = inner_arity;
+                                /// The inner function has a fixed arity — use it exclusively.
+                                /// If the parent rejects this arity (e.g. tuple-destructuring where
+                                /// Array(Nothing) can't reveal element count), skip the transformation.
+                                if (probe_parent_accepts_arity(inner_arity))
+                                    lambda_arity = inner_arity;
                             }
                             else
                             {
-                                /// For variadic functions (inner_arity == 0) or when the inner function's
-                                /// arity didn't match the parent, probe with decreasing arities.
+                                /// Variadic inner function (arity == 0): probe decreasing arities.
                                 for (size_t try_arity = argument_nodes_size - 1; try_arity >= 1; --try_arity)
                                 {
                                     if (probe_parent_accepts_arity(try_arity))

@@ -34,4 +34,13 @@ SELECT arraySort(negate, [3, 1, 4, 1, 5]);
 SELECT arrayMap(x, [1, 2, 3]) FROM (SELECT 1 AS x); -- { serverError ILLEGAL_TYPE_OF_ARGUMENT }
 
 -- Ensure non-higher-order functions don't get the transformation
+-- (the default `getLambdaArgumentTypesImpl` throws, so the probe correctly rejects them)
 SELECT plus(1, 2);
+
+-- Tuple-destructuring: bare function name is NOT applied when the inner function's
+-- fixed arity doesn't match the probed arity (Array(Nothing) can't detect tuples).
+-- The user should write an explicit lambda: arrayMap((x, y) -> plus(x, y), [...])
+SELECT arrayMap(plus, [(1, 10), (2, 20), (3, 30)]); -- { serverError UNKNOWN_IDENTIFIER }
+
+-- Non-HOF function with a function name as argument: should not be rewritten
+SELECT length(toString(123));
