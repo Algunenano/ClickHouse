@@ -24,6 +24,7 @@
 #include <DataTypes/DataTypeNullable.h>
 #include <DataTypes/DataTypeNothing.h>
 #include <DataTypes/hasNullable.h>
+#include <DataTypes/DataTypeArray.h>
 #include <DataTypes/DataTypeFunction.h>
 #include <DataTypes/DataTypeSet.h>
 #include <DataTypes/DataTypeTuple.h>
@@ -738,65 +739,96 @@ ProjectionNames QueryAnalyzer::resolveFunction(QueryTreeNodePtr & node, Identifi
         }
     }
 
-    /** Convert bare function names used as arguments to lambda expressions.
+    /** Convert a bare function name in the first argument position to a lambda expression,
+      * but only when the parent function is a higher-order function that accepts lambdas.
       * Example: arrayMap(toUpper, arr) is converted to arrayMap(x -> toUpper(x), arr).
-      * This allows passing a function name directly to higher-order functions instead of writing a lambda.
       */
     {
         auto & argument_nodes = function_node_ptr->getArguments().getNodes();
         size_t argument_nodes_size = argument_nodes.size();
 
-        for (size_t i = 0; i < argument_nodes_size; ++i)
+        /// Higher-order functions always expect the lambda as the first argument.
+        if (argument_nodes_size >= 2)
         {
-            auto * identifier_node = argument_nodes[i]->as<IdentifierNode>();
-            if (!identifier_node)
-                continue;
-
-            const auto & identifier = identifier_node->getIdentifier();
-            if (identifier.getPartsSize() != 1)
-                continue;
-
-            const auto & identifier_name = identifier.getFullName();
-
-            /// Check if the identifier resolves as a column or alias - if so, keep it as is.
-            auto expression_resolve_result = tryResolveIdentifier(
-                {identifier, IdentifierLookupContext::EXPRESSION}, scope, {});
-            if (expression_resolve_result.isResolved())
-                continue;
-
-            /// Check if it resolves as a lambda alias - if so, let the normal resolution handle it.
-            auto function_resolve_result = tryResolveIdentifier(
-                {identifier, IdentifierLookupContext::FUNCTION}, scope, {});
-            if (function_resolve_result.isResolved())
-                continue;
-
-            /// Check if the name is a known ordinary function.
-            if (!FunctionFactory::instance().has(identifier_name))
-                continue;
-
-            /// This is a bare function name used as an argument.
-            /// Wrap it in a lambda: f -> (x1, ..., xN) -> f(x1, ..., xN)
-            /// where N = number of other arguments (heuristic for higher-order array functions).
-            size_t lambda_arity = argument_nodes_size - 1;
-            if (lambda_arity == 0)
-                continue;
-
-            Names lambda_arg_names;
-            lambda_arg_names.reserve(lambda_arity);
-
-            auto func_call = std::make_shared<FunctionNode>(identifier_name);
-            auto & func_call_args = func_call->getArguments().getNodes();
-            func_call_args.reserve(lambda_arity);
-
-            for (size_t j = 0; j < lambda_arity; ++j)
+            auto * identifier_node = argument_nodes[0]->as<IdentifierNode>();
+            if (identifier_node)
             {
-                String arg_name = "__function_ref_arg_" + std::to_string(j);
-                lambda_arg_names.push_back(arg_name);
-                func_call_args.push_back(std::make_shared<IdentifierNode>(Identifier{arg_name}));
-            }
+                const auto & identifier = identifier_node->getIdentifier();
+                if (identifier.getPartsSize() == 1)
+                {
+                    const auto & identifier_name = identifier.getFullName();
 
-            argument_nodes[i] = std::make_shared<LambdaNode>(
-                std::move(lambda_arg_names), std::move(func_call), false /*is_operator*/);
+                    /// Quick checks first: the identifier must be a known function name,
+                    /// and the parent function must accept lambda arguments.
+                    /// These checks don't create tree nodes, so they don't affect node ID numbering.
+                    if (FunctionFactory::instance().has(identifier_name))
+                    {
+                        auto parent_resolver = FunctionFactory::instance().tryGet(function_name, scope.context);
+                        size_t lambda_arity = 0;
+
+                        if (parent_resolver)
+                        {
+                            /// Probe getLambdaArgumentTypes with decreasing arities
+                            /// to handle functions with fixed parameters (e.g. arrayPartialSort).
+                            for (size_t try_arity = argument_nodes_size - 1; try_arity >= 1; --try_arity)
+                            {
+                                DataTypes probe_args(argument_nodes_size);
+                                probe_args[0] = std::make_shared<DataTypeFunction>(
+                                    DataTypes(try_arity, nullptr), nullptr);
+                                for (size_t j = 1; j < argument_nodes_size; ++j)
+                                    probe_args[j] = std::make_shared<DataTypeArray>(
+                                        std::make_shared<DataTypeNothing>());
+
+                                try
+                                {
+                                    parent_resolver->getLambdaArgumentTypes(probe_args);
+                                    lambda_arity = try_arity;
+                                    break;
+                                }
+                                catch (...)
+                                {
+                                }
+                            }
+                        }
+
+                        if (lambda_arity > 0)
+                        {
+                            /// Now check if the identifier resolves as a column or alias.
+                            /// This is deferred to here because tryResolveIdentifier may allocate
+                            /// tree nodes that affect node ID numbering.
+                            auto expression_resolve_result = tryResolveIdentifier(
+                                {identifier, IdentifierLookupContext::EXPRESSION}, scope, {});
+
+                            if (!expression_resolve_result.isResolved())
+                            {
+                                auto function_resolve_result = tryResolveIdentifier(
+                                    {identifier, IdentifierLookupContext::FUNCTION}, scope, {});
+
+                                if (!function_resolve_result.isResolved())
+                                {
+                                    Names lambda_arg_names;
+                                    lambda_arg_names.reserve(lambda_arity);
+
+                                    auto func_call = std::make_shared<FunctionNode>(identifier_name);
+                                    auto & func_call_args = func_call->getArguments().getNodes();
+                                    func_call_args.reserve(lambda_arity);
+
+                                    for (size_t j = 0; j < lambda_arity; ++j)
+                                    {
+                                        String arg_name = "__function_ref_arg_" + std::to_string(j);
+                                        lambda_arg_names.push_back(arg_name);
+                                        func_call_args.push_back(
+                                            std::make_shared<IdentifierNode>(Identifier{arg_name}));
+                                    }
+
+                                    argument_nodes[0] = std::make_shared<LambdaNode>(
+                                        std::move(lambda_arg_names), std::move(func_call), false /*is_operator*/);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
 
