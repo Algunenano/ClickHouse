@@ -742,6 +742,16 @@ ProjectionNames QueryAnalyzer::resolveFunction(QueryTreeNodePtr & node, Identifi
     /** Convert a bare function name in the first argument position to a lambda expression,
       * but only when the parent function is a higher-order function that accepts lambdas.
       * Example: arrayMap(toUpper, arr) is converted to arrayMap(x -> toUpper(x), arr).
+      *
+      * The lambda arity is determined as follows:
+      * 1. If the inner function has a fixed number of arguments, use that.
+      * 2. Otherwise (variadic), probe the parent function with decreasing arities.
+      * In both cases, the arity is validated against the parent function
+      * via `getLambdaArgumentTypes` with synthetic `Array(Nothing)` arguments.
+      *
+      * Note: for arrays of tuples (e.g. `arrayMap(plus, [(1,2),(3,4)])`), the `Array(Nothing)`
+      * probe cannot detect tuple-destructuring, so the transformation may not apply.
+      * The user should write an explicit lambda in such cases.
       */
     {
         auto & argument_nodes = function_node_ptr->getArguments().getNodes();
@@ -768,13 +778,13 @@ ProjectionNames QueryAnalyzer::resolveFunction(QueryTreeNodePtr & node, Identifi
 
                         if (parent_resolver)
                         {
-                            /// Probe getLambdaArgumentTypes with decreasing arities
-                            /// to handle functions with fixed parameters (e.g. arrayPartialSort).
-                            for (size_t try_arity = argument_nodes_size - 1; try_arity >= 1; --try_arity)
+                            /// Helper lambda: probe whether the parent function accepts a lambda
+                            /// with the given arity at position 0, with Array(Nothing) for other args.
+                            auto probe_parent_accepts_arity = [&](size_t arity) -> bool
                             {
                                 DataTypes probe_args(argument_nodes_size);
                                 probe_args[0] = std::make_shared<DataTypeFunction>(
-                                    DataTypes(try_arity, nullptr), nullptr);
+                                    DataTypes(arity, nullptr), nullptr);
                                 for (size_t j = 1; j < argument_nodes_size; ++j)
                                     probe_args[j] = std::make_shared<DataTypeArray>(
                                         std::make_shared<DataTypeNothing>());
@@ -782,11 +792,36 @@ ProjectionNames QueryAnalyzer::resolveFunction(QueryTreeNodePtr & node, Identifi
                                 try
                                 {
                                     parent_resolver->getLambdaArgumentTypes(probe_args);
-                                    lambda_arity = try_arity;
-                                    break;
+                                    return true;
                                 }
-                                catch (...)
+                                catch (...) // NOLINT(bugprone-empty-catch)
                                 {
+                                    /// Ok: this arity is not accepted by the parent function.
+                                    return false;
+                                }
+                            };
+
+                            /// First, try to determine arity from the inner function itself.
+                            /// This handles cases like `arrayMap(plus, arr1, arr2)` where `plus`
+                            /// has a fixed arity of 2, regardless of how many array args are passed.
+                            auto inner_resolver = FunctionFactory::instance().tryGet(identifier_name, scope.context);
+                            size_t inner_arity = inner_resolver ? inner_resolver->getNumberOfArguments() : 0;
+
+                            if (inner_arity > 0 && probe_parent_accepts_arity(inner_arity))
+                            {
+                                lambda_arity = inner_arity;
+                            }
+                            else
+                            {
+                                /// For variadic functions (inner_arity == 0) or when the inner function's
+                                /// arity didn't match the parent, probe with decreasing arities.
+                                for (size_t try_arity = argument_nodes_size - 1; try_arity >= 1; --try_arity)
+                                {
+                                    if (probe_parent_accepts_arity(try_arity))
+                                    {
+                                        lambda_arity = try_arity;
+                                        break;
+                                    }
                                 }
                             }
                         }
