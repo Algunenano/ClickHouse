@@ -1,4 +1,4 @@
-personal_ws-1.1 en 3602
+personal_ws-1.1 en 3604
 AArch
 ABIs
 ACLs
@@ -1407,6 +1407,7 @@ argMax
 argMin
 argmax
 argmin
+arity
 arrayAUC
 arrayAUCPR
 arrayAll
@@ -1862,6 +1863,7 @@ deserializing
 dest
 destructor
 destructors
+destructuring
 detectCharset
 detectLanguage
 detectLanguageMixed
