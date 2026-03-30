@@ -22,6 +22,8 @@ inline_doc_paths = [
 # (e.g. settings files with DECLARE macros containing description strings)
 embedded_doc_suffixes = [
     "Settings.cpp",
+    "SettingsList.inc",
+    "FormatFactorySettings.h",
 ]
 
 

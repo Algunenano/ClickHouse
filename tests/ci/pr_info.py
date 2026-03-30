@@ -73,6 +73,7 @@ DOCS_ONLY_FILES = ["docker/docs", "aspell-dict.txt"]
 
 DOCS_FILES = DOCS_ONLY_FILES + [
     "Settings.cpp",
+    "SettingsList.inc",
     "FormatFactorySettings.h",
     "tests/ci/docs_check.py",
 ]
