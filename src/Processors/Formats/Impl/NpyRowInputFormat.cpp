@@ -267,9 +267,10 @@ void NpyRowInputFormat::readPrefix()
     /// Validate that the product of all shape dimensions does not overflow
     /// and is consistent with the available data size.
     size_t element_size = header.numpy_type->getSize();
-    if (element_size == 0)
-        throw Exception(ErrorCodes::INCORRECT_DATA, "Npy element size is zero");
 
+    /// element_size == 0 is valid for |S0 and <U0 (zero-length string types).
+    /// Total data is 0 bytes, so all overflow and size checks are trivially satisfied.
+    /// Skip directly to the file-size check (which will also pass: 0 <= available).
     static constexpr size_t max_bytes_per_row = 2ULL * 1024 * 1024 * 1024; /// 2 GiB
     if (element_size > max_bytes_per_row)
         throw Exception(
@@ -288,7 +289,7 @@ void NpyRowInputFormat::readPrefix()
         total_elements *= dim;
     }
 
-    if (total_elements > std::numeric_limits<size_t>::max() / element_size)
+    if (element_size != 0 && total_elements > std::numeric_limits<size_t>::max() / element_size)
         throw Exception(
             ErrorCodes::INCORRECT_DATA,
             "Npy shape overflow: total data size exceeds the maximum value");

@@ -124,7 +124,15 @@ sys.stdout.buffer.write(magic + version + header_len + header)
 
 ${CLICKHOUSE_CLIENT} --query "SELECT * FROM file('${CLICKHOUSE_TEST_UNIQUE_NAME}/offset_amplification.npy', 'Npy') LIMIT 1" 2>&1 | grep -m1 -o 'INCORRECT_DATA'
 
-# Test 8: Valid file still works
+# Test 8: Zero-size string dtype |S0 — valid NumPy type, must not be rejected
+python3 -c "
+import numpy as np
+np.save('${USER_FILES_PATH}/${CLICKHOUSE_TEST_UNIQUE_NAME}/s0.npy', np.ndarray(shape=(3,), dtype='|S0'))
+"
+
+${CLICKHOUSE_CLIENT} --query "SELECT count() FROM file('${CLICKHOUSE_TEST_UNIQUE_NAME}/s0.npy', 'Npy')"
+
+# Test 9: Valid file still works
 python3 -c "
 import numpy as np
 np.save('${USER_FILES_PATH}/${CLICKHOUSE_TEST_UNIQUE_NAME}/valid_shape.npy', np.array([[1, 2, 3], [4, 5, 6]], dtype=np.int32))
