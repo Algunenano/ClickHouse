@@ -66,6 +66,32 @@ A lambda function that accepts multiple arguments can also be passed to a higher
 
 For some functions the first argument (the lambda function) can be omitted. In this case, identical mapping is assumed.
 
+### Bare function names as lambdas {#bare-function-names-as-lambdas}
+
+Instead of writing a full lambda expression, you can pass a function name directly to a higher-order function. The function name is automatically converted to an equivalent lambda expression.
+
+For example, the following pairs are equivalent:
+
+```sql
+SELECT arrayMap(negate, [1, 2, 3]);            -- [-1, -2, -3]
+SELECT arrayMap(x -> negate(x), [1, 2, 3]);    -- [-1, -2, -3]
+
+SELECT arrayMap(plus, [1, 2, 3], [10, 20, 30]);            -- [11, 22, 33]
+SELECT arrayMap((x, y) -> plus(x, y), [1, 2, 3], [10, 20, 30]); -- [11, 22, 33]
+
+SELECT arrayFilter(isNotNull, [1, NULL, 3, NULL, 5]);            -- [1, 3, 5]
+SELECT arrayFilter(x -> isNotNull(x), [1, NULL, 3, NULL, 5]);    -- [1, 3, 5]
+
+SELECT arrayFold(plus, [1, 2, 3, 4, 5], toUInt64(0));                      -- 15
+SELECT arrayFold((acc, x) -> plus(acc, x), [1, 2, 3, 4, 5], toUInt64(0));  -- 15
+```
+
+This works with any ordinary function. Column and alias names take priority over function names when there is ambiguity.
+
+:::note
+For cases involving tuple-destructuring (e.g., arrays of tuples where the lambda receives unpacked elements), you must write an explicit lambda because the automatic arity detection cannot determine the tuple element count.
+:::
+
 ## User Defined Functions (UDFs) {#user-defined-functions-udfs}
 
 ClickHouse supports user-defined functions. See [UDFs](../functions/udf.md).
