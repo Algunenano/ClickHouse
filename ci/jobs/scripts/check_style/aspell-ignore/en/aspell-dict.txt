@@ -1530,6 +1530,7 @@ bcrypt's
 bech
 benchmarked
 benchmarking
+beeterty
 bfloat
 bigrams
 binlog
