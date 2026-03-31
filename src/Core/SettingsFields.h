@@ -157,7 +157,8 @@ struct SettingAutoWrapper final : SettingFieldBase
             base = Base(f);
     }
 
-    SettingAutoWrapper & operator=(const Field & f)    {
+    SettingAutoWrapper & operator=(const Field & f)
+    {
         changed = true;
         if (is_auto = isAuto(f); !is_auto)
             base = f;
@@ -182,13 +183,15 @@ struct SettingAutoWrapper final : SettingFieldBase
 
     String toString() const { return is_auto ? keyword : base.toString(); }
 
-    void parseFromString(const String & str)    {
+    void parseFromString(const String & str)
+    {
         changed = true;
         if (is_auto = isAuto(str); !is_auto)
             base.parseFromString(str);
     }
 
-    void writeBinary(WriteBuffer & out) const    {
+    void writeBinary(WriteBuffer & out) const
+    {
         if (is_auto)
             Base().writeBinary(out); /// serialize default value
         else
@@ -598,7 +601,8 @@ struct SettingFieldMultiEnum final : SettingFieldBase
         return res;
     }
 
-    String toString() const    {
+    String toString() const
+    {
         constexpr String separator = ",";
         String result;
         for (const auto & v : value)
