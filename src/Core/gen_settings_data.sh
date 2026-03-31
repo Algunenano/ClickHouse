@@ -93,6 +93,11 @@ echo "{"
 for TYPE in "${TYPE_ORDER[@]}"; do
     IDX=0
     while IFS=$'\t' read -r NAME DEFAULT; do
+        ## clang-tidy requires bool literals, not 0/1
+        if [[ "$TYPE" == "Bool" ]]; then
+            [[ "$DEFAULT" == "0" ]] && DEFAULT="false"
+            [[ "$DEFAULT" == "1" ]] && DEFAULT="true"
+        fi
         echo "    ${TYPE}_[${IDX}] = SettingField${TYPE}(${DEFAULT});"
         IDX=$((IDX + 1))
     done < "$TMPDIR/$TYPE.txt"
