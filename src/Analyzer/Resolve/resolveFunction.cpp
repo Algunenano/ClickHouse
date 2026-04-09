@@ -798,10 +798,15 @@ ProjectionNames QueryAnalyzer::resolveFunction(QueryTreeNodePtr & node, Identifi
                                     parent_resolver->getLambdaArgumentTypes(probe_args);
                                     return true;
                                 }
-                                catch (...) // NOLINT(bugprone-empty-catch)
+                                catch (const Exception & e)
                                 {
-                                    /// Ok: this arity is not accepted by the parent function.
-                                    return false;
+                                    /// Expected: non-higher-order functions throw ILLEGAL_TYPE_OF_ARGUMENT
+                                    /// from the default getLambdaArgumentTypesImpl, and arity mismatches
+                                    /// throw NUMBER_OF_ARGUMENTS_DOESNT_MATCH from checkNumberOfArguments.
+                                    if (e.code() == ErrorCodes::ILLEGAL_TYPE_OF_ARGUMENT
+                                        || e.code() == ErrorCodes::NUMBER_OF_ARGUMENTS_DOESNT_MATCH)
+                                        return false;
+                                    throw;
                                 }
                             };
 

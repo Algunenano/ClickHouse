@@ -86,7 +86,7 @@ SELECT arrayFold(plus, [1, 2, 3, 4, 5], toUInt64(0));                      -- 15
 SELECT arrayFold((acc, x) -> plus(acc, x), [1, 2, 3, 4, 5], toUInt64(0));  -- 15
 ```
 
-This works with any ordinary function. Column and alias names take priority over function names when there is ambiguity.
+This works with any built-in function. Column and alias names take priority over function names when there is ambiguity. User-defined functions (UDFs) are not currently supported in this syntax — use an explicit lambda instead.
 
 :::note
 For cases involving tuple-destructuring (e.g., arrays of tuples where the lambda receives unpacked elements), you must write an explicit lambda because the automatic arity detection cannot determine the tuple element count.
