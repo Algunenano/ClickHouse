@@ -528,7 +528,7 @@ void prepareColumnNullable(
 
 void prepareColumnTuple(
     ColumnPtr column, DataTypePtr type, const std::string & name, const WriteOptions & options,
-    ColumnChunkWriteStates & states, SchemaElements & schemas)
+    ColumnChunkWriteStates & states, SchemaElements & schemas, const std::optional<std::unordered_map<String, Int64>> & column_field_ids = std::nullopt)
 {
     const auto * column_tuple = assert_cast<const ColumnTuple *>(column.get());
     const auto * type_tuple = assert_cast<const DataTypeTuple *>(type.get());
@@ -544,6 +544,12 @@ void prepareColumnTuple(
     tuple_schema.__set_repetition_type(parq::FieldRepetitionType::REQUIRED);
     tuple_schema.__set_name(name);
     tuple_schema.__set_num_children(static_cast<Int32>(num_elements));
+    if (column_field_ids)
+    {
+        auto it = column_field_ids->find(name);
+        if (it != column_field_ids->end())
+            tuple_schema.__set_field_id(static_cast<Int32>(it->second));
+    }
 
     size_t child_states_begin = states.size();
 
@@ -560,7 +566,7 @@ void prepareColumnTuple(
 
 void prepareColumnArray(
     ColumnPtr column, DataTypePtr type, const std::string & name, const WriteOptions & options,
-    ColumnChunkWriteStates & states, SchemaElements & schemas)
+    ColumnChunkWriteStates & states, SchemaElements & schemas, const std::optional<std::unordered_map<String, Int64>> & column_field_ids = std::nullopt)
 {
     const auto * column_array = assert_cast<const ColumnArray *>(column.get());
     ColumnPtr nested_column = column_array->getDataPtr();
@@ -586,6 +592,12 @@ void prepareColumnArray(
     list_schema.__set_converted_type(parq::ConvertedType::LIST);
     list_schema.__isset.logicalType = true;
     list_schema.logicalType.__set_LIST({});
+    if (column_field_ids)
+    {
+        auto it = column_field_ids->find(name);
+        if (it != column_field_ids->end())
+            list_schema.__set_field_id(static_cast<Int32>(it->second));
+    }
 
     item_schema.__set_repetition_type(parq::FieldRepetitionType::REPEATED);
     item_schema.__set_name("list");
@@ -609,7 +621,7 @@ void prepareColumnArray(
 
 void prepareColumnMap(
     ColumnPtr column, DataTypePtr type, const std::string & name, const WriteOptions & options,
-    ColumnChunkWriteStates & states, SchemaElements & schemas)
+    ColumnChunkWriteStates & states, SchemaElements & schemas, const std::optional<std::unordered_map<String, Int64>> & column_field_ids = std::nullopt)
 {
     const auto * column_map = assert_cast<const ColumnMap *>(column.get());
     const auto * column_array = &column_map->getNestedColumn();
@@ -634,6 +646,12 @@ void prepareColumnMap(
     map_schema.__set_converted_type(parq::ConvertedType::MAP);
     map_schema.__set_logicalType({});
     map_schema.logicalType.__set_MAP({});
+    if (column_field_ids)
+    {
+        auto it = column_field_ids->find(name);
+        if (it != column_field_ids->end())
+            map_schema.__set_field_id(static_cast<Int32>(it->second));
+    }
 
     size_t tuple_schema_idx = schemas.size();
     size_t child_states_begin = states.size();
@@ -663,9 +681,9 @@ void prepareColumnRecursive(
     switch (type->getTypeId())
     {
         case TypeIndex::Nullable: prepareColumnNullable(column, type, name, options, states, schemas, column_field_ids); break;
-        case TypeIndex::Array: prepareColumnArray(column, type, name, options, states, schemas); break;
-        case TypeIndex::Tuple: prepareColumnTuple(column, type, name, options, states, schemas); break;
-        case TypeIndex::Map: prepareColumnMap(column, type, name, options, states, schemas); break;
+        case TypeIndex::Array: prepareColumnArray(column, type, name, options, states, schemas, column_field_ids); break;
+        case TypeIndex::Tuple: prepareColumnTuple(column, type, name, options, states, schemas, column_field_ids); break;
+        case TypeIndex::Map: prepareColumnMap(column, type, name, options, states, schemas, column_field_ids); break;
         case TypeIndex::LowCardinality:
         {
             auto nested_type = assert_cast<const DataTypeLowCardinality &>(*type).getDictionaryType();
