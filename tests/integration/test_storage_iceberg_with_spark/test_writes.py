@@ -1,4 +1,8 @@
+import glob
+import json
+import os
 import pytest
+import pyarrow.parquet as pq
 
 from helpers.iceberg_utils import (
     create_iceberg_table,
@@ -69,6 +73,80 @@ def test_writes(started_cluster_iceberg_with_spark, format_version, storage_type
     )
 
     assert len(initial_files) == len(files)
+
+@pytest.mark.parametrize("storage_type", ["s3", "local"])
+def test_writes_parquet_field_ids(started_cluster_iceberg_with_spark, storage_type):
+    instance = started_cluster_iceberg_with_spark.instances["node1"]
+    spark = started_cluster_iceberg_with_spark.spark_session
+    TABLE_NAME = "test_field_ids_" + storage_type + "_" + get_uuid_str()
+    local_dir = f"/var/lib/clickhouse/user_files/iceberg_data/default/{TABLE_NAME}"
+
+    create_iceberg_table(
+        storage_type,
+        instance,
+        TABLE_NAME,
+        started_cluster_iceberg_with_spark,
+        "(id Int32, label String, score Float64)",
+        2,
+    )
+
+    instance.query(
+        f"INSERT INTO {TABLE_NAME} VALUES (1, 'alice', 1.5), (2, 'bob', 2.5), (3, 'charlie', 3.5)",
+        settings={"allow_insert_into_iceberg": 1},
+    )
+    assert (
+        instance.query(f"SELECT * FROM {TABLE_NAME} ORDER BY id")
+        == "1\talice\t1.5\n2\tbob\t2.5\n3\tcharlie\t3.5\n"
+    )
+
+    default_download_directory(
+        started_cluster_iceberg_with_spark,
+        storage_type,
+        f"/var/lib/clickhouse/user_files/iceberg_data/default/{TABLE_NAME}/",
+        f"/var/lib/clickhouse/user_files/iceberg_data/default/{TABLE_NAME}/",
+    )
+
+    metadata_dir = os.path.join(local_dir, "metadata")
+    metadata_files = sorted(
+        glob.glob(os.path.join(metadata_dir, "*.metadata.json")),
+        key=os.path.getmtime,
+    )
+    assert metadata_files
+
+    with open(metadata_files[-1]) as f:
+        metadata = json.load(f)
+
+    current_schema_id = metadata["current-schema-id"]
+    current_schema = next(
+        s for s in metadata["schemas"] if s["schema-id"] == current_schema_id
+    )
+    iceberg_field_ids = {field["name"]: field["id"] for field in current_schema["fields"]}
+    expected_field_ids = {"id": 1, "label": 2, "score": 3}
+    assert iceberg_field_ids == expected_field_ids,
+
+    data_dir = os.path.join(local_dir, "data")
+    parquet_files = [
+        f
+        for f in glob.glob(os.path.join(data_dir, "**", "*.parquet"), recursive=True)
+        if "delete" not in os.path.basename(f)
+    ]
+    assert parquet_files
+
+    for path in parquet_files:
+        schema = pq.read_schema(path)
+        for field in schema:
+            raw = field.metadata.get(b"PARQUET:field_id") if field.metadata else None
+            assert raw is not None, (
+                f"Column '{field.name}' in {os.path.basename(path)} has no field_id "
+                f"in Parquet metadata."
+            )
+            actual_id = int(raw)
+            expected_id = iceberg_field_ids[field.name]
+            assert actual_id == expected_id, (
+                f"Column '{field.name}': Parquet field_id={actual_id} does not match "
+                f"Iceberg schema field_id={expected_id}."
+            )
+
 
 @pytest.mark.parametrize("format_version", ["1", "2"])
 @pytest.mark.parametrize("storage_type", ["s3", "azure", "local"])
