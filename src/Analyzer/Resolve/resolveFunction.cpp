@@ -43,6 +43,7 @@
 #include <Functions/UserDefined/UserDefinedWebAssembly.h>
 
 #include <Parsers/ASTCreateSQLFunctionQuery.h>
+#include <Parsers/ASTFunction.h>
 #include <Parsers/ASTCreateWasmFunctionQuery.h>
 
 
@@ -772,10 +773,15 @@ ProjectionNames QueryAnalyzer::resolveFunction(QueryTreeNodePtr & node, Identifi
                 {
                     const auto & identifier_name = identifier.getFullName();
 
-                    /// Quick checks first: the identifier must be a known function name,
+                    /// Quick checks first: the identifier must be a known function name
+                    /// (built-in, executable UDF, SQL UDF, or WebAssembly UDF),
                     /// and the parent function must accept lambda arguments.
                     /// These checks don't create tree nodes, so they don't affect node ID numbering.
-                    if (FunctionFactory::instance().has(identifier_name))
+                    bool is_known_function = FunctionFactory::instance().has(identifier_name)
+                        || UserDefinedExecutableFunctionFactory::has(identifier_name, scope.context)
+                        || UserDefinedSQLFunctionFactory::instance().has(identifier_name);
+
+                    if (is_known_function)
                     {
                         auto parent_resolver = FunctionFactory::instance().tryGet(function_name, scope.context);
                         size_t lambda_arity = 0;
@@ -814,7 +820,33 @@ ProjectionNames QueryAnalyzer::resolveFunction(QueryTreeNodePtr & node, Identifi
                             /// This handles cases like `arrayMap(plus, arr1, arr2)` where `plus`
                             /// has a fixed arity of 2, regardless of how many array args are passed.
                             auto inner_resolver = FunctionFactory::instance().tryGet(identifier_name, scope.context);
+                            if (!inner_resolver)
+                                inner_resolver = UserDefinedExecutableFunctionFactory::tryGet(identifier_name, scope.context);
                             size_t inner_arity = inner_resolver ? inner_resolver->getNumberOfArguments() : 0;
+
+                            /// For SQL UDFs without a resolver, extract arity from the CREATE FUNCTION AST.
+                            if (!inner_resolver)
+                            {
+                                if (auto udf_ast = UserDefinedSQLFunctionFactory::instance().tryGet(identifier_name))
+                                {
+                                    if (const auto * lambda = udf_ast->as<ASTCreateSQLFunctionQuery>())
+                                    {
+                                        if (lambda->function_core)
+                                        {
+                                            if (const auto * lambda_expr = lambda->function_core->as<ASTFunction>())
+                                            {
+                                                if (lambda_expr->name == "lambda" && lambda_expr->arguments
+                                                    && lambda_expr->arguments->children.size() >= 2)
+                                                {
+                                                    const auto * tuple_ast = lambda_expr->arguments->children[0]->as<ASTFunction>();
+                                                    if (tuple_ast && tuple_ast->arguments)
+                                                        inner_arity = tuple_ast->arguments->children.size();
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
 
                             if (inner_arity > 0)
                             {

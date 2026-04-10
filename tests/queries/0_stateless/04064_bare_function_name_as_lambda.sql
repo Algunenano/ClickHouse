@@ -44,3 +44,13 @@ SELECT arrayMap(plus, [(1, 10), (2, 20), (3, 30)]); -- { serverError UNKNOWN_IDE
 
 -- Non-HOF function with a function name as argument: should not be rewritten
 SELECT length(toString(123));
+
+-- SQL UDF: unary
+CREATE FUNCTION test_04064_double AS x -> x * 2;
+SELECT arrayMap(test_04064_double, [1, 2, 3]);
+DROP FUNCTION test_04064_double;
+
+-- SQL UDF: binary
+CREATE FUNCTION test_04064_add AS (x, y) -> x + y;
+SELECT arrayMap(test_04064_add, [1, 2, 3], [10, 20, 30]);
+DROP FUNCTION test_04064_add;
