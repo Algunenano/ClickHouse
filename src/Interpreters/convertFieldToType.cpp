@@ -66,6 +66,26 @@ Field convertNumericTypeImpl(const Field & from)
 }
 
 template <typename To>
+Field convertNumberLiteralToType(const Field & from)
+{
+    const auto & num = from.safeGet<NumberLiteral>();
+    ReadBufferFromString buf(num.value);
+    To result;
+    if (!tryReadIntText(result, buf) || !buf.eof())
+    {
+        /// Try parsing as float for Float targets
+        if constexpr (std::is_floating_point_v<To>)
+        {
+            buf.seek(0, SEEK_SET);
+            readFloatText(result, buf);
+            return result;
+        }
+        return {};
+    }
+    return result;
+}
+
+template <typename To>
 Field convertNumericType(const Field & from, const IDataType & type)
 {
     if (from.getType() == Field::Types::UInt64 || from.getType() == Field::Types::Bool)
@@ -82,6 +102,8 @@ Field convertNumericType(const Field & from, const IDataType & type)
         return convertNumericTypeImpl<UInt256, To>(from);
     if (from.getType() == Field::Types::Int256)
         return convertNumericTypeImpl<Int256, To>(from);
+    if (from.getType() == Field::Types::Number)
+        return convertNumberLiteralToType<To>(from);
 
     throw Exception(ErrorCodes::TYPE_MISMATCH, "Type mismatch in IN or VALUES section. Expected: {}. Got: {}",
         type.getName(), from.getType());
@@ -175,6 +197,8 @@ Field convertDecimalType(const Field & from, const To & type, bool strict)
         result = convertDecimalToDecimalType<Decimal256>(from, type);
     else if (from.getType() == Field::Types::Float64)
         result = convertFloatToDecimalType<Float64>(from, type);
+    else if (from.getType() == Field::Types::Number)
+        result = convertStringToDecimalType(Field(from.safeGet<NumberLiteral>().value), type);
     else
         throw Exception(
             ErrorCodes::TYPE_MISMATCH, "Type mismatch in IN or VALUES section. Expected: {}. Got: {}", type.getName(), from.getType());

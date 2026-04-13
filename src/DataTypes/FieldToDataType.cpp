@@ -13,6 +13,8 @@
 #include <DataTypes/getLeastSupertype.h>
 #include <DataTypes/DataTypeFactory.h>
 #include <Common/Exception.h>
+#include <IO/ReadBufferFromString.h>
+#include <IO/ReadHelpers.h>
 
 
 namespace DB
@@ -213,6 +215,50 @@ template <LeastSupertypeOnError on_error>
 DataTypePtr FieldToDataType<on_error>::operator() (const AggregateFunctionStateData & x) const
 {
     return DataTypeFactory::instance().get(x.name);
+}
+
+template <LeastSupertypeOnError on_error>
+DataTypePtr FieldToDataType<on_error>::operator() (const NumberLiteral & x) const
+{
+    /// Determine the smallest integer type that can hold this number.
+    /// The NumberLiteral string is always a decimal integer (possibly with leading '-').
+    const String & s = x.value;
+    bool negative = !s.empty() && s[0] == '-';
+
+    if (negative)
+    {
+        /// Try Int128, then Int256
+        {
+            ReadBufferFromString buf(s);
+            Int128 value;
+            if (tryReadIntText(value, buf) && buf.eof())
+                return std::make_shared<DataTypeInt128>();
+        }
+        {
+            ReadBufferFromString buf(s);
+            Int256 value;
+            if (tryReadIntText(value, buf) && buf.eof())
+                return std::make_shared<DataTypeInt256>();
+        }
+    }
+    else
+    {
+        /// Try UInt128, then UInt256
+        {
+            ReadBufferFromString buf(s);
+            UInt128 value;
+            if (tryReadIntText(value, buf) && buf.eof())
+                return std::make_shared<DataTypeUInt128>();
+        }
+        {
+            ReadBufferFromString buf(s);
+            UInt256 value;
+            if (tryReadIntText(value, buf) && buf.eof())
+                return std::make_shared<DataTypeUInt256>();
+        }
+    }
+
+    throw Exception(ErrorCodes::NOT_IMPLEMENTED, "Cannot determine type for number literal '{}'", s);
 }
 
 template <LeastSupertypeOnError on_error>

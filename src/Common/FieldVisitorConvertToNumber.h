@@ -3,6 +3,8 @@
 #include <Common/Exception.h>
 #include <Common/FieldVisitors.h>
 #include <Common/NaNUtils.h>
+#include <IO/ReadBufferFromString.h>
+#include <IO/ReadHelpers.h>
 #include <base/demangle.h>
 #include <type_traits>
 
@@ -103,6 +105,21 @@ public:
     T operator() (const CustomType &) const
     {
         throw Exception(ErrorCodes::CANNOT_CONVERT_TYPE, "Cannot convert CustomType to {}", demangle(typeid(T).name()));
+    }
+
+    T operator() (const NumberLiteral & x) const
+    {
+        ReadBufferFromString buf(x.value);
+        T result;
+        if constexpr (is_floating_point<T>)
+        {
+            readFloatText(result, buf);
+        }
+        else
+        {
+            readIntText(result, buf);
+        }
+        return result;
     }
 
     template <typename U>

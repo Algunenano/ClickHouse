@@ -51,6 +51,26 @@ bool AggregateFunctionStateData::operator >= (const AggregateFunctionStateData &
     throw Exception(ErrorCodes::ILLEGAL_TYPE_OF_ARGUMENT, "Operator >= is not implemented for AggregateFunctionStateData.");
 }
 
+bool NumberLiteral::operator < (const NumberLiteral &) const
+{
+    throw Exception(ErrorCodes::ILLEGAL_TYPE_OF_ARGUMENT, "Operator < is not implemented for NumberLiteral (resolve to concrete type first).");
+}
+
+bool NumberLiteral::operator <= (const NumberLiteral &) const
+{
+    throw Exception(ErrorCodes::ILLEGAL_TYPE_OF_ARGUMENT, "Operator <= is not implemented for NumberLiteral (resolve to concrete type first).");
+}
+
+bool NumberLiteral::operator > (const NumberLiteral &) const
+{
+    throw Exception(ErrorCodes::ILLEGAL_TYPE_OF_ARGUMENT, "Operator > is not implemented for NumberLiteral (resolve to concrete type first).");
+}
+
+bool NumberLiteral::operator >= (const NumberLiteral &) const
+{
+    throw Exception(ErrorCodes::ILLEGAL_TYPE_OF_ARGUMENT, "Operator >= is not implemented for NumberLiteral (resolve to concrete type first).");
+}
+
 bool AggregateFunctionStateData::operator == (const AggregateFunctionStateData & rhs) const
 {
     if (name != rhs.name)
@@ -118,6 +138,7 @@ bool Field::operator< (const Field & rhs) const
         case Types::Decimal256: return get<DecimalField<Decimal256>>() < rhs.get<DecimalField<Decimal256>>();
         case Types::AggregateFunctionState:  return get<AggregateFunctionStateData>() < rhs.get<AggregateFunctionStateData>();
         case Types::CustomType:  return get<CustomType>() < rhs.get<CustomType>();
+        case Types::Number:  return get<NumberLiteral>() < rhs.get<NumberLiteral>();
     }
 
     throw Exception(ErrorCodes::BAD_TYPE_OF_FIELD, "Bad type of Field");
@@ -162,6 +183,7 @@ bool Field::operator<= (const Field & rhs) const
         case Types::Decimal256: return get<DecimalField<Decimal256>>() <= rhs.get<DecimalField<Decimal256>>();
         case Types::AggregateFunctionState:  return get<AggregateFunctionStateData>() <= rhs.get<AggregateFunctionStateData>();
         case Types::CustomType:  return get<CustomType>() <= rhs.get<CustomType>();
+        case Types::Number:  return get<NumberLiteral>() <= rhs.get<NumberLiteral>();
     }
 
     throw Exception(ErrorCodes::BAD_TYPE_OF_FIELD, "Bad type of Field");
@@ -199,6 +221,7 @@ bool Field::operator== (const Field & rhs) const
         case Types::Decimal256: return get<DecimalField<Decimal256>>() == rhs.get<DecimalField<Decimal256>>();
         case Types::AggregateFunctionState:  return get<AggregateFunctionStateData>() == rhs.get<AggregateFunctionStateData>();
         case Types::CustomType:  return get<CustomType>() == rhs.get<CustomType>();
+        case Types::Number:  return get<NumberLiteral>() == rhs.get<NumberLiteral>();
     }
 
     throw Exception(ErrorCodes::BAD_TYPE_OF_FIELD, "Bad type of Field");
@@ -349,6 +372,12 @@ Field getBinaryValue(UInt8 type, ReadBuffer & buf)
         }
         case Field::Types::CustomType:
             return Field();
+        case Field::Types::Number:
+        {
+            std::string value;
+            readStringBinary(value, buf);
+            return NumberLiteral(std::move(value));
+        }
     }
     throw Exception(ErrorCodes::INCORRECT_DATA, "Unknown field type {}", std::to_string(type));
 }
@@ -744,6 +773,12 @@ Field Field::restoreFromDump(std::string_view dump_)
         return res;
     }
 
+    prefix = std::string_view{"Number_"};
+    if (dump.starts_with(prefix))
+    {
+        return NumberLiteral(String{dump.substr(prefix.length())});
+    }
+
     show_error();
     UNREACHABLE();
 }
@@ -843,6 +878,7 @@ std::string_view fieldTypeToString(Field::Types::Which type)
         case Field::Types::Which::IPv4: return "IPv4"sv;
         case Field::Types::Which::IPv6: return "IPv6"sv;
         case Field::Types::Which::CustomType: return "CustomType"sv;
+        case Field::Types::Which::Number: return "Number"sv;
     }
 }
 
