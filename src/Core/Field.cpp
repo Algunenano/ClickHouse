@@ -841,6 +841,11 @@ void writeText(const Null & x, WriteBuffer & buf)
         writeText("NULL", buf);
 }
 
+inline void writeText(const NumberLiteral & x, WriteBuffer & buf)
+{
+    writeString(x.value, buf);
+}
+
 String fieldToString(const Field & x)
 {
     return Field::dispatch(
@@ -948,6 +953,7 @@ template NearestFieldType<std::decay_t<Map>> & Field::safeGet<Map>() &;
 template NearestFieldType<std::decay_t<Object>> & Field::safeGet<Object>() &;
 template NearestFieldType<std::decay_t<Tuple>> & Field::safeGet<Tuple>() &;
 template NearestFieldType<std::decay_t<CustomType>> & Field::safeGet<CustomType>() &;
+template NearestFieldType<std::decay_t<NumberLiteral>> & Field::safeGet<NumberLiteral>() &;
 /// In Darwin unsigned long does not match any of the UInt* types
 #ifdef OS_DARWIN
 template NearestFieldType<std::decay_t<unsigned long>> & Field::safeGet<unsigned long>() &;

@@ -69,20 +69,19 @@ template <typename To>
 Field convertNumberLiteralToType(const Field & from)
 {
     const auto & num = from.safeGet<NumberLiteral>();
-    ReadBufferFromString buf(num.value);
-    To result;
-    if (!tryReadIntText(result, buf) || !buf.eof())
+    if constexpr (is_floating_point<To>)
     {
-        /// Try parsing as float for Float targets
-        if constexpr (std::is_floating_point_v<To>)
-        {
-            buf.seek(0, SEEK_SET);
-            readFloatText(result, buf);
-            return result;
-        }
-        return {};
+        /// For float targets, parse via strtod
+        return static_cast<To>(std::strtod(num.value.c_str(), nullptr));
     }
-    return result;
+    else
+    {
+        ReadBufferFromString buf(num.value);
+        To result;
+        if (!tryReadIntText(result, buf) || !buf.eof())
+            return {};
+        return result;
+    }
 }
 
 template <typename To>
