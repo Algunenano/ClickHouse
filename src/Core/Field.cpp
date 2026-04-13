@@ -621,7 +621,8 @@ Field Field::resolveNumberLiteral() const
         }
     }
 
-    throw Exception(ErrorCodes::BAD_TYPE_OF_FIELD, "Cannot resolve NumberLiteral '{}'", s);
+    /// Value doesn't fit in any integer type. Fall back to Float64 (approximate).
+    return std::strtod(s.c_str(), nullptr);
 }
 
 String Field::dump() const
