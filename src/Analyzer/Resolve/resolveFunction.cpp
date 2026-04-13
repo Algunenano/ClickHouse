@@ -262,6 +262,30 @@ QueryTreeNodePtr QueryAnalyzer::castNodeToType(
     if (node->getResultType()->equals(*target_type))
         return node;
 
+    /// When a constant was originally a NumberLiteral (e.g. "3.14" parsed as Float64 or
+    /// "100000000000000000000000" parsed as UInt128), cast from the original text to the
+    /// target type. This preserves precision — parsing "3.14" → Decimal64 directly is
+    /// exact, whereas Float64(3.14) → Decimal64 loses trailing digits.
+    if (const auto * constant_node = node->as<ConstantNode>())
+    {
+        if (constant_node->hasNumberLiteralText())
+        {
+            auto string_constant = std::make_shared<ConstantNode>(
+                constant_node->getNumberLiteralText(), std::make_shared<DataTypeString>());
+
+            auto cast_node = std::make_shared<FunctionNode>("CAST");
+            auto cast_args = std::make_shared<ListNode>();
+            cast_args->getNodes().push_back(string_constant);
+            cast_args->getNodes().push_back(
+                std::make_shared<ConstantNode>(target_type->getName(), std::make_shared<DataTypeString>()));
+            cast_node->getArgumentsNode() = cast_args;
+
+            QueryTreeNodePtr result = cast_node;
+            resolveFunction(result, scope);
+            return result;
+        }
+    }
+
     auto cast_node = std::make_shared<FunctionNode>("CAST");
     auto cast_args = std::make_shared<ListNode>();
     cast_args->getNodes().push_back(node);

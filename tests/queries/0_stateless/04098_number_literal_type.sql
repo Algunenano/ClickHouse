@@ -1,11 +1,15 @@
--- Test that big integer literals are parsed correctly without Float64 precision loss.
+-- Test that numeric literals are parsed as NumberLiteral to preserve precision.
 -- Before this fix, numbers > UInt64 max were parsed as Float64, silently losing precision.
+-- Decimal-point literals (3.14) were also parsed as Float64, losing precision for Decimal targets.
 
--- Basic type inference for big unsigned integers
+-- Big unsigned integer type inference
 SELECT toTypeName(100000000000000000000000);
 
--- Basic type inference for big negative integers
+-- Big negative integer type inference
 SELECT toTypeName(-100000000000000000000000);
+
+-- Decimal-point literal default type (backward compat: Float64)
+SELECT toTypeName(3.14);
 
 -- Precision preservation: these two values differ by 500
 SELECT 100000000000000000000500 - 100000000000000000000000;
@@ -21,12 +25,22 @@ WHERE action_id BETWEEN 100000000000000000000000 AND 100000000000000000000500;
 SELECT count() FROM test_number_literal
 WHERE action_id >= 100000000000000000000000 AND action_id <= 100000000000000000000500;
 
--- Ensure big literals work in array context
+DROP TABLE test_number_literal;
+
+-- Big literals in array context
 SELECT toTypeName([100000000000000000000000, 100000000000000000000001]);
 
--- Ensure values are preserved exactly
+-- Value preservation
 SELECT 100000000000000000000000;
 SELECT -100000000000000000000000;
 
--- Clean up
-DROP TABLE test_number_literal;
+-- Decimal precision: implicit cast from literal to Decimal column preserves precision
+DROP TABLE IF EXISTS test_decimal_literal;
+CREATE TABLE test_decimal_literal (d Decimal128(18)) ENGINE = MergeTree ORDER BY d;
+INSERT INTO test_decimal_literal VALUES ('1.123456789012345678');
+SELECT * FROM test_decimal_literal WHERE d = 1.123456789012345678;
+SELECT count() FROM test_decimal_literal WHERE d = 1.123456789012345678;
+DROP TABLE test_decimal_literal;
+
+-- String target: big integer literal cast to String
+SELECT CAST(100000000000000000000000, 'String');

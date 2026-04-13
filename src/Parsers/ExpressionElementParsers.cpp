@@ -1124,7 +1124,7 @@ bool ParserNumber::parseImpl(Pos & pos, ASTPtr & node, Expected & expected)
     if (!pos.isValid())
         return false;
 
-    auto try_read_float = [&](const char * it, const char * end)
+    auto try_read_float = [&](const char * it, const char * end, bool is_bare_word)
     {
         std::string buf(it, end); /// Copying is needed to ensure the string is 0-terminated.
         char * str_end;
@@ -1139,16 +1139,28 @@ bool ParserNumber::parseImpl(Pos & pos, ASTPtr & node, Expected & expected)
                                 "Token number cannot begin with minus, "
                                 "but parsed float number is less than zero.");
 
-            if (negative)
-                float_value = -float_value;
+            /// NaN and Inf stay as Float64 — they have no string representation as numbers.
+            if (is_bare_word || std::isnan(float_value) || std::isinf(float_value))
+            {
+                if (negative)
+                    float_value = -float_value;
 
-            /// Canonicalize NaN to a single representation, because negative NaN has
-            /// a different bit pattern but formats identically to positive NaN ("nan"),
-            /// breaking the AST formatting roundtrip consistency check.
-            if (std::isnan(float_value))
-                float_value = std::numeric_limits<Float64>::quiet_NaN();
+                /// Canonicalize NaN to a single representation, because negative NaN has
+                /// a different bit pattern but formats identically to positive NaN ("nan"),
+                /// breaking the AST formatting roundtrip consistency check.
+                if (std::isnan(float_value))
+                    float_value = std::numeric_limits<Float64>::quiet_NaN();
 
-            res = float_value;
+                res = float_value;
+            }
+            else
+            {
+                /// Store regular numeric literals (with decimal point or exponent) as NumberLiteral
+                /// to defer parsing until the target type is known (preserves Decimal precision).
+                String number_str(negative ? "-" : "");
+                number_str.append(it, end);
+                res = NumberLiteral(std::move(number_str));
+            }
 
             auto literal = make_intrusive<ASTLiteral>(res);
             ++pos;
@@ -1165,7 +1177,7 @@ bool ParserNumber::parseImpl(Pos & pos, ASTPtr & node, Expected & expected)
     /// NaN and Inf
     if (pos->type == TokenType::BareWord)
     {
-        return try_read_float(pos->begin, pos->end);
+        return try_read_float(pos->begin, pos->end, /*is_bare_word=*/ true);
     }
 
     if (pos->type != TokenType::Number)
@@ -1293,7 +1305,7 @@ bool ParserNumber::parseImpl(Pos & pos, ASTPtr & node, Expected & expected)
         }
     }
 
-    return try_read_float(buf, buf + buf_size);
+    return try_read_float(buf, buf + buf_size, /*is_bare_word=*/ false);
 }
 
 

@@ -220,14 +220,31 @@ DataTypePtr FieldToDataType<on_error>::operator() (const AggregateFunctionStateD
 template <LeastSupertypeOnError on_error>
 DataTypePtr FieldToDataType<on_error>::operator() (const NumberLiteral & x) const
 {
-    /// Determine the smallest integer type that can hold this number.
-    /// The NumberLiteral string is always a decimal integer (possibly with leading '-').
     const String & s = x.value;
+
+    /// Check if this looks like a pure integer (no decimal point or exponent).
+    bool is_integer = true;
+    for (size_t i = (s[0] == '-' ? 1 : 0); i < s.size(); ++i)
+    {
+        if (s[i] == '.' || s[i] == 'e' || s[i] == 'E')
+        {
+            is_integer = false;
+            break;
+        }
+    }
+
+    if (!is_integer)
+    {
+        /// For decimal/exponent number literals, return Float64 for backward compatibility.
+        /// The actual precision-preserving conversion happens later when the target type is known.
+        return std::make_shared<DataTypeFloat64>();
+    }
+
+    /// For integer literals, determine the smallest integer type that fits.
     bool negative = !s.empty() && s[0] == '-';
 
     if (negative)
     {
-        /// Try Int128, then Int256
         {
             ReadBufferFromString buf(s);
             Int128 value;
@@ -243,7 +260,6 @@ DataTypePtr FieldToDataType<on_error>::operator() (const NumberLiteral & x) cons
     }
     else
     {
-        /// Try UInt128, then UInt256
         {
             ReadBufferFromString buf(s);
             UInt128 value;
