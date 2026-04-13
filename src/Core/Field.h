@@ -536,6 +536,11 @@ public:
     String dump() const;
     static Field restoreFromDump(std::string_view dump_);
 
+    /// If this Field is a NumberLiteral, resolve it to a concrete numeric type
+    /// (Float64 for decimal-looking strings, UInt128/Int128/etc for big integers).
+    /// Returns *this unchanged if it's not a NumberLiteral.
+    Field resolveNumberLiteral() const;
+
 private:
     AlignedUnionT<DBMS_MIN_FIELD_SIZE - sizeof(Types::Which),
         Null, UInt64, UInt128, UInt256, Int64, Int128, Int256, UUID, IPv4, IPv6, Float64, String, Array, Tuple, Map,

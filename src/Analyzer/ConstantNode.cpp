@@ -10,7 +10,6 @@
 #include <DataTypes/FieldToDataType.h>
 #include <Common/SipHash.h>
 #include <DataTypes/DataTypeDateTime64.h>
-#include <DataTypes/DataTypeString.h>
 
 #include <IO/WriteBuffer.h>
 #include <IO/WriteHelpers.h>
@@ -48,17 +47,14 @@ ConstantNode::ConstantNode(ColumnPtr constant_column_)
 
 ConstantNode::ConstantNode(Field value_, DataTypePtr value_data_type_)
     : ConstantNode(ConstantValue{convertFieldToTypeOrThrow(value_, *value_data_type_), value_data_type_})
-{}
+{
+    if (value_.getType() == Field::Types::Number)
+        number_literal_text = value_.safeGet<NumberLiteral>().value;
+}
 
 ConstantNode::ConstantNode(Field value_)
     : ConstantNode(value_, applyVisitor(FieldToDataType(), value_))
 {}
-
-ConstantNode::ConstantNode(NumberLiteral number_literal_)
-    : ConstantNode(ConstantValue{number_literal_.value, std::make_shared<DataTypeString>()})
-{
-    number_literal_text = std::move(number_literal_.value);
-}
 
 String ConstantNode::getValueStringRepresentation() const
 {

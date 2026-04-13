@@ -684,12 +684,7 @@ QueryTreeNodePtr QueryTreeBuilder::buildExpression(const ASTPtr & expression, co
     }
     else if (const auto * ast_literal = expression->as<ASTLiteral>())
     {
-        if (ast_literal->value.getType() == Field::Types::Number)
-        {
-            /// NumberLiteral: defer type resolution — store as string, resolve when target type is known.
-            result = std::make_shared<ConstantNode>(ast_literal->value.safeGet<NumberLiteral>());
-        }
-        else if (context->getSettingsRef()[Setting::use_variant_as_common_type])
+        if (context->getSettingsRef()[Setting::use_variant_as_common_type])
             result = std::make_shared<ConstantNode>(ast_literal->value, applyVisitor(FieldToDataType<LeastSupertypeOnError::Variant>(), ast_literal->value));
         else
             result = std::make_shared<ConstantNode>(ast_literal->value);

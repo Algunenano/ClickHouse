@@ -1092,20 +1092,45 @@ ProjectionNames QueryAnalyzer::resolveFunction(QueryTreeNodePtr & node, Identifi
 
             /// Determine the default (intrinsic) type for this literal value.
             auto default_type = applyVisitor(FieldToDataType(), Field(NumberLiteral(text)));
+            WhichDataType which_default(default_type);
+            WhichDataType which_ref(reference_type);
 
-            /// Use the reference type if the literal's default type fits in it;
-            /// otherwise use the default type (e.g. UInt128 for a big integer literal
-            /// even when the other argument is UInt64).
-            DataTypePtr target_type;
-            if (reference_type && default_type->getTypeId() == reference_type->getTypeId())
-                target_type = reference_type;
-            else if (reference_type && isNumber(*default_type) && isNumber(*reference_type)
-                     && default_type->getSizeOfValueInMemory() <= reference_type->getSizeOfValueInMemory())
-                target_type = reference_type;
-            else
+            /// Use the reference type when compatible:
+            /// - Decimal ref + any number default → use Decimal (precision preservation)
+            /// - Same numeric family (both integer or both float) and ref is wide enough → use ref
+            /// Otherwise use the literal's intrinsic default type.
+            DataTypePtr target_type = default_type;
+            if (reference_type)
+            {
+                if (isDecimal(*reference_type))
+                {
+                    /// Always use Decimal reference: parsing from string gives exact precision.
+                    target_type = reference_type;
+                }
+                else if (which_default.isInt() && which_ref.isInt()
+                         && default_type->getSizeOfValueInMemory() <= reference_type->getSizeOfValueInMemory())
+                {
+                    target_type = reference_type;
+                }
+                else if (which_default.isUInt() && (which_ref.isUInt() || which_ref.isInt())
+                         && default_type->getSizeOfValueInMemory() <= reference_type->getSizeOfValueInMemory())
+                {
+                    target_type = reference_type;
+                }
+                else if (which_default.isFloat() && which_ref.isFloat())
+                {
+                    target_type = reference_type;
+                }
+            }
+
+            auto parsed_field = tryConvertFieldToType(Field(text), *target_type);
+
+            /// If conversion to reference type failed, fall back to default type.
+            if (parsed_field.isNull() && !target_type->isNullable() && target_type != default_type)
+            {
                 target_type = default_type;
-
-            auto parsed_field = convertFieldToType(Field(text), *target_type);
+                parsed_field = tryConvertFieldToType(Field(text), *target_type);
+            }
 
             if (!parsed_field.isNull() || target_type->isNullable())
             {

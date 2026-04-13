@@ -222,6 +222,15 @@ Field convertDecimalType(const Field & from, const To & type, bool strict)
 
 Field convertFieldToTypeImpl(const Field & src, const IDataType & type, const IDataType * from_type_hint, const FormatSettings & format_settings, bool strict)
 {
+    /// If the source is a NumberLiteral, resolve it to a concrete type first,
+    /// then convert that. This handles all the non-Analyzer code paths
+    /// (settings, index params, etc.) that access Field values directly.
+    if (src.getType() == Field::Types::Number)
+    {
+        Field resolved = src.resolveNumberLiteral();
+        return convertFieldToTypeImpl(resolved, type, from_type_hint, format_settings, strict);
+    }
+
     if (from_type_hint && from_type_hint->equals(type))
     {
         return src;

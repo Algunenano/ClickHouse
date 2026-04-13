@@ -46,10 +46,6 @@ public:
     /// Construct constant query tree node from field, data type will be derived from field value
     explicit ConstantNode(Field value_);
 
-    /// Construct constant query tree node from a NumberLiteral.
-    /// Stored as a String internally; the actual type is resolved later based on context.
-    explicit ConstantNode(NumberLiteral number_literal_);
-
     /// Get constant value
     const ColumnPtr & getColumn() const
     {

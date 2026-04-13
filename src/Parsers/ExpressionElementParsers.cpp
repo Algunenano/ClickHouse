@@ -1139,15 +1139,13 @@ bool ParserNumber::parseImpl(Pos & pos, ASTPtr & node, Expected & expected)
                                 "Token number cannot begin with minus, "
                                 "but parsed float number is less than zero.");
 
-            /// NaN and Inf stay as Float64 — they have no string representation as numbers.
-            if (is_bare_word || std::isnan(float_value) || std::isinf(float_value))
+            /// NaN, Inf, and hex floats (0x...p...) stay as Float64.
+            bool is_hex_float = (end - it >= 2 && it[0] == '0' && (it[1] == 'x' || it[1] == 'X'));
+            if (is_bare_word || is_hex_float || std::isnan(float_value) || std::isinf(float_value))
             {
                 if (negative)
                     float_value = -float_value;
 
-                /// Canonicalize NaN to a single representation, because negative NaN has
-                /// a different bit pattern but formats identically to positive NaN ("nan"),
-                /// breaking the AST formatting roundtrip consistency check.
                 if (std::isnan(float_value))
                     float_value = std::numeric_limits<Float64>::quiet_NaN();
 
@@ -1155,8 +1153,7 @@ bool ParserNumber::parseImpl(Pos & pos, ASTPtr & node, Expected & expected)
             }
             else
             {
-                /// Store regular numeric literals (with decimal point or exponent) as NumberLiteral
-                /// to defer parsing until the target type is known (preserves Decimal precision).
+                /// Store regular numeric literals as NumberLiteral to defer parsing.
                 String number_str(negative ? "-" : "");
                 number_str.append(it, end);
                 res = NumberLiteral(std::move(number_str));

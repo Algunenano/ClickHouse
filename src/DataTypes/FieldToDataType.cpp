@@ -13,8 +13,6 @@
 #include <DataTypes/getLeastSupertype.h>
 #include <DataTypes/DataTypeFactory.h>
 #include <Common/Exception.h>
-#include <IO/ReadBufferFromString.h>
-#include <IO/ReadHelpers.h>
 
 
 namespace DB
@@ -220,61 +218,9 @@ DataTypePtr FieldToDataType<on_error>::operator() (const AggregateFunctionStateD
 template <LeastSupertypeOnError on_error>
 DataTypePtr FieldToDataType<on_error>::operator() (const NumberLiteral & x) const
 {
-    const String & s = x.value;
-
-    /// Check if this looks like a pure integer (no decimal point or exponent).
-    bool is_integer = true;
-    for (size_t i = (s[0] == '-' ? 1 : 0); i < s.size(); ++i)
-    {
-        if (s[i] == '.' || s[i] == 'e' || s[i] == 'E')
-        {
-            is_integer = false;
-            break;
-        }
-    }
-
-    if (!is_integer)
-    {
-        /// For decimal/exponent number literals, return Float64 for backward compatibility.
-        /// The actual precision-preserving conversion happens later when the target type is known.
-        return std::make_shared<DataTypeFloat64>();
-    }
-
-    /// For integer literals, determine the smallest integer type that fits.
-    bool negative = !s.empty() && s[0] == '-';
-
-    if (negative)
-    {
-        {
-            ReadBufferFromString buf(s);
-            Int128 value;
-            if (tryReadIntText(value, buf) && buf.eof())
-                return std::make_shared<DataTypeInt128>();
-        }
-        {
-            ReadBufferFromString buf(s);
-            Int256 value;
-            if (tryReadIntText(value, buf) && buf.eof())
-                return std::make_shared<DataTypeInt256>();
-        }
-    }
-    else
-    {
-        {
-            ReadBufferFromString buf(s);
-            UInt128 value;
-            if (tryReadIntText(value, buf) && buf.eof())
-                return std::make_shared<DataTypeUInt128>();
-        }
-        {
-            ReadBufferFromString buf(s);
-            UInt256 value;
-            if (tryReadIntText(value, buf) && buf.eof())
-                return std::make_shared<DataTypeUInt256>();
-        }
-    }
-
-    throw Exception(ErrorCodes::NOT_IMPLEMENTED, "Cannot determine type for number literal '{}'", s);
+    /// Resolve the NumberLiteral to a concrete Field value, then infer the type from that.
+    Field resolved = Field(x).resolveNumberLiteral();
+    return applyVisitor(FieldToDataType<on_error>(), resolved);
 }
 
 template <LeastSupertypeOnError on_error>
