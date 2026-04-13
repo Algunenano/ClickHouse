@@ -1093,7 +1093,7 @@ ProjectionNames QueryAnalyzer::resolveFunction(QueryTreeNodePtr & node, Identifi
             /// Determine the default (intrinsic) type for this literal value.
             auto default_type = applyVisitor(FieldToDataType(), Field(NumberLiteral(text)));
             WhichDataType which_default(default_type);
-            WhichDataType which_ref(reference_type);
+            WhichDataType which_ref(reference_type ? reference_type : default_type);
 
             /// Use the reference type when compatible:
             /// - Decimal ref + any number default → use Decimal (precision preservation)

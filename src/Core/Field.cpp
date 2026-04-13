@@ -966,15 +966,6 @@ NearestFieldType<std::decay_t<T>> & Field::safeGet() &
 {
     const Types::Which target = TypeToEnum<NearestFieldType<std::decay_t<T>>>::value;
 
-    /// NumberLiteral auto-resolution: when a NumberLiteral is accessed as a concrete numeric type,
-    /// resolve it in-place to the requested type. This handles all code paths that access Field
-    /// values from AST literals (settings, index params, etc.) without explicit conversion.
-    if (which == Types::Number && target != Types::Number)
-    {
-        *this = resolveNumberLiteral();
-        /// After resolution, fall through to the normal safeGet logic.
-    }
-
     /// bool is stored as uint64, will be returned as UInt64 when requested as bool or UInt64, as Int64 when requested as Int64
     /// also allow UInt64 <-> Int64 conversion
     if (target != which &&
