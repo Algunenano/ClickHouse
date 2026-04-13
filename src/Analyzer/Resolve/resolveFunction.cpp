@@ -22,8 +22,11 @@
 
 #include <Core/Settings.h>
 #include <DataTypes/DataTypesNumber.h>
+#include <DataTypes/DataTypesDecimal.h>
 #include <DataTypes/DataTypeNullable.h>
 #include <DataTypes/DataTypeNothing.h>
+#include <DataTypes/FieldToDataType.h>
+#include <Interpreters/convertFieldToType.h>
 #include <DataTypes/hasNullable.h>
 #include <DataTypes/DataTypeFunction.h>
 #include <DataTypes/DataTypeSet.h>
@@ -1058,6 +1061,61 @@ ProjectionNames QueryAnalyzer::resolveFunction(QueryTreeNodePtr & node, Identifi
 
         argument_types.push_back(argument_column.type);
         argument_columns.emplace_back(std::move(argument_column));
+    }
+
+    /// Resolve NumberLiteral constants: when a function has a mix of NumberLiteral (String-typed)
+    /// and concrete numeric arguments, replace each NumberLiteral constant with a value of the
+    /// concrete type parsed from the original text. This avoids precision loss through Float64.
+    {
+        /// Find the "reference" type from non-NumberLiteral numeric arguments.
+        DataTypePtr reference_type;
+        for (size_t i = 0; i < function_arguments_size; ++i)
+        {
+            const auto * const_node = function_arguments[i]->as<ConstantNode>();
+            if (const_node && const_node->hasNumberLiteralText())
+                continue;
+            auto arg_type = removeNullable(argument_types[i]);
+            if (arg_type && (isNumber(*arg_type) || isDecimal(*arg_type)))
+            {
+                reference_type = arg_type;
+                break;
+            }
+        }
+
+        for (size_t i = 0; i < function_arguments_size; ++i)
+        {
+            auto * const_node = function_arguments[i]->as<ConstantNode>();
+            if (!const_node || !const_node->hasNumberLiteralText())
+                continue;
+
+            const auto & text = const_node->getNumberLiteralText();
+
+            /// Determine the default (intrinsic) type for this literal value.
+            auto default_type = applyVisitor(FieldToDataType(), Field(NumberLiteral(text)));
+
+            /// Use the reference type if the literal's default type fits in it;
+            /// otherwise use the default type (e.g. UInt128 for a big integer literal
+            /// even when the other argument is UInt64).
+            DataTypePtr target_type;
+            if (reference_type && default_type->getTypeId() == reference_type->getTypeId())
+                target_type = reference_type;
+            else if (reference_type && isNumber(*default_type) && isNumber(*reference_type)
+                     && default_type->getSizeOfValueInMemory() <= reference_type->getSizeOfValueInMemory())
+                target_type = reference_type;
+            else
+                target_type = default_type;
+
+            auto parsed_field = convertFieldToType(Field(text), *target_type);
+
+            if (!parsed_field.isNull() || target_type->isNullable())
+            {
+                auto new_constant = std::make_shared<ConstantNode>(parsed_field, target_type);
+                function_arguments[i] = new_constant;
+                argument_columns[i].column = new_constant->getColumn();
+                argument_columns[i].type = target_type;
+                argument_types[i] = target_type;
+            }
+        }
     }
 
     /// Calculate function projection name
