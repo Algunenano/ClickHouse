@@ -11,6 +11,7 @@
 #include <IO/ReadHelpers.h>
 #include <IO/WriteHelpers.h>
 #include <IO/ReadBufferFromString.h>
+#include <IO/WriteBufferFromString.h>
 #include <IO/readDecimalText.h>
 
 
@@ -589,19 +590,32 @@ Field Field::resolveNumberLiteral() const
     }
 
     /// Integer literal → resolve to the smallest fitting integer type.
+    /// tryReadIntText doesn't detect overflow for wide integers, so we verify
+    /// by converting back to string and comparing with the original.
     bool negative = !s.empty() && s[0] == '-';
+    std::string_view digits = s;
+    if (negative)
+        digits.remove_prefix(1);
+
+    auto verifyRoundtrip = [&](const auto & value) -> bool
+    {
+        WriteBufferFromOwnString wb;
+        writeText(value, wb);
+        return wb.str() == digits;
+    };
+
     if (negative)
     {
         {
             ReadBufferFromString buf(s);
             Int128 value;
-            if (tryReadIntText(value, buf) && buf.eof())
+            if (tryReadIntText(value, buf) && buf.eof() && value < 0 && verifyRoundtrip(-value))
                 return value;
         }
         {
             ReadBufferFromString buf(s);
             Int256 value;
-            if (tryReadIntText(value, buf) && buf.eof())
+            if (tryReadIntText(value, buf) && buf.eof() && value < 0 && verifyRoundtrip(-value))
                 return value;
         }
     }
@@ -610,13 +624,13 @@ Field Field::resolveNumberLiteral() const
         {
             ReadBufferFromString buf(s);
             UInt128 value;
-            if (tryReadIntText(value, buf) && buf.eof())
+            if (tryReadIntText(value, buf) && buf.eof() && verifyRoundtrip(value))
                 return value;
         }
         {
             ReadBufferFromString buf(s);
             UInt256 value;
-            if (tryReadIntText(value, buf) && buf.eof())
+            if (tryReadIntText(value, buf) && buf.eof() && verifyRoundtrip(value))
                 return value;
         }
     }
