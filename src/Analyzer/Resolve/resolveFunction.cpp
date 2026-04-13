@@ -1123,13 +1123,23 @@ ProjectionNames QueryAnalyzer::resolveFunction(QueryTreeNodePtr & node, Identifi
                 }
             }
 
-            auto parsed_field = tryConvertFieldToType(Field(text), *target_type);
+            /// For Decimal targets, convert from string text directly (preserves precision).
+            /// For other targets, resolve the NumberLiteral first (uses strtod for floats,
+            /// which handles subnormals and edge cases that readFloatText doesn't).
+            Field parsed_field;
+            if (isDecimal(*target_type))
+                parsed_field = tryConvertFieldToType(Field(text), *target_type);
+            else
+                parsed_field = tryConvertFieldToType(Field(NumberLiteral(text)).resolveNumberLiteral(), *target_type);
 
             /// If conversion to reference type failed, fall back to default type.
             if (parsed_field.isNull() && !target_type->isNullable() && target_type != default_type)
             {
                 target_type = default_type;
-                parsed_field = tryConvertFieldToType(Field(text), *target_type);
+                if (isDecimal(*target_type))
+                    parsed_field = tryConvertFieldToType(Field(text), *target_type);
+                else
+                    parsed_field = tryConvertFieldToType(Field(NumberLiteral(text)).resolveNumberLiteral(), *target_type);
             }
 
             if (!parsed_field.isNull() || target_type->isNullable())
