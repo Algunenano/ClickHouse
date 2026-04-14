@@ -25,8 +25,7 @@
 #include <DataTypes/DataTypesDecimal.h>
 #include <DataTypes/DataTypeNullable.h>
 #include <DataTypes/DataTypeNothing.h>
-#include <DataTypes/FieldToDataType.h>
-#include <Interpreters/convertFieldToType.h>
+#include <Interpreters/resolveNumberLiteral.h>
 #include <DataTypes/hasNullable.h>
 #include <DataTypes/DataTypeFunction.h>
 #include <DataTypes/DataTypeSet.h>
@@ -1063,13 +1062,7 @@ ProjectionNames QueryAnalyzer::resolveFunction(QueryTreeNodePtr & node, Identifi
         argument_columns.emplace_back(std::move(argument_column));
     }
 
-    /// Resolve NumberLiteral constants: when a function has a mix of NumberLiteral (String-typed)
-    /// and concrete numeric arguments, replace each NumberLiteral constant with a value of the
-    /// concrete type parsed from the original text. This avoids precision loss through Float64.
-    ///
-    /// Decimal conversion is only applied for comparison/equality functions (equals, less, in, between, etc.)
-    /// For arithmetic (multiply, divide, plus), we use the default Float64 resolution to avoid
-    /// scale overflow and precision issues with Decimal arithmetic.
+    /// Resolve NumberLiteral constants: replace each with a properly typed value based on context.
     {
         static const std::unordered_set<String> comparison_functions = {
             "equals", "notEquals", "less", "greater", "lessOrEquals", "greaterOrEquals",
@@ -1098,72 +1091,10 @@ ProjectionNames QueryAnalyzer::resolveFunction(QueryTreeNodePtr & node, Identifi
             if (!const_node || !const_node->hasNumberLiteralText())
                 continue;
 
-            const auto & text = const_node->getNumberLiteralText();
+            auto [parsed_field, target_type] = resolveNumberLiteralForFunction(
+                const_node->getNumberLiteralText(), reference_type, is_comparison);
 
-            /// Determine the default (intrinsic) type for this literal value.
-            auto default_type = applyVisitor(FieldToDataType(), Field(NumberLiteral(text)));
-            WhichDataType which_default(default_type);
-            WhichDataType which_ref(reference_type ? reference_type : default_type);
-
-            /// Use the reference type when compatible:
-            /// - Decimal ref + any number default → use Decimal (precision preservation)
-            /// - Same numeric family (both integer or both float) and ref is wide enough → use ref
-            /// Otherwise use the literal's intrinsic default type.
-            DataTypePtr target_type = default_type;
-            if (reference_type)
-            {
-                if (is_comparison && isDecimal(*reference_type))
-                {
-                    /// For comparisons only: use Decimal with the literal's own scale.
-                    /// This ensures exact comparison without Float64 precision loss.
-                    /// Only for plain decimal notation (no scientific notation with e/E).
-                    bool has_exponent = text.find_first_of("eE") != String::npos;
-                    if (!has_exponent)
-                    {
-                        size_t literal_scale = 0;
-                        if (auto dot_pos = text.find('.'); dot_pos != String::npos)
-                            literal_scale = text.size() - dot_pos - 1;
-
-                        target_type = std::make_shared<DataTypeDecimal<Decimal256>>(
-                            DataTypeDecimal<Decimal256>::maxPrecision(), static_cast<UInt32>(literal_scale));
-                    }
-                }
-                else if (which_default.isInt() && which_ref.isInt()
-                         && default_type->getSizeOfValueInMemory() <= reference_type->getSizeOfValueInMemory())
-                {
-                    target_type = reference_type;
-                }
-                else if (which_default.isUInt() && (which_ref.isUInt() || which_ref.isInt())
-                         && default_type->getSizeOfValueInMemory() <= reference_type->getSizeOfValueInMemory())
-                {
-                    target_type = reference_type;
-                }
-                else if (which_default.isFloat() && which_ref.isFloat())
-                {
-                    target_type = reference_type;
-                }
-            }
-
-            /// For Decimal targets, convert from string text directly (preserves precision).
-            /// For other targets, resolve the NumberLiteral first (uses strtod for floats,
-            /// which handles subnormals and edge cases that readFloatText doesn't).
-            Field parsed_field;
-            if (isDecimal(*target_type))
-                parsed_field = tryConvertFieldToType(Field(text), *target_type);
-            else
-                parsed_field = tryConvertFieldToType(Field(NumberLiteral(text)).resolveNumberLiteral(), *target_type);
-
-            /// If conversion to reference type failed, fall back to default type.
-            if (parsed_field.isNull() && !target_type->isNullable() && target_type != default_type)
-            {
-                target_type = default_type;
-                if (isDecimal(*target_type))
-                    parsed_field = tryConvertFieldToType(Field(text), *target_type);
-                else
-                    parsed_field = tryConvertFieldToType(Field(NumberLiteral(text)).resolveNumberLiteral(), *target_type);
-            }
-
-            if (!parsed_field.isNull() || target_type->isNullable())
+            if (target_type)
             {
                 auto new_constant = std::make_shared<ConstantNode>(parsed_field, target_type);
                 function_arguments[i] = new_constant;

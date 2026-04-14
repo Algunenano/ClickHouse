@@ -50,6 +50,7 @@
 #include <Interpreters/IdentifierSemantic.h>
 #include <Interpreters/Set.h>
 #include <Interpreters/convertFieldToType.h>
+#include <Interpreters/resolveNumberLiteral.h>
 #include <Interpreters/evaluateConstantExpression.h>
 #include <Interpreters/interpretSubquery.h>
 #include <Interpreters/misc.h>
@@ -1150,8 +1151,6 @@ void ActionsMatcher::visit(const ASTFunction & node, const ASTPtr & ast, Data & 
     if (arguments_present)
     {
         /// Deferred NumberLiteral resolution for comparison functions only.
-        /// For comparisons like `decimal_col = 3.14`, convert the literal to Decimal
-        /// to avoid precision loss through Float64. For arithmetic, use the default Float64.
         static const std::unordered_set<String> comparison_functions = {
             "equals", "notEquals", "less", "greater", "lessOrEquals", "greaterOrEquals",
         };
@@ -1170,49 +1169,29 @@ void ActionsMatcher::visit(const ASTFunction & node, const ASTPtr & ast, Data & 
                 if (i < argument_names.size())
                 {
                     const auto * arg_node = index.tryGetNode(argument_names[i]);
-                    if (arg_node && arg_node->result_type && isDecimal(*removeNullable(arg_node->result_type)))
+                    if (arg_node && arg_node->result_type && (isNumber(*removeNullable(arg_node->result_type)) || isDecimal(*removeNullable(arg_node->result_type))))
                     {
-                        reference_type = removeNullable(arg_node->result_type);
+                        reference_type = arg_node->result_type;
                         break;
                     }
                 }
             }
 
-            if (reference_type)
+            for (size_t i = 0; i < args.size(); ++i)
             {
-                for (size_t i = 0; i < args.size(); ++i)
+                const auto * lit = args[i]->as<ASTLiteral>();
+                if (!lit || lit->value.getType() != Field::Types::Number)
+                    continue;
+
+                auto [parsed, target_type] = resolveNumberLiteralForFunction(
+                    lit->value.safeGet<NumberLiteral>().value, reference_type, /*is_comparison=*/ true);
+
+                if (target_type && i < argument_names.size())
                 {
-                    const auto * lit = args[i]->as<ASTLiteral>();
-                    if (!lit || lit->value.getType() != Field::Types::Number)
-                        continue;
-
-                    const String & text = lit->value.safeGet<NumberLiteral>().value;
-
-                    /// Use Decimal with the literal's own scale.
-                    /// Only for plain decimal notation (no scientific notation with e/E).
-                    bool has_exponent = text.find_first_of("eE") != String::npos;
-                    if (has_exponent)
-                        continue;
-
-                    size_t literal_scale = 0;
-                    if (auto dot_pos = text.find('.'); dot_pos != String::npos)
-                        literal_scale = text.size() - dot_pos - 1;
-
-                    DataTypePtr target_type = std::make_shared<DataTypeDecimal<Decimal256>>(
-                        DataTypeDecimal<Decimal256>::maxPrecision(), static_cast<UInt32>(literal_scale));
-
-                    auto parsed = tryConvertFieldToType(Field(text), *target_type);
-                    if (!parsed.isNull())
-                    {
-                        /// Replace the constant in the DAG with the properly typed value.
-                        if (i < argument_names.size())
-                        {
-                            String new_name = data.getUniqueName("__number_literal");
-                            data.addColumn(ColumnWithTypeAndName(
-                                target_type->createColumnConst(1, parsed), target_type, new_name));
-                            argument_names[i] = new_name;
-                        }
-                    }
+                    String new_name = data.getUniqueName("__number_literal");
+                    data.addColumn(ColumnWithTypeAndName(
+                        target_type->createColumnConst(1, parsed), target_type, new_name));
+                    argument_names[i] = new_name;
                 }
             }
         }
