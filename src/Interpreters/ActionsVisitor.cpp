@@ -921,7 +921,7 @@ void ActionsMatcher::visit(const ASTFunction & node, const ASTPtr & ast, Data & 
             for (size_t i = 0; i < parameters_size; ++i)
             {
                 ASTPtr literal = evaluateConstantExpressionAsLiteral(node_parameters[i], current_context);
-                parameters[i] = literal->as<ASTLiteral>()->value;
+                parameters[i] = literal->as<ASTLiteral>()->value.resolveNumberLiteral();
             }
         }
 
@@ -1149,6 +1149,73 @@ void ActionsMatcher::visit(const ASTFunction & node, const ASTPtr & ast, Data & 
 
     if (arguments_present)
     {
+        /// Deferred NumberLiteral resolution: when a function has NumberLiteral arguments,
+        /// re-resolve them based on the types of sibling arguments (e.g. Decimal column).
+        /// This avoids precision loss through Float64 for comparisons like `decimal_col = 3.14`.
+        /// Skip IN/NOT IN — those have special set handling for the second argument.
+        static const std::unordered_set<String> in_functions = {"in", "notIn", "globalIn", "globalNotIn", "nullIn", "notNullIn", "globalNullIn", "globalNotNullIn"};
+        if (node.arguments && !in_functions.contains(node.name))
+        {
+            const auto & args = node.arguments->children;
+            const auto & index = data.actions_stack.getLastActionsIndex();
+
+            /// Find a reference type from non-NumberLiteral numeric arguments.
+            DataTypePtr reference_type;
+            for (size_t i = 0; i < args.size(); ++i)
+            {
+                const auto * lit = args[i]->as<ASTLiteral>();
+                if (lit && lit->value.getType() == Field::Types::Number)
+                    continue;
+                if (i < argument_names.size())
+                {
+                    const auto * arg_node = index.tryGetNode(argument_names[i]);
+                    if (arg_node && arg_node->result_type && isDecimal(*removeNullable(arg_node->result_type)))
+                    {
+                        reference_type = removeNullable(arg_node->result_type);
+                        break;
+                    }
+                }
+            }
+
+            if (reference_type)
+            {
+                for (size_t i = 0; i < args.size(); ++i)
+                {
+                    const auto * lit = args[i]->as<ASTLiteral>();
+                    if (!lit || lit->value.getType() != Field::Types::Number)
+                        continue;
+
+                    const String & text = lit->value.safeGet<NumberLiteral>().value;
+
+                    /// Determine target Decimal type with enough scale.
+                    size_t literal_scale = 0;
+                    if (auto dot_pos = text.find('.'); dot_pos != String::npos)
+                        literal_scale = text.size() - dot_pos - 1;
+
+                    UInt32 ref_scale = getDecimalScale(*reference_type);
+                    DataTypePtr target_type;
+                    if (literal_scale <= ref_scale)
+                        target_type = reference_type;
+                    else
+                        target_type = std::make_shared<DataTypeDecimal<Decimal256>>(
+                            DataTypeDecimal<Decimal256>::maxPrecision(), static_cast<UInt32>(literal_scale));
+
+                    auto parsed = tryConvertFieldToType(Field(text), *target_type);
+                    if (!parsed.isNull())
+                    {
+                        /// Replace the constant in the DAG with the properly typed value.
+                        if (i < argument_names.size())
+                        {
+                            String new_name = data.getUniqueName("__number_literal");
+                            data.addColumn(ColumnWithTypeAndName(
+                                target_type->createColumnConst(1, parsed), target_type, new_name));
+                            argument_names[i] = new_name;
+                        }
+                    }
+                }
+            }
+        }
+
         /// Calculate column name here again, because AST may be changed here (in case of untuple).
         data.addFunction(function_builder, argument_names, ast->getColumnName());
     }
