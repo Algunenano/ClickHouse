@@ -125,7 +125,7 @@ namespace
         }
         if (f.getType() == Field::Types::Number)
         {
-            return stringToNumber<T>(f.safeGet<NumberLiteral>().value);
+            return fieldToNumber<T>(f.resolveNumberLiteral());
         }
         throw Exception(
             ErrorCodes::CANNOT_CONVERT_TYPE, "Invalid value {} of the setting, which needs {}", f, demangle(typeid(T).name()));

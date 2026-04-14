@@ -105,9 +105,11 @@ public:
         throw Exception(ErrorCodes::CANNOT_CONVERT_TYPE, "Cannot convert CustomType to {}", demangle(typeid(T).name()));
     }
 
-    T operator() (const NumberLiteral &) const
+    T operator() (const NumberLiteral & x) const
     {
-        throw Exception(ErrorCodes::CANNOT_CONVERT_TYPE, "Cannot convert NumberLiteral to {}", demangle(typeid(T).name()));
+        /// Resolve via Float64 (strtod handles scientific notation, decimals, and big integers).
+        Float64 d = std::strtod(x.value.c_str(), nullptr);
+        return operator()(d);
     }
 
     template <typename U>
