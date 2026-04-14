@@ -1149,12 +1149,13 @@ void ActionsMatcher::visit(const ASTFunction & node, const ASTPtr & ast, Data & 
 
     if (arguments_present)
     {
-        /// Deferred NumberLiteral resolution: when a function has NumberLiteral arguments,
-        /// re-resolve them based on the types of sibling arguments (e.g. Decimal column).
-        /// This avoids precision loss through Float64 for comparisons like `decimal_col = 3.14`.
-        /// Skip IN/NOT IN — those have special set handling for the second argument.
-        static const std::unordered_set<String> in_functions = {"in", "notIn", "globalIn", "globalNotIn", "nullIn", "notNullIn", "globalNullIn", "globalNotNullIn"};
-        if (node.arguments && !in_functions.contains(node.name))
+        /// Deferred NumberLiteral resolution for comparison functions only.
+        /// For comparisons like `decimal_col = 3.14`, convert the literal to Decimal
+        /// to avoid precision loss through Float64. For arithmetic, use the default Float64.
+        static const std::unordered_set<String> comparison_functions = {
+            "equals", "notEquals", "less", "greater", "lessOrEquals", "greaterOrEquals",
+        };
+        if (node.arguments && comparison_functions.contains(node.name))
         {
             const auto & args = node.arguments->children;
             const auto & index = data.actions_stack.getLastActionsIndex();
@@ -1187,18 +1188,13 @@ void ActionsMatcher::visit(const ASTFunction & node, const ASTPtr & ast, Data & 
 
                     const String & text = lit->value.safeGet<NumberLiteral>().value;
 
-                    /// Determine target Decimal type with enough scale.
+                    /// Use Decimal with the literal's own scale (not the reference scale).
                     size_t literal_scale = 0;
                     if (auto dot_pos = text.find('.'); dot_pos != String::npos)
                         literal_scale = text.size() - dot_pos - 1;
 
-                    UInt32 ref_scale = getDecimalScale(*reference_type);
-                    DataTypePtr target_type;
-                    if (literal_scale <= ref_scale)
-                        target_type = reference_type;
-                    else
-                        target_type = std::make_shared<DataTypeDecimal<Decimal256>>(
-                            DataTypeDecimal<Decimal256>::maxPrecision(), static_cast<UInt32>(literal_scale));
+                    DataTypePtr target_type = std::make_shared<DataTypeDecimal<Decimal256>>(
+                        DataTypeDecimal<Decimal256>::maxPrecision(), static_cast<UInt32>(literal_scale));
 
                     auto parsed = tryConvertFieldToType(Field(text), *target_type);
                     if (!parsed.isNull())
