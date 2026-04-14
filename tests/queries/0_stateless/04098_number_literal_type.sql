@@ -137,3 +137,22 @@ SELECT -170141183460469231731687303715884105728;
 -- Int256 min = -57896044618658097711785492504343953926634992332820282019728792003956564819968
 SELECT toTypeName(-57896044618658097711785492504343953926634992332820282019728792003956564819968);
 SELECT -57896044618658097711785492504343953926634992332820282019728792003956564819968;
+
+--
+-- 11. Scientific notation literals with Decimal comparison (must not corrupt scale)
+--
+
+DROP TABLE IF EXISTS test_decimal_sci;
+CREATE TABLE test_decimal_sci (d Decimal64(4)) ENGINE = MergeTree ORDER BY d;
+INSERT INTO test_decimal_sci VALUES (0.01);
+
+-- 1e-2 = 0.01 — scientific notation should resolve as Float64, not Decimal with wrong scale
+SELECT count() FROM test_decimal_sci WHERE d = 1e-2;
+
+-- 1.23e-2 = 0.0123 — same, no broken Decimal scale
+SELECT count() FROM test_decimal_sci WHERE d = 1.23e-2;
+
+-- Plain decimal: exact match via Decimal
+SELECT count() FROM test_decimal_sci WHERE d = 0.01;
+
+DROP TABLE test_decimal_sci;

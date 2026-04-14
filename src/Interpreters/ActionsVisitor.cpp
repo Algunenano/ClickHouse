@@ -1188,7 +1188,12 @@ void ActionsMatcher::visit(const ASTFunction & node, const ASTPtr & ast, Data & 
 
                     const String & text = lit->value.safeGet<NumberLiteral>().value;
 
-                    /// Use Decimal with the literal's own scale (not the reference scale).
+                    /// Use Decimal with the literal's own scale.
+                    /// Only for plain decimal notation (no scientific notation with e/E).
+                    bool has_exponent = text.find_first_of("eE") != String::npos;
+                    if (has_exponent)
+                        continue;
+
                     size_t literal_scale = 0;
                     if (auto dot_pos = text.find('.'); dot_pos != String::npos)
                         literal_scale = text.size() - dot_pos - 1;

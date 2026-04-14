@@ -1116,12 +1116,17 @@ ProjectionNames QueryAnalyzer::resolveFunction(QueryTreeNodePtr & node, Identifi
                 {
                     /// For comparisons only: use Decimal with the literal's own scale.
                     /// This ensures exact comparison without Float64 precision loss.
-                    size_t literal_scale = 0;
-                    if (auto dot_pos = text.find('.'); dot_pos != String::npos)
-                        literal_scale = text.size() - dot_pos - 1;
+                    /// Only for plain decimal notation (no scientific notation with e/E).
+                    bool has_exponent = text.find_first_of("eE") != String::npos;
+                    if (!has_exponent)
+                    {
+                        size_t literal_scale = 0;
+                        if (auto dot_pos = text.find('.'); dot_pos != String::npos)
+                            literal_scale = text.size() - dot_pos - 1;
 
-                    target_type = std::make_shared<DataTypeDecimal<Decimal256>>(
-                        DataTypeDecimal<Decimal256>::maxPrecision(), static_cast<UInt32>(literal_scale));
+                        target_type = std::make_shared<DataTypeDecimal<Decimal256>>(
+                            DataTypeDecimal<Decimal256>::maxPrecision(), static_cast<UInt32>(literal_scale));
+                    }
                 }
                 else if (which_default.isInt() && which_ref.isInt()
                          && default_type->getSizeOfValueInMemory() <= reference_type->getSizeOfValueInMemory())
