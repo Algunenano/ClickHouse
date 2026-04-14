@@ -597,11 +597,11 @@ Field Field::resolveNumberLiteral() const
     if (negative)
         digits.remove_prefix(1);
 
-    auto verifyRoundtrip = [&](const auto & value) -> bool
+    auto verifyRoundtrip = [](const auto & value, std::string_view expected) -> bool
     {
         WriteBufferFromOwnString wb;
         writeText(value, wb);
-        return wb.str() == digits;
+        return wb.str() == expected;
     };
 
     if (negative)
@@ -609,13 +609,13 @@ Field Field::resolveNumberLiteral() const
         {
             ReadBufferFromString buf(s);
             Int128 value;
-            if (tryReadIntText(value, buf) && buf.eof() && value < 0 && verifyRoundtrip(-value))
+            if (tryReadIntText(value, buf) && buf.eof() && value < 0 && verifyRoundtrip(value, s))
                 return value;
         }
         {
             ReadBufferFromString buf(s);
             Int256 value;
-            if (tryReadIntText(value, buf) && buf.eof() && value < 0 && verifyRoundtrip(-value))
+            if (tryReadIntText(value, buf) && buf.eof() && value < 0 && verifyRoundtrip(value, s))
                 return value;
         }
     }
@@ -624,13 +624,13 @@ Field Field::resolveNumberLiteral() const
         {
             ReadBufferFromString buf(s);
             UInt128 value;
-            if (tryReadIntText(value, buf) && buf.eof() && verifyRoundtrip(value))
+            if (tryReadIntText(value, buf) && buf.eof() && verifyRoundtrip(value, s))
                 return value;
         }
         {
             ReadBufferFromString buf(s);
             UInt256 value;
-            if (tryReadIntText(value, buf) && buf.eof() && verifyRoundtrip(value))
+            if (tryReadIntText(value, buf) && buf.eof() && verifyRoundtrip(value, s))
                 return value;
         }
     }
