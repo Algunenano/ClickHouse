@@ -1104,8 +1104,26 @@ ProjectionNames QueryAnalyzer::resolveFunction(QueryTreeNodePtr & node, Identifi
             {
                 if (isDecimal(*reference_type))
                 {
-                    /// Always use Decimal reference: parsing from string gives exact precision.
-                    target_type = reference_type;
+                    /// Use Decimal, but with enough scale to hold the literal exactly.
+                    /// E.g. if the reference is Decimal(9,3) but the literal is "1.5551" (scale 4),
+                    /// we must use Decimal with scale >= 4, otherwise truncation causes false matches.
+                    size_t literal_scale = 0;
+                    if (auto dot_pos = text.find('.'); dot_pos != String::npos)
+                        literal_scale = text.size() - dot_pos - 1;
+
+                    UInt32 ref_scale = getDecimalScale(*reference_type);
+                    if (literal_scale <= ref_scale)
+                    {
+                        /// Literal fits in the reference Decimal scale — use it directly.
+                        target_type = reference_type;
+                    }
+                    else
+                    {
+                        /// Literal has more decimal digits than the reference. Use a Decimal256
+                        /// that can hold the full precision.
+                        target_type = std::make_shared<DataTypeDecimal<Decimal256>>(
+                            DataTypeDecimal<Decimal256>::maxPrecision(), static_cast<UInt32>(literal_scale));
+                    }
                 }
                 else if (which_default.isInt() && which_ref.isInt()
                          && default_type->getSizeOfValueInMemory() <= reference_type->getSizeOfValueInMemory())
