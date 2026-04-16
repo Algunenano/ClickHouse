@@ -229,7 +229,16 @@ private:
         }
         else if (const auto * type_array = typeid_cast<const DB::DataTypeArray *>(nested_type.get()))
         {
-            findRequiredIndices(name, transformed_name, header_index, type_array->getNestedType(), field_indices, added_indices, required_indices, file, clickhouse_to_parquet_names);
+            String element_name = name;
+            String element_transformed_name = transformed_name;
+            if (clickhouse_to_parquet_names)
+            {
+                element_name = Nested::concatenateName(name, "element");
+                element_transformed_name = Nested::concatenateName(transformed_name, "element");
+                if (auto it = clickhouse_to_parquet_names->find(element_name); it != clickhouse_to_parquet_names->end())
+                    element_transformed_name = it->second;
+            }
+            findRequiredIndices(element_name, element_transformed_name, header_index, type_array->getNestedType(), field_indices, added_indices, required_indices, file, clickhouse_to_parquet_names);
             return;
         }
         else if (const auto * type_map = typeid_cast<const DB::DataTypeMap *>(nested_type.get()))
