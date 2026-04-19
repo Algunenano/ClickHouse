@@ -60,3 +60,8 @@ DROP FUNCTION test_04064_double;
 CREATE FUNCTION test_04064_add AS (x, y) -> x + y;
 SELECT arrayMap(test_04064_add, [1, 2, 3], [10, 20, 30]);
 DROP FUNCTION test_04064_add;
+
+-- Executable UDF: `test_function` is configured via `tests/config/test_function.xml`
+-- and sums two UInt64 arguments. This confirms that the rewrite reaches
+-- `UserDefinedExecutableFunctionFactory` and not only `FunctionFactory`/SQL UDFs.
+SELECT arrayMap(test_function, [toUInt64(1), toUInt64(2), toUInt64(3)], [toUInt64(10), toUInt64(20), toUInt64(30)]);
