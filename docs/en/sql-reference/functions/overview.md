@@ -88,9 +88,7 @@ SELECT arrayFold((acc, x) -> plus(acc, x), [1, 2, 3, 4, 5], toUInt64(0));  -- 15
 
 This works with any function, including built-in functions and user-defined functions (SQL UDFs and executable UDFs). Column and alias names take priority over function names when there is ambiguity.
 
-:::note
-For cases involving tuple-destructuring (e.g., arrays of tuples where the lambda receives unpacked elements), you must write an explicit lambda because the automatic arity detection cannot determine the tuple element count.
-:::
+The lambda arity is taken from the inner function. For example, `arrayMap(plus, ...)` uses arity 2 because `plus` takes two arguments, so it also works with tuple inputs such as `arrayMap(plus, [(1, 10), (2, 20)])` where the tuple elements are unpacked into the lambda arguments.
 
 ## User Defined Functions (UDFs) {#user-defined-functions-udfs}
 

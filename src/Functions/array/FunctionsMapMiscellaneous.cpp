@@ -58,6 +58,7 @@ public:
     bool useDefaultImplementationForLowCardinalityColumns() const override { return impl.useDefaultImplementationForLowCardinalityColumns(); }
     bool useDefaultImplementationForConstants() const override { return impl.useDefaultImplementationForConstants(); }
     bool isSuitableForShortCircuitArgumentsExecution(const DataTypesWithConstInfo &) const override  { return false; }
+    bool isHigherOrderFunction() const override { return impl.isHigherOrderFunction(); }
 
     void getLambdaArgumentTypes(DataTypes & arguments) const override
     {
