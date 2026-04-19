@@ -752,10 +752,12 @@ ProjectionNames QueryAnalyzer::resolveFunction(QueryTreeNodePtr & node, Identifi
       * - Built-in and executable UDFs: `getNumberOfArguments` (zero means variadic).
       * - SQL UDFs: the number of lambda parameters in the CREATE FUNCTION AST.
       * - WebAssembly UDFs: intentionally not supported for now.
-      * Variadic inner functions (arity zero) are not eligible — we cannot guess how many
-      * lambda arguments the user intended, and the rules differ per parent
-      * (e.g. `arrayMap` vs. `arrayPartialSort`). Users should write an explicit lambda
-      * in that case.
+      * For variadic inner functions (e.g. `toString`), fall back to the number of array
+      * arguments (`argument_nodes_size - 1`). This works for the common higher-order
+      * functions (`arrayMap`, `arrayFilter`, `arrayFold`, …) where the lambda arity
+      * equals the number of arrays. For higher-order functions with fixed non-array
+      * parameters (e.g. `arrayPartialSort`), variadic inner functions may need an
+      * explicit lambda.
       */
     {
         auto & argument_nodes = function_node_ptr->getArguments().getNodes();
@@ -818,42 +820,41 @@ ProjectionNames QueryAnalyzer::resolveFunction(QueryTreeNodePtr & node, Identifi
                                 }
                             }
 
-                            /// Only rewrite when we can determine the inner arity. Variadic
-                            /// inner functions are not supported — the user should write an
-                            /// explicit lambda instead.
-                            if (inner_arity > 0)
+                            /// For variadic inner functions (arity zero), fall back to the
+                            /// number of array arguments, which is correct for the common
+                            /// higher-order functions.
+                            size_t lambda_arity = inner_arity > 0 ? inner_arity : (argument_nodes_size - 1);
+
+                            /// Now check if the identifier resolves as a column or alias.
+                            /// This is deferred to here because tryResolveIdentifier may allocate
+                            /// tree nodes that affect node ID numbering.
+                            auto expression_resolve_result = tryResolveIdentifier(
+                                {identifier, IdentifierLookupContext::EXPRESSION}, scope, {});
+
+                            if (!expression_resolve_result.isResolved())
                             {
-                                /// Now check if the identifier resolves as a column or alias.
-                                /// This is deferred to here because tryResolveIdentifier may allocate
-                                /// tree nodes that affect node ID numbering.
-                                auto expression_resolve_result = tryResolveIdentifier(
-                                    {identifier, IdentifierLookupContext::EXPRESSION}, scope, {});
+                                auto function_resolve_result = tryResolveIdentifier(
+                                    {identifier, IdentifierLookupContext::FUNCTION}, scope, {});
 
-                                if (!expression_resolve_result.isResolved())
+                                if (!function_resolve_result.isResolved())
                                 {
-                                    auto function_resolve_result = tryResolveIdentifier(
-                                        {identifier, IdentifierLookupContext::FUNCTION}, scope, {});
+                                    Names lambda_arg_names;
+                                    lambda_arg_names.reserve(lambda_arity);
 
-                                    if (!function_resolve_result.isResolved())
+                                    auto func_call = std::make_shared<FunctionNode>(identifier_name);
+                                    auto & func_call_args = func_call->getArguments().getNodes();
+                                    func_call_args.reserve(lambda_arity);
+
+                                    for (size_t j = 0; j < lambda_arity; ++j)
                                     {
-                                        Names lambda_arg_names;
-                                        lambda_arg_names.reserve(inner_arity);
-
-                                        auto func_call = std::make_shared<FunctionNode>(identifier_name);
-                                        auto & func_call_args = func_call->getArguments().getNodes();
-                                        func_call_args.reserve(inner_arity);
-
-                                        for (size_t j = 0; j < inner_arity; ++j)
-                                        {
-                                            String arg_name = "__function_ref_arg_" + std::to_string(j);
-                                            lambda_arg_names.push_back(arg_name);
-                                            func_call_args.push_back(
-                                                std::make_shared<IdentifierNode>(Identifier{arg_name}));
-                                        }
-
-                                        argument_nodes[0] = std::make_shared<LambdaNode>(
-                                            std::move(lambda_arg_names), std::move(func_call), false /*is_operator*/);
+                                        String arg_name = "__function_ref_arg_" + std::to_string(j);
+                                        lambda_arg_names.push_back(arg_name);
+                                        func_call_args.push_back(
+                                            std::make_shared<IdentifierNode>(Identifier{arg_name}));
                                     }
+
+                                    argument_nodes[0] = std::make_shared<LambdaNode>(
+                                        std::move(lambda_arg_names), std::move(func_call), false /*is_operator*/);
                                 }
                             }
                         }
