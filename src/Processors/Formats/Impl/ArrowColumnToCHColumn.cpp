@@ -47,7 +47,6 @@
 #include <arrow/array.h>
 #include <arrow/util/key_value_metadata.h>
 #include <boost/algorithm/string/case_conv.hpp>
-#include <boost/algorithm/string/predicate.hpp>
 #include <base/unaligned.h>
 
 
@@ -1497,8 +1496,7 @@ static ColumnWithTypeAndName readNonNullableColumnFromArrowColumn(
 
                     /// Full name of the parquet column.
                     /// For example, if the column name is "a" and the field name in the structure is "b", the full name will be "a.b".
-                    auto it_parent = clickhouse_columns_to_parquet->find(full_column_name);
-                    auto full_name = (it_parent != clickhouse_columns_to_parquet->end()) ? it_parent->second : full_column_name;
+                    auto full_name = clickhouse_columns_to_parquet->at(full_column_name);
                     full_name += "." + field_name;
                     if (auto it = parquet_columns_to_clickhouse->find(full_name); it != parquet_columns_to_clickhouse->end())
                     {
@@ -1530,35 +1528,6 @@ static ColumnWithTypeAndName readNonNullableColumnFromArrowColumn(
                 tuple_elements.emplace_back(std::move(column_with_type_and_name.column));
                 tuple_types.emplace_back(std::move(column_with_type_and_name.type));
                 tuple_names.emplace_back(std::move(column_with_type_and_name.name));
-            }
-
-            if (tuple_type_hint && tuple_type_hint->hasExplicitNames() && !is_map_nested_column)
-            {
-                size_t num_rows = static_cast<size_t>(arrow_column->length());
-                for (size_t j = 0; j < tuple_type_hint->getElements().size(); ++j)
-                {
-                    const String & hint_name = tuple_type_hint->getElementNames()[j];
-                    bool found = false;
-                    for (const auto & existing_name : tuple_names)
-                    {
-                        if (settings.case_insensitive_matching
-                                ? boost::iequals(existing_name, hint_name)
-                                : existing_name == hint_name)
-                        {
-                            found = true;
-                            break;
-                        }
-                    }
-                    if (!found)
-                    {
-                        auto missing_type = tuple_type_hint->getElement(j);
-                        auto missing_column = missing_type->createColumn();
-                        missing_column->insertManyDefaults(num_rows);
-                        tuple_elements.emplace_back(std::move(missing_column));
-                        tuple_types.emplace_back(missing_type);
-                        tuple_names.emplace_back(hint_name);
-                    }
-                }
             }
 
             ColumnPtr tuple_column;
