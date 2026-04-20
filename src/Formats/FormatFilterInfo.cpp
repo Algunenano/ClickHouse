@@ -45,7 +45,17 @@ std::pair<std::unordered_map<String, String>, std::unordered_map<String, String>
         if (auto it = format_encoding.find(field_id); it != format_encoding.end())
         {
             clickhouse_to_parquet_names[column_name] = it->second;
-            parquet_names_to_clickhouse[it->second] = column_name;
+            const String & parquet_path = it->second;
+            auto parquet_last_sep = parquet_path.rfind('.');
+            auto ch_last_sep = column_name.rfind('.');
+            std::string_view parquet_last = parquet_last_sep != String::npos
+                ? std::string_view(parquet_path).substr(parquet_last_sep + 1)
+                : std::string_view(parquet_path);
+            std::string_view ch_last = ch_last_sep != String::npos
+                ? std::string_view(column_name).substr(ch_last_sep + 1)
+                : std::string_view(column_name);
+            if (parquet_last == ch_last)
+                parquet_names_to_clickhouse[parquet_path] = column_name;
         }
         else
         {
