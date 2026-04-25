@@ -24,8 +24,10 @@ SELECT arrayFold(plus, [1, 2, 3, 4, 5], toUInt64(0));
 -- Nested higher-order functions
 SELECT arrayMap(toString, arrayMap(negate, [1, 2, 3]));
 
--- arrayPartialSort with a bare function name (has a fixed `limit` parameter)
-SELECT arrayPartialSort(negate, 2, [5, 9, 1, 3]);
+-- arrayPartialSort with a bare function name (has a fixed `limit` parameter).
+-- Only the first `limit` elements are guaranteed to be sorted; take just those
+-- to keep the reference deterministic.
+SELECT arraySlice(arrayPartialSort(negate, 2, [5, 9, 1, 3]), 1, 2);
 
 -- arraySort with a bare function name
 SELECT arraySort(negate, [3, 1, 4, 1, 5]);
