@@ -1,5 +1,13 @@
+-- Tags: no-parallel
+-- Reason for no-parallel: this test creates SQL UDFs (`test_04064_double`,
+-- `test_04064_add`); concurrent runs in flaky check would race on
+-- `CREATE FUNCTION` and `DROP FUNCTION` for these global names.
+
 -- Test passing bare function names to higher-order functions instead of lambdas.
 -- https://github.com/ClickHouse/ClickHouse/issues/63498
+
+-- The bare-function-to-lambda rewrite is implemented only in the new analyzer.
+SET enable_analyzer = 1;
 
 -- Basic: arrayMap with a function name
 SELECT arrayMap(negate, [1, 2, 3]);
