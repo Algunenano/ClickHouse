@@ -86,9 +86,11 @@ SELECT arrayFold(plus, [1, 2, 3, 4, 5], toUInt64(0));                      -- 15
 SELECT arrayFold((acc, x) -> plus(acc, x), [1, 2, 3, 4, 5], toUInt64(0));  -- 15
 ```
 
-This works with any function, including built-in functions and user-defined functions (SQL UDFs and executable UDFs). Column and alias names take priority over function names when there is ambiguity.
+This works with built-in functions, SQL UDFs, and executable UDFs. WebAssembly UDFs are not supported and require an explicit lambda. Column and alias names take priority over function names when there is ambiguity.
 
 The lambda arity is taken from the inner function. For example, `arrayMap(plus, ...)` uses arity 2 because `plus` takes two arguments, so it also works with tuple inputs such as `arrayMap(plus, [(1, 10), (2, 20)])` where the tuple elements are unpacked into the lambda arguments.
+
+For variadic inner functions (such as `toString`, which has no fixed arity), the lambda arity falls back to the number of array arguments. This is correct for higher-order functions like `arrayMap`, `arrayFilter`, and `arrayFold`. For higher-order functions that accept fixed non-array parameters in addition to arrays — for example, `arrayPartialSort(f, limit, arr)` — bare variadic function names may produce the wrong arity, in which case an explicit lambda is required.
 
 ## User Defined Functions (UDFs) {#user-defined-functions-udfs}
 

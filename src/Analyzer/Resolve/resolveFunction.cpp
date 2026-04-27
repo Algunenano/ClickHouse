@@ -779,9 +779,24 @@ ProjectionNames QueryAnalyzer::resolveFunction(QueryTreeNodePtr & node, Identifi
                     /// affect node ID numbering. Crucially, none of them throw under
                     /// normal conditions — this matters for queries run with
                     /// `terminate_on_any_exception` enabled.
+                    ///
+                    /// `UserDefinedSQLFunctionFactory` stores both SQL UDFs and WebAssembly
+                    /// UDFs. Only SQL UDFs (`ASTCreateSQLFunctionQuery`) are considered here:
+                    /// WebAssembly UDFs have no lambda-arity extraction path, so falling
+                    /// back to `argument_nodes_size - 1` would build the wrong arity for
+                    /// tuple-destructuring inputs (e.g. `arrayMap(wasm_add, [(1,10),(2,20)])`).
                     bool is_known_function = FunctionFactory::instance().has(identifier_name)
-                        || UserDefinedExecutableFunctionFactory::has(identifier_name, scope.context)
-                        || UserDefinedSQLFunctionFactory::instance().has(identifier_name);
+                        || UserDefinedExecutableFunctionFactory::has(identifier_name, scope.context);
+
+                    ASTPtr sql_udf_ast;
+                    if (!is_known_function)
+                    {
+                        sql_udf_ast = UserDefinedSQLFunctionFactory::instance().tryGet(identifier_name);
+                        if (sql_udf_ast && sql_udf_ast->as<ASTCreateSQLFunctionQuery>())
+                            is_known_function = true;
+                        else
+                            sql_udf_ast.reset();
+                    }
 
                     if (is_known_function)
                     {
@@ -798,23 +813,20 @@ ProjectionNames QueryAnalyzer::resolveFunction(QueryTreeNodePtr & node, Identifi
                             size_t inner_arity = inner_resolver ? inner_resolver->getNumberOfArguments() : 0;
 
                             /// For SQL UDFs without a resolver, extract arity from the CREATE FUNCTION AST.
-                            if (!inner_resolver)
+                            if (!inner_resolver && sql_udf_ast)
                             {
-                                if (auto udf_ast = UserDefinedSQLFunctionFactory::instance().tryGet(identifier_name))
+                                if (const auto * lambda = sql_udf_ast->as<ASTCreateSQLFunctionQuery>())
                                 {
-                                    if (const auto * lambda = udf_ast->as<ASTCreateSQLFunctionQuery>())
+                                    if (lambda->function_core)
                                     {
-                                        if (lambda->function_core)
+                                        if (const auto * lambda_expr = lambda->function_core->as<ASTFunction>())
                                         {
-                                            if (const auto * lambda_expr = lambda->function_core->as<ASTFunction>())
+                                            if (lambda_expr->name == "lambda" && lambda_expr->arguments
+                                                && lambda_expr->arguments->children.size() >= 2)
                                             {
-                                                if (lambda_expr->name == "lambda" && lambda_expr->arguments
-                                                    && lambda_expr->arguments->children.size() >= 2)
-                                                {
-                                                    const auto * tuple_ast = lambda_expr->arguments->children[0]->as<ASTFunction>();
-                                                    if (tuple_ast && tuple_ast->arguments)
-                                                        inner_arity = tuple_ast->arguments->children.size();
-                                                }
+                                                const auto * tuple_ast = lambda_expr->arguments->children[0]->as<ASTFunction>();
+                                                if (tuple_ast && tuple_ast->arguments)
+                                                    inner_arity = tuple_ast->arguments->children.size();
                                             }
                                         }
                                     }
