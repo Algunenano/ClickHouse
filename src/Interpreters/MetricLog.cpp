@@ -140,7 +140,7 @@ void MetricLog::stepFunction(const std::chrono::system_clock::time_point current
                 if (counter == 0 && !is_inf_bucket && !show_zero_values)
                     continue;
                 cumulative += counter;
-                Float64 bound = is_inf_bucket ? std::numeric_limits<Float64>::infinity() : static_cast<Float64>(buckets[i]);
+                Float64 bound = is_inf_bucket ? std::numeric_limits<Float64>::infinity() : buckets[i];
                 histogram_map.push_back(Tuple{bound, cumulative});
             }
 
@@ -151,7 +151,7 @@ void MetricLog::stepFunction(const std::chrono::system_clock::time_point current
             elem.histogram_labels.push_back(std::move(labels));
             elem.histogram_histogram.push_back(std::move(histogram_map));
             elem.histogram_count.push_back(cumulative);
-            elem.histogram_sum.push_back(static_cast<Float64>(metric.getSum()));
+            elem.histogram_sum.push_back(metric.getSum());
         });
     });
 
