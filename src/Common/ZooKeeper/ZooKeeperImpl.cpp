@@ -113,7 +113,7 @@ namespace
     {
         callback = [&histogram, callback, timer = Stopwatch()](const Response & response)
         {
-            const auto response_time = static_cast<HistogramMetrics::Value>(timer.elapsedMilliseconds());
+            const Int64 response_time = timer.elapsedMilliseconds();
             histogram.observe(response_time);
             return callback(response);
         };
