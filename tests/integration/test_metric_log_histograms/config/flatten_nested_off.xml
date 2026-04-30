@@ -1,7 +1,0 @@
-<clickhouse>
-    <profiles>
-        <default>
-            <flatten_nested>0</flatten_nested>
-        </default>
-    </profiles>
-</clickhouse>
