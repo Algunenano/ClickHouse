@@ -753,7 +753,7 @@ ProjectionNames QueryAnalyzer::resolveFunction(QueryTreeNodePtr & node, Identifi
       * - Built-in and executable UDFs: `getNumberOfArguments` (zero means variadic).
       * - SQL UDFs: the number of lambda parameters in the CREATE FUNCTION AST.
       * - WebAssembly UDFs: intentionally not supported for now.
-      * For variadic inner functions (e.g. `toString`), fall back to the number of array
+      * For variadic inner functions (e.g. `concat`), fall back to the number of array
       * arguments (`argument_nodes_size - 1`). This works for the common higher-order
       * functions (`arrayMap`, `arrayFilter`, `arrayFold`, …) where the lambda arity
       * equals the number of arrays. For higher-order functions with fixed non-array
