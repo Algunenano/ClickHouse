@@ -65,7 +65,7 @@ The `transposed` schema stores data in a format similar to `system.asynchronous_
 
 **Histograms**
 
-Each row also carries a snapshot of every registered histogram metric in a `histograms` Nested column with subfields `metric`, `labels`, `histogram`, `count`, and `sum`. Bucket counts are cumulative since server startup. By default, histograms whose total `count` is zero are not emitted, and zero-counter buckets within an emitted histogram are omitted from the `histogram` map; set `system_metric_log_show_zero_values_in_histograms = 1` (in the default user profile) to keep all histograms and all buckets.
+Each row also carries a snapshot of every registered histogram metric in a `histograms` Nested column with fields `metric`, `labels`, `histogram`, `count`, and `sum`. Bucket counts are cumulative since server startup. By default, histograms whose total `count` is zero are not emitted, and zero-counter buckets within an emitted histogram are omitted from the `histogram` map; set `system_metric_log_show_zero_values_in_histograms = 1` (in the default user profile) to keep all histograms and all buckets.
 
 Example query:
 
