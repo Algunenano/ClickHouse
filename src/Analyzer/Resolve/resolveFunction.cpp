@@ -831,41 +831,53 @@ ProjectionNames QueryAnalyzer::resolveFunction(QueryTreeNodePtr & node, Identifi
                                 }
                             }
 
-                            /// For variadic inner functions (arity zero), fall back to the
-                            /// number of array arguments, which is correct for the common
-                            /// higher-order functions.
-                            size_t lambda_arity = inner_arity > 0 ? inner_arity : (argument_nodes_size - 1);
+                            /// Determine the lambda arity:
+                            /// - Inner function with fixed arity: use it directly.
+                            /// - Variadic inner function (e.g. `concat`): fall back to the
+                            ///   number of array arguments, which is correct for the common
+                            ///   higher-order functions (`arrayMap`, `arrayFilter`, `arrayFold`).
+                            /// - Fixed-arity zero-argument inner function (e.g. `UTCTimestamp`):
+                            ///   the rewrite makes no sense — a zero-arg function can't be
+                            ///   applied to lambda arguments — leave the call unchanged.
+                            size_t lambda_arity = 0;
+                            if (inner_arity > 0)
+                                lambda_arity = inner_arity;
+                            else if (inner_resolver && inner_resolver->isVariadic())
+                                lambda_arity = argument_nodes_size - 1;
 
-                            /// Now check if the identifier resolves as a column or alias.
-                            /// This is deferred to here because tryResolveIdentifier may allocate
-                            /// tree nodes that affect node ID numbering.
-                            auto expression_resolve_result = tryResolveIdentifier(
-                                {identifier, IdentifierLookupContext::EXPRESSION}, scope, {});
-
-                            if (!expression_resolve_result.isResolved())
+                            if (lambda_arity > 0)
                             {
-                                auto function_resolve_result = tryResolveIdentifier(
-                                    {identifier, IdentifierLookupContext::FUNCTION}, scope, {});
+                                /// Now check if the identifier resolves as a column or alias.
+                                /// This is deferred to here because tryResolveIdentifier may allocate
+                                /// tree nodes that affect node ID numbering.
+                                auto expression_resolve_result = tryResolveIdentifier(
+                                    {identifier, IdentifierLookupContext::EXPRESSION}, scope, {});
 
-                                if (!function_resolve_result.isResolved())
+                                if (!expression_resolve_result.isResolved())
                                 {
-                                    Names lambda_arg_names;
-                                    lambda_arg_names.reserve(lambda_arity);
+                                    auto function_resolve_result = tryResolveIdentifier(
+                                        {identifier, IdentifierLookupContext::FUNCTION}, scope, {});
 
-                                    auto func_call = std::make_shared<FunctionNode>(identifier_name);
-                                    auto & func_call_args = func_call->getArguments().getNodes();
-                                    func_call_args.reserve(lambda_arity);
-
-                                    for (size_t j = 0; j < lambda_arity; ++j)
+                                    if (!function_resolve_result.isResolved())
                                     {
-                                        String arg_name = "__function_ref_arg_" + std::to_string(j);
-                                        lambda_arg_names.push_back(arg_name);
-                                        func_call_args.push_back(
-                                            std::make_shared<IdentifierNode>(Identifier{arg_name}));
-                                    }
+                                        Names lambda_arg_names;
+                                        lambda_arg_names.reserve(lambda_arity);
 
-                                    argument_nodes[0] = std::make_shared<LambdaNode>(
-                                        std::move(lambda_arg_names), std::move(func_call), false /*is_operator*/);
+                                        auto func_call = std::make_shared<FunctionNode>(identifier_name);
+                                        auto & func_call_args = func_call->getArguments().getNodes();
+                                        func_call_args.reserve(lambda_arity);
+
+                                        for (size_t j = 0; j < lambda_arity; ++j)
+                                        {
+                                            String arg_name = "__function_ref_arg_" + std::to_string(j);
+                                            lambda_arg_names.push_back(arg_name);
+                                            func_call_args.push_back(
+                                                std::make_shared<IdentifierNode>(Identifier{arg_name}));
+                                        }
+
+                                        argument_nodes[0] = std::make_shared<LambdaNode>(
+                                            std::move(lambda_arg_names), std::move(func_call), false /*is_operator*/);
+                                    }
                                 }
                             }
                         }

@@ -75,3 +75,9 @@ DROP FUNCTION test_04064_add;
 -- and sums two UInt64 arguments. This confirms that the rewrite reaches
 -- `UserDefinedExecutableFunctionFactory` and not only `FunctionFactory`/SQL UDFs.
 SELECT arrayMap(test_function, [toUInt64(1), toUInt64(2), toUInt64(3)], [toUInt64(10), toUInt64(20), toUInt64(30)]);
+
+-- Fixed-arity zero-argument inner function: applying a 0-arg function to lambda
+-- arguments makes no sense, so the rewrite is skipped (rather than building an
+-- invalid `x -> UTCTimestamp(x)` lambda). `UTCTimestamp` then remains as an
+-- unresolvable identifier in expression context.
+SELECT arrayMap(UTCTimestamp, [1, 2, 3]); -- { serverError UNKNOWN_IDENTIFIER }
