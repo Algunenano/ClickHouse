@@ -773,43 +773,41 @@ ProjectionNames QueryAnalyzer::resolveFunction(QueryTreeNodePtr & node, Identifi
                 const auto & identifier = identifier_node->getIdentifier();
                 if (identifier.getPartsSize() == 1)
                 {
-                    const auto & identifier_name = identifier.getFullName();
+                    /// Check the parent first. This avoids probing UDF registries (which take
+                    /// the external UDF loader mutex) on every ordinary call like `plus(a, b)`
+                    /// where the first argument happens to be an identifier.
+                    auto parent_resolver = FunctionFactory::instance().tryGet(function_name, scope.context);
 
-                    /// Quick checks first: these don't create tree nodes, so they don't
-                    /// affect node ID numbering. Crucially, none of them throw under
-                    /// normal conditions — this matters for queries run with
-                    /// `terminate_on_any_exception` enabled.
-                    ///
-                    /// `UserDefinedSQLFunctionFactory` stores both SQL UDFs and WebAssembly
-                    /// UDFs. Only SQL UDFs (`ASTCreateSQLFunctionQuery`) are considered here:
-                    /// WebAssembly UDFs have no lambda-arity extraction path, so falling
-                    /// back to `argument_nodes_size - 1` would build the wrong arity for
-                    /// tuple-destructuring inputs (e.g. `arrayMap(wasm_add, [(1,10),(2,20)])`).
-                    bool is_known_function = FunctionFactory::instance().has(identifier_name)
-                        || UserDefinedExecutableFunctionFactory::has(identifier_name, scope.context);
-
-                    ASTPtr sql_udf_ast;
-                    if (!is_known_function)
+                    if (parent_resolver && parent_resolver->isHigherOrderFunction())
                     {
-                        sql_udf_ast = UserDefinedSQLFunctionFactory::instance().tryGet(identifier_name);
-                        if (sql_udf_ast && sql_udf_ast->as<ASTCreateSQLFunctionQuery>())
-                            is_known_function = true;
-                        else
-                            sql_udf_ast.reset();
-                    }
+                        const auto & identifier_name = identifier.getFullName();
 
-                    if (is_known_function)
-                    {
-                        auto parent_resolver = FunctionFactory::instance().tryGet(function_name, scope.context);
+                        /// These checks don't create tree nodes, so they don't affect node ID
+                        /// numbering. None of them throw under normal conditions — this matters
+                        /// for queries run with `terminate_on_any_exception` enabled.
+                        ///
+                        /// `UserDefinedSQLFunctionFactory` stores both SQL UDFs and WebAssembly
+                        /// UDFs. Only SQL UDFs (`ASTCreateSQLFunctionQuery`) are considered here:
+                        /// WebAssembly UDFs have no lambda-arity extraction path, so falling
+                        /// back to `argument_nodes_size - 1` would build the wrong arity for
+                        /// tuple-destructuring inputs (e.g. `arrayMap(wasm_add, [(1,10),(2,20)])`).
+                        auto inner_resolver = FunctionFactory::instance().tryGet(identifier_name, scope.context);
+                        if (!inner_resolver)
+                            inner_resolver = UserDefinedExecutableFunctionFactory::tryGet(identifier_name, scope.context);
 
-                        if (parent_resolver && parent_resolver->isHigherOrderFunction())
+                        ASTPtr sql_udf_ast;
+                        if (!inner_resolver)
+                        {
+                            sql_udf_ast = UserDefinedSQLFunctionFactory::instance().tryGet(identifier_name);
+                            if (!sql_udf_ast || !sql_udf_ast->as<ASTCreateSQLFunctionQuery>())
+                                sql_udf_ast.reset();
+                        }
+
+                        if (inner_resolver || sql_udf_ast)
                         {
                             /// Determine arity from the inner function itself. This handles
                             /// cases like `arrayMap(plus, arr1, arr2)` where `plus` has a
                             /// fixed arity of 2, regardless of how many array args are passed.
-                            auto inner_resolver = FunctionFactory::instance().tryGet(identifier_name, scope.context);
-                            if (!inner_resolver)
-                                inner_resolver = UserDefinedExecutableFunctionFactory::tryGet(identifier_name, scope.context);
                             size_t inner_arity = inner_resolver ? inner_resolver->getNumberOfArguments() : 0;
 
                             /// For SQL UDFs without a resolver, extract arity from the CREATE FUNCTION AST.
