@@ -6,6 +6,7 @@
 #include <base/cgroupsv2.h>
 #include <base/find_symbols.h>
 #include <sys/resource.h>
+#include <base/getPageSize.h>
 #include <Common/AsynchronousMetrics.h>
 #include <Common/Exception.h>
 #include <Common/ErrnoException.h>
@@ -13,6 +14,7 @@
 #include <Common/formatReadable.h>
 #include <Common/Jemalloc.h>
 #include <Common/JemallocCacheArena.h>
+#include <Common/JemallocJITArena.h>
 #include <Common/MemoryTracker.h>
 #include <Common/PageCache.h>
 #include <Common/logger_useful.h>
@@ -25,6 +27,10 @@
 #include <string_view>
 
 #include "config.h"
+
+#if USE_EMBEDDED_COMPILER
+#include <Interpreters/JIT/CompiledExpressionCache.h>
+#endif
 
 #if USE_JEMALLOC
 #    include <jemalloc/jemalloc.h>
@@ -1157,6 +1163,54 @@ void AsynchronousMetrics::update(TimePoint update_time, bool force_update)
         saveJemallocMetricImpl<size_t>(new_values,
             fmt::format("stats.arenas.{}.pdirty", cache_arena),
             "jemalloc.cache_arena.pdirty");
+    }
+
+    /// Per-arena metrics for the dedicated JIT arena (LLVM bookkeeping: TargetMachine, IR modules,
+    /// optimization passes, RuntimeDyld relocation tables, etc.).
+    /// jemalloc reports per-arena `pactive`/`pdirty` as a count of jemalloc pages. Multiply by the
+    /// runtime page size (`getPageSize()`) to expose byte-valued metrics so the values are meaningful
+    /// independent of the host's page size (4 KiB on x86_64, 16 KiB on Apple Silicon, 64 KiB on some ARM64).
+    if (JemallocJITArena::isEnabled())
+    {
+        unsigned jit_arena = JemallocJITArena::getArenaIndex();
+        size_t jit_pactive = saveJemallocMetricImpl<size_t>(new_values,
+            fmt::format("stats.arenas.{}.pactive", jit_arena),
+            "jemalloc.jit_arena.pactive");
+        size_t jit_pdirty = saveJemallocMetricImpl<size_t>(new_values,
+            fmt::format("stats.arenas.{}.pdirty", jit_arena),
+            "jemalloc.jit_arena.pdirty");
+
+        Int64 page_size = getPageSize();
+        new_values["jemalloc.jit_arena.active_bytes"] = { jit_pactive * page_size,
+            "Active bytes in the dedicated jemalloc JIT arena. Includes both (a) LLVM heap state "
+            "(TargetMachine and its target-specific Subtarget, IR modules, optimization-pass analyses, "
+            "RuntimeDyld relocation tables) and (b) the page-aligned reserved blocks that "
+            "`JITModuleMemoryManager` allocates via `posix_memalign` for executable/data sections "
+            "(intercepted into `je_posix_memalign`, so it goes through jemalloc). "
+            "`CompiledExpressionCacheBytes` (CurrentMetric) is a *subset* of this — it tracks only the "
+            "reserved page-block capacity for executable/data sections, not the actual code/data bytes "
+            "in use within those blocks."};
+        new_values["jemalloc.jit_arena.dirty_bytes"] = { jit_pdirty * page_size,
+            "Dirty bytes in the JIT arena that are eligible for purging back to the OS."};
+    }
+#endif
+
+#if USE_EMBEDDED_COMPILER
+    /// Compiled-expression cache: configured limits (the current usage is exposed via the
+    /// `CompiledExpressionCacheBytes` and `CompiledExpressionCacheCount` CurrentMetrics).
+    /// Note: `CompiledExpressionCacheBytes` is the page-block capacity reserved by
+    /// `JITModuleMemoryManager` for cached compiled functions. Those blocks are allocated via
+    /// `posix_memalign` (intercepted into `je_posix_memalign` in `Common/malloc.cpp`), so they
+    /// go through jemalloc and are accounted within the dedicated JIT arena — i.e. this metric
+    /// is a *subset* of `jemalloc.jit_arena.active_bytes` above, not a separate quantity.
+    if (auto * compiled_cache = CompiledExpressionCacheFactory::instance().tryGetCache())
+    {
+        new_values["CompiledExpressionCacheBytesMax"] = { compiled_cache->maxSizeInBytes(),
+            "Configured maximum bytes of the compiled-expression cache. "
+            "Available headroom = this minus `CompiledExpressionCacheBytes` (CurrentMetric)." };
+        new_values["CompiledExpressionCacheCountMax"] = { compiled_cache->maxCount(),
+            "Configured maximum entries of the compiled-expression cache. "
+            "Available headroom = this minus `CompiledExpressionCacheCount` (CurrentMetric)." };
     }
 #endif
 
