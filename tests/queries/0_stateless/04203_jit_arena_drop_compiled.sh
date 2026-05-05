@@ -6,8 +6,9 @@
 # use_jemalloc: this test asserts on `jemalloc.jit_arena.*` async metrics, which are only
 #               registered when the build has jemalloc.
 #
-# Test that JIT compilation populates the dedicated jemalloc JIT arena and that
-# `SYSTEM DROP COMPILED EXPRESSION CACHE` removes cached compiled functions.
+# Test that JIT compilation populates the dedicated jemalloc JIT arena and the compiled-expression
+# cache. The drop itself is exercised at the end but its post-conditions are not asserted; see the
+# comment on the drop call below for why.
 
 CUR_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 # shellcheck source=../shell_config.sh
@@ -38,15 +39,18 @@ echo "cache_count_after_compile $($CLICKHOUSE_CLIENT -q "
     SELECT toUInt8(value > 0) FROM system.metrics
     WHERE name = 'CompiledExpressionCacheCount'")"
 
-# Drop the cache. We assert the cache count goes to zero, but NOT that
-# `jemalloc.jit_arena.active_bytes` returns to its pre-compile value, because the bulk of the
-# arena footprint is the CHJIT singleton's persistent state (TargetMachine, Subtarget,
-# LLVMContext-uniqued types/constants). That state is held alive via `shared_ptr<CHJIT>` by
-# every cache entry that compiled against it, so it only goes away once the last entry releases.
-# Background system queries that JIT-compile (for system_log inserts, etc.) can land a fresh
-# entry between `cache->clear()` and the singleton-slot reset, pinning the old instance for the
-# duration of that entry's life. Asserting on arena bytes here would therefore be flaky.
+# Drop the cache. We do NOT assert here that `CompiledExpressionCacheCount` returns to zero,
+# nor that `jemalloc.jit_arena.active_bytes` returns to its pre-compile value:
+#  - The arena footprint is dominated by the CHJIT singleton's persistent state (`TargetMachine`,
+#    `Subtarget`, `LLVMContext`-uniqued types/constants), held alive via `shared_ptr<CHJIT>` by
+#    every cache entry that compiled against it. A concurrent in-flight compile that lands a
+#    fresh holder between `cache->clear()` and the singleton-slot reset will pin the old
+#    instance for that entry's life.
+#  - The cache count is similarly racy and the race is pre-existing, not introduced by this PR.
+#    The static `min_count_to_compile_*` counters in `Aggregator.cpp` / `ExpressionJIT.cpp` are
+#    not reset on drop, so any aggregation whose description has crossed the threshold before
+#    the drop will JIT-compile and re-populate the cache on first reuse — including from
+#    server-internal queries running between our drop and our metric read.
+# We still issue the drop here so that the JIT arena gets purged before the test exits, which
+# keeps the test environment tidy for subsequent runs.
 $CLICKHOUSE_CLIENT -q "SYSTEM DROP COMPILED EXPRESSION CACHE"
-
-echo "cache_count_after_drop $($CLICKHOUSE_CLIENT -q "
-    SELECT value FROM system.metrics WHERE name = 'CompiledExpressionCacheCount'")"
