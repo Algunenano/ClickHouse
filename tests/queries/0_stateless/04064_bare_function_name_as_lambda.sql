@@ -53,6 +53,12 @@ SELECT plus(1, 2);
 -- which `arrayMap` destructures across the tuple elements.
 SELECT arrayMap(plus, [(1, 10), (2, 20), (3, 30)]);
 
+-- Variadic inner functions on tuple inputs require an explicit lambda.
+-- `arrayMap(concat, [('a','b'), ('c','d')])` would be rewritten as a unary
+-- lambda and is not equivalent to `(x, y) -> concat(x, y)` after tuple
+-- destructuring, so write the explicit lambda instead.
+SELECT arrayMap((x, y) -> concat(x, y), [('a', 'b'), ('c', 'd')]);
+
 -- A non-HOF parent rejects bare function names even if they would otherwise be valid.
 -- `plus` is not a higher-order function, so `plus(negate, 1)` is not rewritten and
 -- fails because `negate` cannot be resolved as a column/alias.

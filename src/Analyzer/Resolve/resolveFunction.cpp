@@ -836,6 +836,12 @@ ProjectionNames QueryAnalyzer::resolveFunction(QueryTreeNodePtr & node, Identifi
                             /// - Variadic inner function (e.g. `concat`): fall back to the
                             ///   number of array arguments, which is correct for the common
                             ///   higher-order functions (`arrayMap`, `arrayFilter`, `arrayFold`).
+                            ///   Note: this fallback does not auto-unpack tuples — for variadic
+                            ///   inner functions with a single `Array(Tuple(...))` argument
+                            ///   (e.g. `arrayMap(concat, [('a','b'), ('c','d')])`) the rewrite
+                            ///   produces a unary lambda, which is not equivalent to the binary
+                            ///   `(x, y) -> concat(x, y)` an explicit lambda would yield after
+                            ///   tuple destructuring. Use an explicit lambda for that case.
                             /// - Fixed-arity zero-argument inner function (e.g. `UTCTimestamp`):
                             ///   the rewrite makes no sense — a zero-arg function can't be
                             ///   applied to lambda arguments — leave the call unchanged.

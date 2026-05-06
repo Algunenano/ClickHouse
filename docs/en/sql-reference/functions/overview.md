@@ -92,6 +92,8 @@ The lambda arity is taken from the inner function. For example, `arrayMap(plus, 
 
 For variadic inner functions (such as `concat`, which accepts any number of arguments), the lambda arity falls back to the number of array arguments. This is correct for higher-order functions like `arrayMap`, `arrayFilter`, and `arrayFold`. For higher-order functions that accept fixed non-array parameters in addition to arrays — for example, `arrayPartialSort(f, limit, arr)` — bare variadic function names may produce the wrong arity, in which case an explicit lambda is required.
 
+Variadic inner functions also do not auto-unpack tuple inputs. For example, `arrayMap(concat, [('a', 'b'), ('c', 'd')])` rewrites to a unary lambda and is not equivalent to `arrayMap((x, y) -> concat(x, y), [('a', 'b'), ('c', 'd')])`. Use an explicit lambda when you want to destructure tuple elements into a variadic call.
+
 ## User Defined Functions (UDFs) {#user-defined-functions-udfs}
 
 ClickHouse supports user-defined functions. See [UDFs](../functions/udf.md).
