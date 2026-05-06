@@ -344,38 +344,44 @@ void IPolygonDictionary::loadData()
             blockToAttributes(block);
     });
 
-    /// Correct and sort polygons by area and update polygon_index_to_attribute_value_index after sort
+    /// Correct and sort polygons by area, applying the same permutation to
+    /// `polygon_index_to_attribute_value_index`. We sort an index permutation
+    /// and rebuild the two vectors via `std::move`, so the polygons' inner
+    /// ring storage is transferred (not deep-copied) from the old to the new
+    /// vector. The previous implementation copied every polygon into a
+    /// `pair<Polygon, size_t>` and back, which peaked at ~3× the polygon
+    /// storage during load.
     PaddedPODArray<double> areas;
     areas.resize_fill(polygons.size());
 
-    VectorWithMemoryTracking<std::pair<Polygon, size_t>> polygon_ids;
-    polygon_ids.reserve(polygons.size());
+    VectorWithMemoryTracking<size_t> order(polygons.size());
 
     for (size_t i = 0; i < polygons.size(); ++i)
     {
         auto & polygon = polygons[i];
         bg::correct(polygon);
-
         areas[i] = bg::area(polygon);
-        polygon_ids.emplace_back(polygon, i);
+        order[i] = i;
     }
 
-    ::sort(polygon_ids.begin(), polygon_ids.end(), [& areas](const auto & lhs, const auto & rhs)
+    ::sort(order.begin(), order.end(), [&areas](size_t lhs, size_t rhs)
     {
-        return areas[lhs.second] < areas[rhs.second];
+        return areas[lhs] < areas[rhs];
     });
 
-    VectorWithMemoryTracking<size_t> correct_ids;
-    correct_ids.reserve(polygon_ids.size());
+    VectorWithMemoryTracking<Polygon> sorted_polygons;
+    sorted_polygons.reserve(polygons.size());
+    VectorWithMemoryTracking<size_t> sorted_ids;
+    sorted_ids.reserve(polygon_index_to_attribute_value_index.size());
 
-    for (size_t i = 0; i < polygon_ids.size(); ++i)
+    for (size_t idx : order)
     {
-        auto & polygon = polygon_ids[i];
-        correct_ids.emplace_back(polygon_index_to_attribute_value_index[polygon.second]);
-        polygons[i] = polygon.first;
+        sorted_polygons.emplace_back(std::move(polygons[idx]));
+        sorted_ids.emplace_back(polygon_index_to_attribute_value_index[idx]);
     }
 
-    polygon_index_to_attribute_value_index = std::move(correct_ids);
+    polygons = std::move(sorted_polygons);
+    polygon_index_to_attribute_value_index = std::move(sorted_ids);
 }
 
 void IPolygonDictionary::calculateBytesAllocated()
