@@ -174,16 +174,12 @@ void SlabsPolygonIndex::indexBuild(const VectorWithMemoryTracking<Polygon> & pol
         }
     }
 
-    /** Two-pass build of the Compressed-Sparse-Row segment tree: first count
-      * how many edges land in each node, prefix-sum those counts into
-      * offsets, then place each edge at its node's slot using a write cursor.
+    /** Two-pass build of the Compressed-Sparse-Row segment tree: first count how many edges land in each node, prefix-sum
+      * those counts into offsets, then place each edge at its node's slot using a write cursor.
       *
-      * Why two passes? With the flat representation we need to know each
-      * node's final size before we allocate anything: only then can we make
-      * exactly one allocation for the packed-edges array and skip the
-      * capacity-doubling overhead of growing a per-node vector. Both passes
-      * walk the identical `[l, r)` segment-tree range as the previous
-      * `vector<vector<EdgeLine>>` builder, so total work stays O(m log n).
+      * Why two passes? Each node's final edge count must be known before we allocate, so the packed-edges array can be
+      * sized exactly once with no capacity-doubling slack. Both passes walk the identical `[l, r)` segment-tree range, so
+      * total work stays O(m log n).
       */
     edges_index_tree_offsets.assign(2 * n + 1, 0);
 

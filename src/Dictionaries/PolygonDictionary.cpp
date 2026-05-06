@@ -344,13 +344,10 @@ void IPolygonDictionary::loadData()
             blockToAttributes(block);
     });
 
-    /// Correct and sort polygons by area, applying the same permutation to
-    /// `polygon_index_to_attribute_value_index`. We sort an index permutation
-    /// and rebuild the two vectors via `std::move`, so the polygons' inner
-    /// ring storage is transferred (not deep-copied) from the old to the new
-    /// vector. The previous implementation copied every polygon into a
-    /// `pair<Polygon, size_t>` and back, which peaked at ~3× the polygon
-    /// storage during load.
+    /// Correct and sort polygons by area, applying the same permutation to `polygon_index_to_attribute_value_index`. The
+    /// sort runs over an index permutation and the two destination vectors are rebuilt via `std::move`, so each polygon's
+    /// inner ring storage is transferred rather than deep-copied -- keeping peak load-time memory close to 1x the polygon
+    /// storage.
     PaddedPODArray<double> areas;
     areas.resize_fill(polygons.size());
 
