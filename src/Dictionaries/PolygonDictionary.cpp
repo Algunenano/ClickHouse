@@ -583,6 +583,25 @@ struct Offset
     bool atLastRingOfPolygon() { return current_ring + 1 == polygon_offsets[current_polygon]; }
     bool atLastPointOfRing() { return points_added == ring_offsets[current_ring]; }
 
+    /// Number of points in the ring at index `r` (0-based among all rings).
+    size_t pointsInRing(size_t r) const
+    {
+        const auto prev = (r == 0) ? IColumn::Offset(0) : ring_offsets[r - 1];
+        return ring_offsets[r] - prev;
+    }
+
+    /// Index (in the flat ring list) of the outer ring of polygon `p`.
+    size_t firstRingOfPolygon(size_t p) const
+    {
+        return (p == 0) ? size_t(0) : polygon_offsets[p - 1];
+    }
+
+    /// Number of inner rings of polygon `p` (total rings minus the outer one).
+    size_t numInnerRingsOfPolygon(size_t p) const
+    {
+        return polygon_offsets[p] - firstRingOfPolygon(p) - 1;
+    }
+
     bool allRingsHaveAPositiveArea()
     {
         IColumn::Offset prev_offset = 0;
@@ -601,10 +620,25 @@ struct Data
     VectorWithMemoryTracking<IPolygonDictionary::Polygon> & dest;
     VectorWithMemoryTracking<size_t> & ids;
 
-    void addPolygon(bool new_multi_polygon = false)
+    void addPolygon(bool new_multi_polygon, size_t outer_size, size_t num_inner_rings)
     {
         dest.emplace_back();
+        /// Pre-size the rings so `addPoint` does not grow them by capacity
+        /// doubling. With many small polygons, the doubling slack across
+        /// every outer ring adds up.
+        if (outer_size != 0)
+            dest.back().outer().reserve(outer_size);
+        if (num_inner_rings != 0)
+            dest.back().inners().reserve(num_inner_rings);
         ids.push_back((ids.empty() ? 0 : ids.back() + new_multi_polygon));
+    }
+
+    void startInnerRing(size_t size)
+    {
+        auto & last_polygon = dest.back();
+        last_polygon.inners().emplace_back();
+        if (size != 0)
+            last_polygon.inners().back().reserve(size);
     }
 
     void addPoint(IPolygonDictionary::Coord x, IPolygonDictionary::Coord y)
@@ -620,14 +654,21 @@ void addNewPoint(IPolygonDictionary::Coord x, IPolygonDictionary::Coord y, Data 
     if (offset.atLastPointOfRing())
     {
         if (offset.atLastRingOfPolygon())
-            data.addPolygon(offset.atLastPolygonOfMultiPolygon());
+        {
+            /// We're about to start the polygon at index `current_polygon + 1`.
+            /// `++offset` happens further down, after we finish writing this
+            /// new polygon's first point.
+            const size_t next_p = offset.current_polygon + 1;
+            const size_t outer = offset.pointsInRing(offset.firstRingOfPolygon(next_p));
+            const size_t num_inner = offset.numInnerRingsOfPolygon(next_p);
+            data.addPolygon(offset.atLastPolygonOfMultiPolygon(), outer, num_inner);
+        }
         else
         {
             /** An outer ring is added automatically with a new polygon, thus we need the else statement here.
              *  This also implies that if we are at this point we have to add an inner ring.
              */
-            auto & last_polygon = data.dest.back();
-            last_polygon.inners().emplace_back();
+            data.startInnerRing(offset.pointsInRing(offset.current_ring + 1));
         }
     }
     data.addPoint(x, y);
@@ -730,8 +771,19 @@ void IPolygonDictionary::extractPolygons(const ColumnPtr & column)
         throw Exception(ErrorCodes::BAD_ARGUMENTS,
             "Every ring included in a polygon or excluded from it should contain at least 3 points");
 
-    /** Adding the first empty polygon */
-    data.addPolygon(true);
+    /** Adding the first polygon (rings are reserved here so the per-point
+      * append loop below doesn't grow them by capacity doubling).
+      */
+    if (!offset.polygon_offsets.empty())
+    {
+        const size_t outer = offset.pointsInRing(offset.firstRingOfPolygon(0));
+        const size_t num_inner = offset.numInnerRingsOfPolygon(0);
+        data.addPolygon(true, outer, num_inner);
+    }
+    else
+    {
+        data.addPolygon(true, 0, 0);
+    }
 
     switch (configuration.point_type)
     {
