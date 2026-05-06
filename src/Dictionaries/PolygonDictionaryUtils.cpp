@@ -93,7 +93,13 @@ size_t SlabsPolygonIndex::getBytesAllocated() const
 
 VectorWithMemoryTracking<Coord> SlabsPolygonIndex::uniqueX(const VectorWithMemoryTracking<Polygon> & polygons)
 {
+    size_t total_points = 0;
+    for (const auto & poly : polygons)
+        total_points += bg::num_points(poly);
+
     VectorWithMemoryTracking<Coord> all_x;
+    all_x.reserve(total_points);
+
     for (const auto & poly : polygons)
     {
         for (const auto & point : poly.outer())
