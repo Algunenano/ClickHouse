@@ -2137,6 +2137,7 @@ deserializing
 dest
 destructor
 destructors
+destructure
 destructuring
 detectCharset
 detectLanguage
