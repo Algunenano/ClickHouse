@@ -78,10 +78,11 @@ public:
     /** EdgeLine is optimized version of Edge. */
     struct EdgeLine
     {
+        EdgeLine() = default;
         explicit EdgeLine(const Edge & e): k(e.k), b(e.b), polygon_id(e.polygon_id) {}
-        Coord k;
-        Coord b;
-        size_t polygon_id;
+        Coord k = 0;
+        Coord b = 0;
+        size_t polygon_id = 0;
     };
 
 private:
@@ -100,12 +101,19 @@ private:
     VectorWithMemoryTracking<Coord> sorted_x;
     VectorWithMemoryTracking<Edge> all_edges;
 
-    /** This edges_index_tree stores all slabs with edges efficiently, using segment tree algorithm.
-      * edges_index_tree[i] node combines segments from edges_index_tree[i*2] and edges_index_tree[i*2+1].
-      * Every polygon's edge covers a segment of x coordinates, and can be added to this tree by
-      *  placing it into O(log n) nodes of this tree.
+    /** Flat CSR-style segment tree storing all slabs with edges.
+      * Conceptually `edges_index_tree[i]` is a list of `EdgeLine`s, where node
+      * `i` combines segments from nodes `i*2` and `i*2+1`. Every polygon's edge
+      * covers a segment of x coordinates and is placed into O(log n) nodes.
+      * Implementation: edges for node `i` live at positions
+      * `[edges_index_tree_offsets[i], edges_index_tree_offsets[i + 1])` of
+      * `edges_index_tree_lines`. The previous representation was
+      * `vector<vector<EdgeLine>>`, which carried a ~24-byte header per node
+      * (most nodes are sparsely populated), plus a heap block per non-empty
+      * node — expensive when many leaf cells each build their own slab index.
       */
-    VectorWithMemoryTracking<VectorWithMemoryTracking<EdgeLine>> edges_index_tree;
+    VectorWithMemoryTracking<size_t> edges_index_tree_offsets;
+    VectorWithMemoryTracking<EdgeLine> edges_index_tree_lines;
 };
 
 template <class ReturnCell>

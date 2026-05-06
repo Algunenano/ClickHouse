@@ -85,12 +85,10 @@ SlabsPolygonIndex::SlabsPolygonIndex(
 
 size_t SlabsPolygonIndex::getBytesAllocated() const
 {
-    size_t total = sorted_x.capacity() * sizeof(Coord)
-                 + all_edges.capacity() * sizeof(Edge)
-                 + edges_index_tree.capacity() * sizeof(VectorWithMemoryTracking<EdgeLine>);
-    for (const auto & node : edges_index_tree)
-        total += node.capacity() * sizeof(EdgeLine);
-    return total;
+    return sorted_x.capacity() * sizeof(Coord)
+         + all_edges.capacity() * sizeof(Edge)
+         + edges_index_tree_offsets.capacity() * sizeof(size_t)
+         + edges_index_tree_lines.capacity() * sizeof(EdgeLine);
 }
 
 VectorWithMemoryTracking<Coord> SlabsPolygonIndex::uniqueX(const VectorWithMemoryTracking<Polygon> & polygons)
@@ -144,7 +142,6 @@ void SlabsPolygonIndex::indexBuild(const VectorWithMemoryTracking<Polygon> & pol
     {
         n = sorted_x.size() - 1;
     }
-    edges_index_tree.resize(2 * n);
 
     /** Map of interesting edge ids to the index of left x, the index of right x */
     VectorWithMemoryTracking<size_t> edge_left(m, n);
@@ -171,6 +168,24 @@ void SlabsPolygonIndex::indexBuild(const VectorWithMemoryTracking<Polygon> & pol
         }
     }
 
+    /** Build the segment tree in CSR layout: first count edges per node, then
+      * prefix-sum into offsets, then place edges using a write cursor.
+      * Both passes walk the same `[l, r)` range as the original
+      * `vector<vector<EdgeLine>>` builder.
+      */
+    edges_index_tree_offsets.assign(2 * n + 1, 0);
+
+    auto walk_range = [n](size_t l, size_t r, auto && visit)
+    {
+        for (l += n, r += n; l < r; l >>= 1, r >>= 1)
+        {
+            if (l & 1)
+                visit(l++);
+            if (r & 1)
+                visit(--r);
+        }
+    };
+
     for (size_t i = 0; i != all_edges.size(); ++i)
     {
         size_t l = edge_left[i];
@@ -182,18 +197,27 @@ void SlabsPolygonIndex::indexBuild(const VectorWithMemoryTracking<Polygon> & pol
                 i, all_edges[i].l.x(), all_edges[i].r.x(), sorted_x[l], sorted_x[r], l, r);
         }
 
-        /** Adding [l, r) to the segment tree */
-        for (l += n, r += n; l < r; l >>= 1, r >>= 1)
+        /// Count: bumping position `node + 1` so a prefix sum over offsets
+        /// turns these counts into start offsets in one pass.
+        walk_range(l, r, [this](size_t node) { ++edges_index_tree_offsets[node + 1]; });
+    }
+
+    for (size_t k = 1; k <= 2 * n; ++k)
+        edges_index_tree_offsets[k] += edges_index_tree_offsets[k - 1];
+
+    edges_index_tree_lines.resize(edges_index_tree_offsets[2 * n]);
+
+    /// Per-node write cursor, freed at the end of this scope.
+    VectorWithMemoryTracking<size_t> write_cursors(2 * n, 0);
+    for (size_t i = 0; i != all_edges.size(); ++i)
+    {
+        size_t l = edge_left[i];
+        size_t r = edge_right[i];
+        const Edge & edge = all_edges[i];
+        walk_range(l, r, [this, &edge, &write_cursors](size_t node)
         {
-            if (l & 1)
-            {
-                edges_index_tree[l++].emplace_back(all_edges[i]);
-            }
-            if (r & 1)
-            {
-                edges_index_tree[--r].emplace_back(all_edges[i]);
-            }
-        }
+            edges_index_tree_lines[edges_index_tree_offsets[node] + write_cursors[node]++] = EdgeLine(edge);
+        });
     }
 }
 
@@ -301,13 +325,18 @@ bool SlabsPolygonIndex::find(const Point & point, size_t & id) const
     /** Find position of the slab with binary search by sorted_x */
     size_t pos = std::upper_bound(sorted_x.begin() + 1, sorted_x.end() - 1, x) - sorted_x.begin() - 1;
 
-    /** Jump to the leaf in segment tree */
-    pos += edges_index_tree.size() / 2;
+    /** Jump to the leaf in segment tree. `edges_index_tree_offsets` has size
+      * `2 * n + 1` where `n = sorted_x.size() - 1` is the number of slabs.
+      */
+    const size_t n_slabs = (edges_index_tree_offsets.size() - 1) / 2;
+    pos += n_slabs;
     do
     {
-        /** Iterating over interesting edges */
-        for (const auto & edge : edges_index_tree[pos])
+        /** Iterating over interesting edges in node `pos` (CSR slice). */
+        const size_t end = edges_index_tree_offsets[pos + 1];
+        for (size_t k = edges_index_tree_offsets[pos]; k < end; ++k)
         {
+            const auto & edge = edges_index_tree_lines[k];
             /** Check if point lies above the edge */
             if (x * edge.k + edge.b <= y)
                 intersections.emplace_back(edge.polygon_id);
