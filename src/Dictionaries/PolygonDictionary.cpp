@@ -593,10 +593,19 @@ struct Offset
         return (p == 0) ? size_t(0) : polygon_offsets[p - 1];
     }
 
-    /// Number of inner rings of polygon `p` (total rings minus the outer one).
+    /// Number of inner rings of polygon `p` (total rings minus the outer one),
+    /// or 0 for the malformed case of a polygon with zero rings (which the
+    /// existing code accepts as an empty polygon entry).
     size_t numInnerRingsOfPolygon(size_t p) const
     {
-        return polygon_offsets[p] - firstRingOfPolygon(p) - 1;
+        const size_t total_rings = polygon_offsets[p] - firstRingOfPolygon(p);
+        return total_rings == 0 ? 0 : total_rings - 1;
+    }
+
+    /// Whether polygon `p` has at least one ring (i.e., an outer ring exists).
+    bool polygonHasOuterRing(size_t p) const
+    {
+        return polygon_offsets[p] > firstRingOfPolygon(p);
     }
 
     bool allRingsHaveAPositiveArea()
@@ -653,10 +662,13 @@ void addNewPoint(IPolygonDictionary::Coord x, IPolygonDictionary::Coord y, Data 
         if (offset.atLastRingOfPolygon())
         {
             /// We're about to start the polygon at index `current_polygon + 1`.
-            /// `++offset` happens further down, after we finish writing this
-            /// new polygon's first point.
+            /// `++offset` happens further down, after we finish writing this new polygon's first point.
+            /// `polygonHasOuterRing` guards `pointsInRing` against the malformed-but-accepted case
+            /// of a polygon with zero rings (no outer ring index to look up).
             const size_t next_p = offset.current_polygon + 1;
-            const size_t outer = offset.pointsInRing(offset.firstRingOfPolygon(next_p));
+            size_t outer = 0;
+            if (offset.polygonHasOuterRing(next_p))
+                outer = offset.pointsInRing(offset.firstRingOfPolygon(next_p));
             const size_t num_inner = offset.numInnerRingsOfPolygon(next_p);
             data.addPolygon(offset.atLastPolygonOfMultiPolygon(), outer, num_inner);
         }
@@ -768,19 +780,19 @@ void IPolygonDictionary::extractPolygons(const ColumnPtr & column)
         throw Exception(ErrorCodes::BAD_ARGUMENTS,
             "Every ring included in a polygon or excluded from it should contain at least 3 points");
 
-    /** Adding the first polygon (rings are reserved here so the per-point
-      * append loop below doesn't grow them by capacity doubling).
+    /** Adding the first polygon (rings are reserved here so the per-point append loop below doesn't grow them by
+      * capacity doubling). `polygonHasOuterRing` guards the `ring_offsets[0]` lookup against the malformed-but-accepted
+      * case of a polygon with zero rings (e.g. a `[[]]` MultiPolygon row), where there is no outer ring index to read.
       */
+    size_t first_outer_size = 0;
+    size_t first_num_inner = 0;
     if (!offset.polygon_offsets.empty())
     {
-        const size_t outer = offset.pointsInRing(offset.firstRingOfPolygon(0));
-        const size_t num_inner = offset.numInnerRingsOfPolygon(0);
-        data.addPolygon(true, outer, num_inner);
+        if (offset.polygonHasOuterRing(0))
+            first_outer_size = offset.pointsInRing(offset.firstRingOfPolygon(0));
+        first_num_inner = offset.numInnerRingsOfPolygon(0);
     }
-    else
-    {
-        data.addPolygon(true, 0, 0);
-    }
+    data.addPolygon(true, first_outer_size, first_num_inner);
 
     switch (configuration.point_type)
     {
