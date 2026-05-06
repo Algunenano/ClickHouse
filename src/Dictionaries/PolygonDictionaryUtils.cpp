@@ -31,6 +31,11 @@ const FinalCell * FinalCell::find(Coord, Coord) const
     return this;
 }
 
+size_t FinalCell::getBytesAllocated() const
+{
+    return sizeof(*this) + polygon_ids.capacity() * sizeof(size_t);
+}
+
 inline void shift(Point & point, Coord val)
 {
     point.x(point.x() + val);
@@ -65,12 +70,27 @@ const FinalCellWithSlabs * FinalCellWithSlabs::find(Coord, Coord) const
     return this;
 }
 
+size_t FinalCellWithSlabs::getBytesAllocated() const
+{
+    return sizeof(*this) + index.getBytesAllocated() + corresponding_ids.capacity() * sizeof(size_t);
+}
+
 SlabsPolygonIndex::SlabsPolygonIndex(
     const VectorWithMemoryTracking<Polygon> & polygons)
     : log(getLogger("SlabsPolygonIndex")),
       sorted_x(uniqueX(polygons))
 {
     indexBuild(polygons);
+}
+
+size_t SlabsPolygonIndex::getBytesAllocated() const
+{
+    size_t total = sorted_x.capacity() * sizeof(Coord)
+                 + all_edges.capacity() * sizeof(Edge)
+                 + edges_index_tree.capacity() * sizeof(VectorWithMemoryTracking<EdgeLine>);
+    for (const auto & node : edges_index_tree)
+        total += node.capacity() * sizeof(EdgeLine);
+    return total;
 }
 
 VectorWithMemoryTracking<Coord> SlabsPolygonIndex::uniqueX(const VectorWithMemoryTracking<Polygon> & polygons)

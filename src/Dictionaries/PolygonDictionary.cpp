@@ -44,7 +44,11 @@ IPolygonDictionary::IPolygonDictionary(
 {
     setup();
     loadData();
-    calculateBytesAllocated();
+    /// `calculateBytesAllocated` is intentionally not called here: the base
+    /// constructor runs before derived class members (the lookup index) are
+    /// initialized, and a virtual dispatch from the base would skip the
+    /// derived `getIndexBytesAllocated`. Each concrete subclass calls
+    /// `calculateBytesAllocated` from its own constructor instead.
 }
 
 void IPolygonDictionary::convertKeyColumns(Columns & key_columns, DataTypes & key_types) const
@@ -376,16 +380,20 @@ void IPolygonDictionary::loadData()
 
 void IPolygonDictionary::calculateBytesAllocated()
 {
-    /// Index allocated by subclass not counted because it take a small part in relation to attributes and polygons
-
     if (configuration.store_polygon_key_column)
         bytes_allocated += key_attribute_column->allocatedBytes();
 
     for (const auto & column : attributes_columns)
         bytes_allocated += column->allocatedBytes();
 
-    for (auto & polygon : polygons)
+    bytes_allocated += polygons.capacity() * sizeof(Polygon);
+    for (const auto & polygon : polygons)
         bytes_allocated += bg::num_points(polygon) * sizeof(Point);
+
+    bytes_allocated += polygon_index_to_attribute_value_index.capacity() * sizeof(size_t);
+
+    /// Subclasses that build a lookup index (grid, slabs) report it here.
+    bytes_allocated += getIndexBytesAllocated();
 }
 
 VectorWithMemoryTracking<IPolygonDictionary::Point> IPolygonDictionary::extractPoints(const Columns & key_columns)
