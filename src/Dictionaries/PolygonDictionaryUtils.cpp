@@ -168,10 +168,16 @@ void SlabsPolygonIndex::indexBuild(const VectorWithMemoryTracking<Polygon> & pol
         }
     }
 
-    /** Build the segment tree in CSR layout: first count edges per node, then
-      * prefix-sum into offsets, then place edges using a write cursor.
-      * Both passes walk the same `[l, r)` range as the original
-      * `vector<vector<EdgeLine>>` builder.
+    /** Two-pass build of the Compressed-Sparse-Row segment tree: first count
+      * how many edges land in each node, prefix-sum those counts into
+      * offsets, then place each edge at its node's slot using a write cursor.
+      *
+      * Why two passes? With the flat representation we need to know each
+      * node's final size before we allocate anything: only then can we make
+      * exactly one allocation for the packed-edges array and skip the
+      * capacity-doubling overhead of growing a per-node vector. Both passes
+      * walk the identical `[l, r)` segment-tree range as the previous
+      * `vector<vector<EdgeLine>>` builder, so total work stays O(m log n).
       */
     edges_index_tree_offsets.assign(2 * n + 1, 0);
 
@@ -332,7 +338,11 @@ bool SlabsPolygonIndex::find(const Point & point, size_t & id) const
     pos += n_slabs;
     do
     {
-        /** Iterating over interesting edges in node `pos` (CSR slice). */
+        /** Walk the contiguous slice of edges that belong to node `pos`.
+          * Reading them sequentially out of one packed array (instead of
+          * jumping to a per-node `vector` heap block) keeps the inner
+          * loop cache-friendly during point lookups.
+          */
         const size_t end = edges_index_tree_offsets[pos + 1];
         for (size_t k = edges_index_tree_offsets[pos]; k < end; ++k)
         {

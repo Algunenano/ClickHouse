@@ -101,16 +101,26 @@ private:
     VectorWithMemoryTracking<Coord> sorted_x;
     VectorWithMemoryTracking<Edge> all_edges;
 
-    /** Flat CSR-style segment tree storing all slabs with edges.
-      * Conceptually `edges_index_tree[i]` is a list of `EdgeLine`s, where node
-      * `i` combines segments from nodes `i*2` and `i*2+1`. Every polygon's edge
-      * covers a segment of x coordinates and is placed into O(log n) nodes.
-      * Implementation: edges for node `i` live at positions
+    /** Segment tree storing all slabs with edges, laid out in
+      * Compressed-Sparse-Row form (one packed data array, one offsets array).
+      * Conceptually `edges_index_tree[i]` is a list of `EdgeLine`s where node
+      * `i` combines segments from nodes `i*2` and `i*2+1`. Every polygon's
+      * edge covers a segment of x coordinates and is placed into O(log n)
+      * nodes. Edges for node `i` live at positions
       * `[edges_index_tree_offsets[i], edges_index_tree_offsets[i + 1])` of
-      * `edges_index_tree_lines`. The previous representation was
-      * `vector<vector<EdgeLine>>`, which carried a ~24-byte header per node
-      * (most nodes are sparsely populated), plus a heap block per non-empty
-      * node — expensive when many leaf cells each build their own slab index.
+      * `edges_index_tree_lines`.
+      *
+      * Why two flat arrays instead of `vector<vector<EdgeLine>>`?
+      * Each `polygon_index_cell` leaf builds its own `SlabsPolygonIndex`,
+      * and dense workloads (parcels, address polygons) produce hundreds of
+      * thousands to millions of leaves. A `vector<vector<EdgeLine>>` paid,
+      * per leaf and per segment-tree node, a 24-byte inner-vector header,
+      * plus a separate heap allocation for every non-empty node, plus the
+      * capacity-doubling slack each of those vectors accumulated. Across
+      * all leaves that overhead added up to hundreds of MiB of header and
+      * allocator metadata. The flat representation has one allocation for
+      * offsets and one for the packed edges per leaf, with no per-node
+      * header and no slack.
       */
     VectorWithMemoryTracking<size_t> edges_index_tree_offsets;
     VectorWithMemoryTracking<EdgeLine> edges_index_tree_lines;
