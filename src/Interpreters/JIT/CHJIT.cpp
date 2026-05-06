@@ -519,7 +519,7 @@ CHJIT::CompiledModule CHJIT::compileModule(std::unique_ptr<llvm::Module> module)
             auto jit_symbol = dynamic_linker.getSymbol(mangled_name);
 
             if (!jit_symbol)
-                throw Exception(ErrorCodes::CANNOT_COMPILE_CODE, "DynamicLinker could not found symbol {} after compilation", function_name);
+                throw Exception(ErrorCodes::CANNOT_COMPILE_CODE, "DynamicLinker could not find symbol {} after compilation", function_name);
 
             auto * jit_symbol_address = reinterpret_cast<void *>(jit_symbol.getAddress());
             compiled_module.function_name_to_symbol.emplace(std::move(function_name), jit_symbol_address);
