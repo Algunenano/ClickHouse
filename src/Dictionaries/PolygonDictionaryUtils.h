@@ -218,7 +218,18 @@ public:
         setBoundingBox();
         VectorWithMemoryTracking<size_t> order(polygons.size());
         iota(order.data(), order.size(), size_t(0));
-        root = makeCell(min_x, min_y, max_x, max_y, order);
+
+        /// One pool, shared across the whole recursion. The previous
+        /// implementation built a fresh `ThreadPool` of up to 128 threads
+        /// inside every `makeCell` invocation, which churns thread
+        /// creation/teardown for nothing past `kMultiProcessingDepth`.
+        ThreadPool pool(
+            CurrentMetrics::PolygonDictionaryThreads,
+            CurrentMetrics::PolygonDictionaryThreadsActive,
+            CurrentMetrics::PolygonDictionaryThreadsScheduled,
+            128);
+
+        root = makeCell(min_x, min_y, max_x, max_y, order, 0, pool);
     }
 
     /** Retrieves the cell containing a given point.
@@ -253,7 +264,7 @@ private:
 
     const VectorWithMemoryTracking<Polygon> & polygons;
 
-    std::unique_ptr<ICell<ReturnCell>> makeCell(Coord current_min_x, Coord current_min_y, Coord current_max_x, Coord current_max_y, VectorWithMemoryTracking<size_t> possible_ids, size_t depth = 0)
+    std::unique_ptr<ICell<ReturnCell>> makeCell(Coord current_min_x, Coord current_min_y, Coord current_max_x, Coord current_max_y, VectorWithMemoryTracking<size_t> possible_ids, size_t depth, ThreadPool & pool)
     {
         auto current_box = Box(Point(current_min_x, current_min_y), Point(current_max_x, current_max_y));
         Polygon tmp_poly;
@@ -282,26 +293,23 @@ private:
         VectorWithMemoryTracking<std::unique_ptr<ICell<ReturnCell>>> children;
         children.resize(DividedCell<ReturnCell>::kSplit * DividedCell<ReturnCell>::kSplit);
 
-        ThreadPool pool(CurrentMetrics::PolygonDictionaryThreads, CurrentMetrics::PolygonDictionaryThreadsActive, CurrentMetrics::PolygonDictionaryThreadsScheduled, 128);
+        ThreadPoolCallbackRunnerLocal<void> runner(pool, ThreadName::POLYGON_DICT_LOAD);
+        for (size_t i = 0; i < DividedCell<ReturnCell>::kSplit; current_min_x += x_shift, ++i)
         {
-            ThreadPoolCallbackRunnerLocal<void> runner(pool, ThreadName::POLYGON_DICT_LOAD);
-            for (size_t i = 0; i < DividedCell<ReturnCell>::kSplit; current_min_x += x_shift, ++i)
+            /// Capturing by reference is fine, all variables outlive runner
+            auto handle_row = [this, &children, &y_shift, &x_shift, &possible_ids, &pool, depth, i, x = current_min_x, y = current_min_y]() mutable
             {
-                /// Capturing by reference is fine, all variables outlive runner
-                auto handle_row = [this, &children, &y_shift, &x_shift, &possible_ids, depth, i, x = current_min_x, y = current_min_y]() mutable
+                for (size_t j = 0; j < DividedCell<ReturnCell>::kSplit; y += y_shift, ++j)
                 {
-                    for (size_t j = 0; j < DividedCell<ReturnCell>::kSplit; y += y_shift, ++j)
-                    {
-                        children[i * DividedCell<ReturnCell>::kSplit + j] = makeCell(x, y, x + x_shift, y + y_shift, possible_ids, depth);
-                    }
-                };
-                if (depth <= kMultiProcessingDepth)
-                    runner.enqueueAndKeepTrack(std::move(handle_row));
-                else
-                    handle_row();
-            }
-            runner.waitForAllToFinishAndRethrowFirstError();
+                    children[i * DividedCell<ReturnCell>::kSplit + j] = makeCell(x, y, x + x_shift, y + y_shift, possible_ids, depth, pool);
+                }
+            };
+            if (depth <= kMultiProcessingDepth)
+                runner.enqueueAndKeepTrack(std::move(handle_row));
+            else
+                handle_row();
         }
+        runner.waitForAllToFinishAndRethrowFirstError();
         return std::make_unique<DividedCell<ReturnCell>>(std::move(children));
     }
 
