@@ -218,6 +218,17 @@ constexpr uint16_t maybe_negate(uint16_t x)
         return static_cast<uint16_t>(~x);
 }
 
+#if defined(__aarch64__)
+template <bool positive>
+inline uint8x16_t maybe_negate(uint8x16_t x)
+{
+    if constexpr (positive)
+        return x;
+    else
+        return vmvnq_u8(x);
+}
+#endif
+
 enum class ReturnMode : uint8_t
 {
     End,
@@ -246,9 +257,7 @@ inline const char * find_first_symbols_sse2(const char * const begin, const char
     {
         uint8x16_t bytes = vld1q_u8(reinterpret_cast<const uint8_t *>(pos));
 
-        uint8x16_t eq = neon_is_in<symbols...>(bytes);
-        if constexpr (!positive)
-            eq = vmvnq_u8(eq);
+        uint8x16_t eq = maybe_negate<positive>(neon_is_in<symbols...>(bytes));
 
         uint64_t bit_mask = neon_to_bitmask(eq);
         if (bit_mask)
@@ -286,9 +295,7 @@ inline const char * find_first_symbols_sse2(const char * const begin, const char
     {
         uint8x16_t bytes = vld1q_u8(reinterpret_cast<const uint8_t *>(pos));
 
-        uint8x16_t eq = neon_is_in_execute(bytes, needles);
-        if constexpr (!positive)
-            eq = vmvnq_u8(eq);
+        uint8x16_t eq = maybe_negate<positive>(neon_is_in_execute(bytes, needles));
 
         uint64_t bit_mask = neon_to_bitmask(eq);
         if (bit_mask)
@@ -325,9 +332,7 @@ inline const char * find_last_symbols_sse2(const char * const begin, const char 
     {
         uint8x16_t bytes = vld1q_u8(reinterpret_cast<const uint8_t *>(pos - 16));
 
-        uint8x16_t eq = neon_is_in<symbols...>(bytes);
-        if constexpr (!positive)
-            eq = vmvnq_u8(eq);
+        uint8x16_t eq = maybe_negate<positive>(neon_is_in<symbols...>(bytes));
 
         uint64_t bit_mask = neon_to_bitmask(eq);
         if (bit_mask)
@@ -366,9 +371,7 @@ inline const char * find_last_symbols_sse2(const char * const begin, const char 
     {
         uint8x16_t bytes = vld1q_u8(reinterpret_cast<const uint8_t *>(pos - 16));
 
-        uint8x16_t eq = neon_is_in_execute(bytes, needles);
-        if constexpr (!positive)
-            eq = vmvnq_u8(eq);
+        uint8x16_t eq = maybe_negate<positive>(neon_is_in_execute(bytes, needles));
 
         uint64_t bit_mask = neon_to_bitmask(eq);
         if (bit_mask)
