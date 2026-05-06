@@ -11,6 +11,9 @@
 #if defined(__SSE4_2__)
     #include <nmmintrin.h>
 #endif
+#if defined(__aarch64__)
+    #include <arm_neon.h>
+#endif
 
 
 /** find_first_symbols<c1, c2, ...>(begin, end):
@@ -140,6 +143,69 @@ inline __m128i mm_is_in_execute(__m128i bytes, const std::array<__m128i, 16u> & 
 }
 #endif
 
+#if defined(__aarch64__)
+/// On AArch64 we use NEON. There is no direct equivalent of pmovmskb, so we
+/// use the well-known shrn-by-4 trick to compress a 16-byte vector of all-0/all-1
+/// bytes into a 64-bit value where each input byte is represented by a 4-bit
+/// nibble. The position of the lowest (or highest) matching byte is then
+/// recovered as `__builtin_ctzll(mask) >> 2` (or `__builtin_clzll(mask) >> 2`).
+template <char s0>
+inline uint8x16_t neon_is_in(uint8x16_t bytes)
+{
+    return vceqq_u8(bytes, vdupq_n_u8(static_cast<uint8_t>(s0)));
+}
+
+template <char s0, char s1, char... tail>
+inline uint8x16_t neon_is_in(uint8x16_t bytes)
+{
+    uint8x16_t eq0 = vceqq_u8(bytes, vdupq_n_u8(static_cast<uint8_t>(s0)));
+    uint8x16_t eq = neon_is_in<s1, tail...>(bytes);
+    return vorrq_u8(eq0, eq);
+}
+
+inline uint8x16_t neon_is_in(uint8x16_t bytes, const char * symbols, size_t num_chars)
+{
+    uint8x16_t accumulator = vdupq_n_u8(0);
+    for (size_t i = 0; i < num_chars; ++i)
+    {
+        uint8x16_t eq = vceqq_u8(bytes, vdupq_n_u8(static_cast<uint8_t>(symbols[i])));
+        accumulator = vorrq_u8(accumulator, eq);
+    }
+
+    return accumulator;
+}
+
+inline std::array<uint8x16_t, 16u> neon_is_in_prepare(const char * symbols, size_t num_chars)
+{
+    std::array<uint8x16_t, 16u> result;
+
+    for (size_t i = 0; i < 16u; ++i)
+        result[i] = vdupq_n_u8(i < num_chars ? static_cast<uint8_t>(symbols[i]) : 0);
+
+    return result;
+}
+
+inline uint8x16_t neon_is_in_execute(uint8x16_t bytes, const std::array<uint8x16_t, 16u> & needles)
+{
+    uint8x16_t accumulator = vdupq_n_u8(0);
+
+    for (const auto & needle : needles)
+    {
+        uint8x16_t eq = vceqq_u8(bytes, needle);
+        accumulator = vorrq_u8(accumulator, eq);
+    }
+
+    return accumulator;
+}
+
+/// Compresses a 16-byte all-0/all-1 vector into a 64-bit value where each input
+/// byte occupies a 4-bit nibble (all bits set if matched, all clear otherwise).
+inline uint64_t neon_to_bitmask(uint8x16_t eq)
+{
+    return vget_lane_u64(vreinterpret_u64_u8(vshrn_n_u16(vreinterpretq_u16_u8(eq), 4)), 0);
+}
+#endif
+
 template <bool positive>
 constexpr bool maybe_negate(bool x) { return x == positive; }
 
@@ -175,6 +241,19 @@ inline const char * find_first_symbols_sse2(const char * const begin, const char
         if (bit_mask)
             return pos + __builtin_ctz(bit_mask);
     }
+#elif defined(__aarch64__)
+    for (; pos + 15 < end; pos += 16)
+    {
+        uint8x16_t bytes = vld1q_u8(reinterpret_cast<const uint8_t *>(pos));
+
+        uint8x16_t eq = neon_is_in<symbols...>(bytes);
+        if constexpr (!positive)
+            eq = vmvnq_u8(eq);
+
+        uint64_t bit_mask = neon_to_bitmask(eq);
+        if (bit_mask)
+            return pos + (__builtin_ctzll(bit_mask) >> 2);
+    }
 #endif
 
     for (; pos < end; ++pos)
@@ -200,6 +279,20 @@ inline const char * find_first_symbols_sse2(const char * const begin, const char
         uint16_t bit_mask = maybe_negate<positive>(uint16_t(_mm_movemask_epi8(eq)));
         if (bit_mask)
             return pos + __builtin_ctz(bit_mask);
+    }
+#elif defined(__aarch64__)
+    const auto needles = neon_is_in_prepare(symbols, num_chars);
+    for (; pos + 15 < end; pos += 16)
+    {
+        uint8x16_t bytes = vld1q_u8(reinterpret_cast<const uint8_t *>(pos));
+
+        uint8x16_t eq = neon_is_in_execute(bytes, needles);
+        if constexpr (!positive)
+            eq = vmvnq_u8(eq);
+
+        uint64_t bit_mask = neon_to_bitmask(eq);
+        if (bit_mask)
+            return pos + (__builtin_ctzll(bit_mask) >> 2);
     }
 #endif
 
@@ -227,6 +320,19 @@ inline const char * find_last_symbols_sse2(const char * const begin, const char 
         if (bit_mask)
             return pos - 1 - (__builtin_clz(bit_mask) - 16);    /// because __builtin_clz works with mask as uint32.
     }
+#elif defined(__aarch64__)
+    for (; pos - 16 >= begin; pos -= 16)
+    {
+        uint8x16_t bytes = vld1q_u8(reinterpret_cast<const uint8_t *>(pos - 16));
+
+        uint8x16_t eq = neon_is_in<symbols...>(bytes);
+        if constexpr (!positive)
+            eq = vmvnq_u8(eq);
+
+        uint64_t bit_mask = neon_to_bitmask(eq);
+        if (bit_mask)
+            return pos - 1 - (__builtin_clzll(bit_mask) >> 2);
+    }
 #endif
 
     --pos;
@@ -253,6 +359,20 @@ inline const char * find_last_symbols_sse2(const char * const begin, const char 
         uint16_t bit_mask = maybe_negate<positive>(uint16_t(_mm_movemask_epi8(eq)));
         if (bit_mask)
             return pos - 1 - (__builtin_clz(bit_mask) - 16);    /// because __builtin_clz works with mask as uint32.
+    }
+#elif defined(__aarch64__)
+    const auto needles = neon_is_in_prepare(symbols, num_chars);
+    for (; pos - 16 >= begin; pos -= 16)
+    {
+        uint8x16_t bytes = vld1q_u8(reinterpret_cast<const uint8_t *>(pos - 16));
+
+        uint8x16_t eq = neon_is_in_execute(bytes, needles);
+        if constexpr (!positive)
+            eq = vmvnq_u8(eq);
+
+        uint64_t bit_mask = neon_to_bitmask(eq);
+        if (bit_mask)
+            return pos - 1 - (__builtin_clzll(bit_mask) >> 2);
     }
 #endif
 
