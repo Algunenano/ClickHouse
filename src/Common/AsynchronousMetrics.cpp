@@ -6,7 +6,6 @@
 #include <base/cgroupsv2.h>
 #include <base/find_symbols.h>
 #include <sys/resource.h>
-#include <base/getPageSize.h>
 #include <Common/AsynchronousMetrics.h>
 #include <Common/Exception.h>
 #include <Common/ErrnoException.h>
@@ -1167,9 +1166,11 @@ void AsynchronousMetrics::update(TimePoint update_time, bool force_update)
 
     /// Per-arena metrics for the dedicated JIT arena (LLVM bookkeeping: TargetMachine, IR modules,
     /// optimization passes, RuntimeDyld relocation tables, etc.).
-    /// jemalloc reports per-arena `pactive`/`pdirty` as a count of jemalloc pages. Multiply by the
-    /// runtime page size (`getPageSize()`) to expose byte-valued metrics so the values are meaningful
-    /// independent of the host's page size (4 KiB on x86_64, 16 KiB on Apple Silicon, 64 KiB on some ARM64).
+    /// jemalloc reports per-arena `pactive`/`pdirty` as a count of jemalloc pages. The
+    /// `*_bytes` variants below multiply by jemalloc's compiled-in page size (read once from
+    /// `arenas.page`), not the OS page size: the two differ on platforms where jemalloc is
+    /// built with `LG_PAGE=16` (64 KiB pages — aarch64, ppc64le, riscv64) but the kernel uses
+    /// 4 KiB pages. Using `getPageSize()` would under-report by 16× there.
     if (JemallocJITArena::isEnabled())
     {
         unsigned jit_arena = JemallocJITArena::getArenaIndex();
@@ -1180,7 +1181,8 @@ void AsynchronousMetrics::update(TimePoint update_time, bool force_update)
             fmt::format("stats.arenas.{}.pdirty", jit_arena),
             "jemalloc.jit_arena.pdirty");
 
-        Int64 page_size = getPageSize();
+        static const Jemalloc::MibCache<size_t> jemalloc_page_size_mib{"arenas.page"};
+        const size_t page_size = jemalloc_page_size_mib.getValue();
         new_values["jemalloc.jit_arena.active_bytes"] = { jit_pactive * page_size,
             "Active bytes in the dedicated jemalloc JIT arena. Includes both (a) LLVM heap state "
             "(TargetMachine and its target-specific Subtarget, IR modules, optimization-pass analyses, "
