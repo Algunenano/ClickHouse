@@ -278,16 +278,19 @@ inline const char * find_first_symbols_sse2(const char * const begin, const char
     const char * pos = begin;
 
 #if defined(__SSE2__)
-    const auto needles = mm_is_in_prepare(symbols, num_chars);
-    for (; pos + 15 < end; pos += 16)
+    if (pos + 15 < end)
     {
-        __m128i bytes = _mm_loadu_si128(reinterpret_cast<const __m128i *>(pos));
+        const auto needles = mm_is_in_prepare(symbols, num_chars);
+        for (; pos + 15 < end; pos += 16)
+        {
+            __m128i bytes = _mm_loadu_si128(reinterpret_cast<const __m128i *>(pos));
 
-        __m128i eq = mm_is_in_execute(bytes, needles);
+            __m128i eq = mm_is_in_execute(bytes, needles);
 
-        uint16_t bit_mask = maybe_negate<positive>(uint16_t(_mm_movemask_epi8(eq)));
-        if (bit_mask)
-            return pos + __builtin_ctz(bit_mask);
+            uint16_t bit_mask = maybe_negate<positive>(uint16_t(_mm_movemask_epi8(eq)));
+            if (bit_mask)
+                return pos + __builtin_ctz(bit_mask);
+        }
     }
 #elif defined(__aarch64__)
     if (pos + 15 < end)
@@ -357,16 +360,19 @@ inline const char * find_last_symbols_sse2(const char * const begin, const char 
     const char * pos = end;
 
 #if defined(__SSE2__)
-    const auto needles = mm_is_in_prepare(symbols, num_chars);
-    for (; pos - 16 >= begin; pos -= 16)
+    if (pos - 16 >= begin)
     {
-        __m128i bytes = _mm_loadu_si128(reinterpret_cast<const __m128i *>(pos - 16));
+        const auto needles = mm_is_in_prepare(symbols, num_chars);
+        for (; pos - 16 >= begin; pos -= 16)
+        {
+            __m128i bytes = _mm_loadu_si128(reinterpret_cast<const __m128i *>(pos - 16));
 
-        __m128i eq = mm_is_in_execute(bytes, needles);
+            __m128i eq = mm_is_in_execute(bytes, needles);
 
-        uint16_t bit_mask = maybe_negate<positive>(uint16_t(_mm_movemask_epi8(eq)));
-        if (bit_mask)
-            return pos - 1 - (__builtin_clz(bit_mask) - 16);    /// because __builtin_clz works with mask as uint32.
+            uint16_t bit_mask = maybe_negate<positive>(uint16_t(_mm_movemask_epi8(eq)));
+            if (bit_mask)
+                return pos - 1 - (__builtin_clz(bit_mask) - 16);    /// because __builtin_clz works with mask as uint32.
+        }
     }
 #elif defined(__aarch64__)
     if (pos - 16 >= begin)
