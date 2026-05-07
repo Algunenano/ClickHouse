@@ -213,4 +213,10 @@ TEST(FindNotSymbols, NullCharacter)
     std::string s("abcdefg\0x", 9u);
     test_find_first_not<'a', 'b', 'c', 'd', 'e', 'f', 'g'>(s, 7u);
     test_find_first_not(s, "abcdefg", 7u);
+
+    // Same check with a haystack long enough to exercise the SIMD body — guards against
+    // implementations that pad unused needle slots with \0 and falsely match it.
+    std::string long_s("abcdefgabcdefgab\0", 17u);
+    test_find_first_not<'a', 'b', 'c', 'd', 'e', 'f', 'g'>(long_s, 16u);
+    test_find_first_not(long_s, "abcdefg", 16u);
 }

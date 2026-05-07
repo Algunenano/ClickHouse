@@ -179,19 +179,19 @@ inline std::array<uint8x16_t, 16u> neon_is_in_prepare(const char * symbols, size
 {
     std::array<uint8x16_t, 16u> result;
 
-    for (size_t i = 0; i < 16u; ++i)
-        result[i] = vdupq_n_u8(i < num_chars ? static_cast<uint8_t>(symbols[i]) : 0);
+    for (size_t i = 0; i < num_chars; ++i)
+        result[i] = vdupq_n_u8(static_cast<uint8_t>(symbols[i]));
 
     return result;
 }
 
-inline uint8x16_t neon_is_in_execute(uint8x16_t bytes, const std::array<uint8x16_t, 16u> & needles)
+inline uint8x16_t neon_is_in_execute(uint8x16_t bytes, const std::array<uint8x16_t, 16u> & needles, size_t num_chars)
 {
     uint8x16_t accumulator = vdupq_n_u8(0);
 
-    for (const auto & needle : needles)
+    for (size_t i = 0; i < num_chars; ++i)
     {
-        uint8x16_t eq = vceqq_u8(bytes, needle);
+        uint8x16_t eq = vceqq_u8(bytes, needles[i]);
         accumulator = vorrq_u8(accumulator, eq);
     }
 
@@ -290,16 +290,19 @@ inline const char * find_first_symbols_sse2(const char * const begin, const char
             return pos + __builtin_ctz(bit_mask);
     }
 #elif defined(__aarch64__)
-    const auto needles = neon_is_in_prepare(symbols, num_chars);
-    for (; pos + 15 < end; pos += 16)
+    if (pos + 15 < end)
     {
-        uint8x16_t bytes = vld1q_u8(reinterpret_cast<const uint8_t *>(pos));
+        const auto needles = neon_is_in_prepare(symbols, num_chars);
+        for (; pos + 15 < end; pos += 16)
+        {
+            uint8x16_t bytes = vld1q_u8(reinterpret_cast<const uint8_t *>(pos));
 
-        uint8x16_t eq = maybe_negate<positive>(neon_is_in_execute(bytes, needles));
+            uint8x16_t eq = maybe_negate<positive>(neon_is_in_execute(bytes, needles, num_chars));
 
-        uint64_t bit_mask = neon_to_bitmask(eq);
-        if (bit_mask)
-            return pos + (__builtin_ctzll(bit_mask) >> 2);
+            uint64_t bit_mask = neon_to_bitmask(eq);
+            if (bit_mask)
+                return pos + (__builtin_ctzll(bit_mask) >> 2);
+        }
     }
 #endif
 
@@ -366,16 +369,19 @@ inline const char * find_last_symbols_sse2(const char * const begin, const char 
             return pos - 1 - (__builtin_clz(bit_mask) - 16);    /// because __builtin_clz works with mask as uint32.
     }
 #elif defined(__aarch64__)
-    const auto needles = neon_is_in_prepare(symbols, num_chars);
-    for (; pos - 16 >= begin; pos -= 16)
+    if (pos - 16 >= begin)
     {
-        uint8x16_t bytes = vld1q_u8(reinterpret_cast<const uint8_t *>(pos - 16));
+        const auto needles = neon_is_in_prepare(symbols, num_chars);
+        for (; pos - 16 >= begin; pos -= 16)
+        {
+            uint8x16_t bytes = vld1q_u8(reinterpret_cast<const uint8_t *>(pos - 16));
 
-        uint8x16_t eq = maybe_negate<positive>(neon_is_in_execute(bytes, needles));
+            uint8x16_t eq = maybe_negate<positive>(neon_is_in_execute(bytes, needles, num_chars));
 
-        uint64_t bit_mask = neon_to_bitmask(eq);
-        if (bit_mask)
-            return pos - 1 - (__builtin_clzll(bit_mask) >> 2);
+            uint64_t bit_mask = neon_to_bitmask(eq);
+            if (bit_mask)
+                return pos - 1 - (__builtin_clzll(bit_mask) >> 2);
+        }
     }
 #endif
 
