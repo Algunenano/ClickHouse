@@ -1466,24 +1466,25 @@ Counters::Counters(VariableContext level_, Counters * parent_)
       level(level_)
 {
     counters = counters_holder.get();
+    inheritTracingFromParent(parent_);
 }
 
 Counters::Counters(Counters && src) noexcept
     : counters(std::exchange(src.counters, nullptr))
     , counters_holder(std::move(src.counters_holder))
     , parent(src.parent.exchange(nullptr))
-    , trace_all_profile_events(src.trace_all_profile_events.load(std::memory_order_relaxed))
+    , any_trace_in_chain(src.any_trace_in_chain.load(std::memory_order_relaxed))
     , level(src.level)
 {
 }
 
 void Counters::resetCounters()
 {
+    /// Counter is a packed `std::atomic<size_t>` (bit 63 = should_trace, bits 0..62 = count),
+    /// so a single `memset` clears both the value and any trace bit. resetCounters runs only on
+    /// per-thread counters (where trace bits are never set), so dropping them here is fine.
     if (counters)
-    {
-        for (Event i = Event(0); i < num_counters; ++i)
-            counters[i].store(0, std::memory_order_relaxed);
-    }
+        std::memset(static_cast<void *>(counters), 0, num_counters * sizeof(Counter));
 }
 
 void Counters::reset()
@@ -1500,7 +1501,7 @@ Counters::Snapshot Counters::getPartiallyAtomicSnapshot() const
 {
     Snapshot res;
     for (Event i = Event(0); i < num_counters; ++i)
-        res.counters_holder[i] = counters[i].load(std::memory_order_relaxed);
+        res.counters_holder[i] = counters[i].load(std::memory_order_relaxed) & COUNTER_VALUE_MASK;
     return res;
 }
 
@@ -1618,8 +1619,8 @@ double Counters::getCPUOverload(Int64 os_cpu_busy_time_threshold, bool reset)
 {
     /// It's possible that we'll have slightly inconsistent values between wait time and busy time. But since we take the value of CPU wait time first,
     /// it should not affect the situation a lot. In the worst case scenario we will have a slightly lower CPU overload value than it should be, but it's fine.
-    Int64 curr_cpu_wait_microseconds = counters[OSCPUWaitMicroseconds];
-    Int64 curr_cpu_virtual_time_microseconds = counters[OSCPUVirtualTimeMicroseconds];
+    Int64 curr_cpu_wait_microseconds = counters[OSCPUWaitMicroseconds].load(std::memory_order_relaxed) & COUNTER_VALUE_MASK;
+    Int64 curr_cpu_virtual_time_microseconds = counters[OSCPUVirtualTimeMicroseconds].load(std::memory_order_relaxed) & COUNTER_VALUE_MASK;
 
     Int64 os_cpu_wait_microseconds = curr_cpu_wait_microseconds - prev_cpu_wait_microseconds.load(std::memory_order_acquire);
     Int64 os_cpu_virtual_time_microseconds = curr_cpu_virtual_time_microseconds - prev_cpu_virtual_time_microseconds.load(std::memory_order_acquire);
@@ -1640,20 +1641,32 @@ double Counters::getCPUOverload(Int64 os_cpu_busy_time_threshold, bool reset)
 
 void Counters::increment(Event event, Count amount)
 {
+    /// First pass: every parent-level atomic increment. We deliberately ignore `fetch_add`'s
+    /// return value so the compiler emits `lock add` (non-returning) and the parent walk can
+    /// pipeline without a data dependency between iterations.
     Counters * current = this;
-    bool send_to_trace_log = false;
-
     do
     {
         current->counters[event].fetch_add(amount, std::memory_order_relaxed);
-        send_to_trace_log |= current->counters[event].should_trace;
-        send_to_trace_log |= current->trace_all_profile_events.load(std::memory_order_relaxed);
-
         current = current->parent;
     } while (current != nullptr);
 
-    if (unlikely(send_to_trace_log))
-        DB::TraceSender::send(DB::TraceType::ProfileEvent, StackTrace(), {.event = event, .increment = amount});
+    /// Common case: no tracing is configured anywhere in the parent chain. A single relaxed
+    /// load + branch exits before walking the chain again.
+    if (likely(!any_trace_in_chain.load(std::memory_order_relaxed)))
+        return;
+
+    /// Slow path: tracing is enabled somewhere; check the trace bit, short-circuit on hit.
+    current = this;
+    do
+    {
+        if (current->counters[event].load(std::memory_order_relaxed) & COUNTER_TRACE_BIT)
+        {
+            DB::TraceSender::send(DB::TraceType::ProfileEvent, StackTrace(), {.event = event, .increment = amount});
+            return;
+        }
+        current = current->parent;
+    } while (current != nullptr);
 }
 
 void Counters::incrementNoTrace(Event event, Count amount)

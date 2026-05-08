@@ -23,11 +23,16 @@ namespace ProfileEvents
     using Count = size_t;
     using Increment = Int64;
 
+    /// Bit 63 of each counter is the "send to system.trace_log on increment" flag.
+    /// Counters never realistically reach 2^63, so we steal the top bit and keep the
+    /// counter packed in 8 bytes (4 per cache line) instead of paying 16 bytes for
+    /// 8 bytes of value + 1 byte of bool + 7 bytes of padding.
+    static constexpr Count COUNTER_TRACE_BIT = Count(1) << 63;
+    static constexpr Count COUNTER_VALUE_MASK = ~COUNTER_TRACE_BIT;
+
     struct Counter : public std::atomic<Count>
     {
         using std::atomic<Count>::atomic;
-        /// When we should send it to system.trace_log
-        bool should_trace = false;
     };
     class Counters;
 
@@ -68,7 +73,10 @@ namespace ProfileEvents
         std::unique_ptr<Counter[]> counters_holder;
         /// Used to propagate increments
         std::atomic<Counters *> parent = {};
-        std::atomic_bool trace_all_profile_events = false;
+        /// Fast-path gate for `increment`: true iff any tracing flag (per-event or "all")
+        /// has been set on this `Counters` or any ancestor. When false (the common case),
+        /// `increment` skips the per-event trace-bit check loop entirely.
+        std::atomic_bool any_trace_in_chain = false;
         Counter prev_cpu_wait_microseconds = 0;
         Counter prev_cpu_virtual_time_microseconds = 0;
 
@@ -144,23 +152,55 @@ namespace ProfileEvents
             }
 
             current_val->parent.store(user, std::memory_order_relaxed);
+            current_val->inheritTracingFromParent(user);
         }
 
         /// Set parent (thread unsafe)
         void setParent(Counters * parent_)
         {
             parent.store(parent_, std::memory_order_relaxed);
+            inheritTracingFromParent(parent_);
         }
 
+        /// Trace every event by setting bit 63 on every counter, and mark the chain.
         void setTraceAllProfileEvents()
         {
-            trace_all_profile_events.store(true, std::memory_order_relaxed);
+            for (Event i = Event(0); i < num_counters; ++i)
+                counters[i].fetch_or(COUNTER_TRACE_BIT, std::memory_order_relaxed);
+            markChainTracing();
         }
 
         void setTraceProfileEvent(ProfileEvents::Event event)
         {
-            counters[event].should_trace = true;
+            counters[event].fetch_or(COUNTER_TRACE_BIT, std::memory_order_relaxed);
+            markChainTracing();
         }
+
+        bool anyTraceInChain() const noexcept
+        {
+            return any_trace_in_chain.load(std::memory_order_relaxed);
+        }
+
+    private:
+        /// Walk up the parent chain marking `any_trace_in_chain` so descendants attaching
+        /// to any of these ancestors will inherit the flag at attach time.
+        void markChainTracing()
+        {
+            Counters * c = this;
+            while (c != nullptr)
+            {
+                c->any_trace_in_chain.store(true, std::memory_order_relaxed);
+                c = c->parent.load(std::memory_order_relaxed);
+            }
+        }
+
+        void inheritTracingFromParent(Counters * p)
+        {
+            if (p && p->any_trace_in_chain.load(std::memory_order_relaxed))
+                any_trace_in_chain.store(true, std::memory_order_relaxed);
+        }
+
+    public:
 
         void setTraceProfileEvents(const String & events_list);
 

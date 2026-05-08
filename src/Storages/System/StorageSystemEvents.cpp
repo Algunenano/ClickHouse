@@ -33,7 +33,7 @@ void StorageSystemEvents::fillData(MutableColumns & res_columns, ContextPtr cont
 {
     for (ProfileEvents::Event i = ProfileEvents::Event(0), end = ProfileEvents::end(); i < end; ++i)
     {
-        UInt64 value = ProfileEvents::global_counters[i];
+        UInt64 value = ProfileEvents::global_counters[i].load(std::memory_order_relaxed) & ProfileEvents::COUNTER_VALUE_MASK;
 
         if (0 != value || context->getSettingsRef()[Setting::system_events_show_zero_values])
         {
