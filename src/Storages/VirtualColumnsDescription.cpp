@@ -93,4 +93,15 @@ Block VirtualColumnsDescription::getSampleBlock(VirtualsKind kind, VirtualsMater
     return result;
 }
 
+NamesAndTypesList VirtualColumnsDescription::getNamesAndTypes(VirtualsKind kind, VirtualsMaterializationPlace place) const
+{
+    NamesAndTypesList result;
+    for (const auto & desc : container)
+        if (static_cast<UInt8>(desc.kind) & static_cast<UInt8>(kind))
+            if (static_cast<UInt8>(desc.place) & static_cast<UInt8>(place))
+                result.emplace_back(desc.name, desc.type);
+
+    return result;
+}
+
 }
