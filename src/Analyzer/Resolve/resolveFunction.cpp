@@ -810,7 +810,11 @@ ProjectionNames QueryAnalyzer::resolveFunction(QueryTreeNodePtr & node, Identifi
                             /// fixed arity of 2, regardless of how many array args are passed.
                             size_t inner_arity = inner_resolver ? inner_resolver->getNumberOfArguments() : 0;
 
-                            /// For SQL UDFs without a resolver, extract arity from the CREATE FUNCTION AST.
+                            /// SQL UDFs are not registered in `FunctionFactory` because they are not
+                            /// `IFunction` implementations: their body is an arbitrary SQL expression
+                            /// inlined at analysis time by `UserDefinedSQLFunctionVisitor`, not evaluated
+                            /// by a runtime resolver. So when the inner function is a SQL UDF we extract
+                            /// arity directly from the stored `CREATE FUNCTION` AST.
                             if (!inner_resolver && sql_udf_ast)
                             {
                                 if (const auto * lambda = sql_udf_ast->as<ASTCreateSQLFunctionQuery>())

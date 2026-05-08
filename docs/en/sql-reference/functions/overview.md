@@ -86,7 +86,7 @@ SELECT arrayFold(plus, [1, 2, 3, 4, 5], toUInt64(0));                      -- 15
 SELECT arrayFold((acc, x) -> plus(acc, x), [1, 2, 3, 4, 5], toUInt64(0));  -- 15
 ```
 
-This works with built-in functions, SQL UDFs, and executable UDFs. WebAssembly UDFs are not supported and require an explicit lambda. Column and alias names take priority over function names when there is ambiguity.
+This works with built-in functions, SQL UDFs, and executable UDFs. WebAssembly UDFs are not supported and require an explicit lambda — they are stored alongside SQL UDFs but expose a different `CREATE FUNCTION` AST shape that does not carry a lambda body, so the analyzer cannot determine the lambda arity for the rewrite. Column and alias names take priority over function names when there is ambiguity.
 
 The lambda arity is taken from the inner function. For example, `arrayMap(plus, ...)` uses arity 2 because `plus` takes two arguments, so it also works with tuple inputs such as `arrayMap(plus, [(1, 10), (2, 20)])` where the tuple elements are unpacked into the lambda arguments.
 
