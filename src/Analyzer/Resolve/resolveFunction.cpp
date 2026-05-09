@@ -750,9 +750,9 @@ ProjectionNames QueryAnalyzer::resolveFunction(QueryTreeNodePtr & node, Identifi
       * even though the exception is caught (the exception constructor itself terminates).
       *
       * The lambda arity is taken from the inner function:
-      * - Built-in and executable UDFs: `getNumberOfArguments` (zero means variadic).
-      * - SQL UDFs: the number of lambda parameters in the CREATE FUNCTION AST.
-      * - WebAssembly UDFs: intentionally not supported for now.
+      * - Built-in, executable, and WebAssembly UDFs: `getNumberOfArguments` of the
+      *   resolver (zero means variadic; WebAssembly UDFs are always fixed-arity).
+      * - SQL UDFs: the number of lambda parameters in the `CREATE FUNCTION` AST.
       * For variadic inner functions (e.g. `concat`), fall back to the number of array
       * arguments (`argument_nodes_size - 1`). This works for the common higher-order
       * functions (`arrayMap`, `arrayFilter`, `arrayFold`, …) where the lambda arity
@@ -786,14 +786,21 @@ ProjectionNames QueryAnalyzer::resolveFunction(QueryTreeNodePtr & node, Identifi
                         /// numbering. None of them throw under normal conditions — this matters
                         /// for queries run with `terminate_on_any_exception` enabled.
                         ///
-                        /// `UserDefinedSQLFunctionFactory` stores both SQL UDFs and WebAssembly
-                        /// UDFs. Only SQL UDFs (`ASTCreateSQLFunctionQuery`) are considered here:
-                        /// WebAssembly UDFs have no lambda-arity extraction path, so falling
-                        /// back to `argument_nodes_size - 1` would build the wrong arity for
-                        /// tuple-destructuring inputs (e.g. `arrayMap(wasm_add, [(1,10),(2,20)])`).
+                        /// Built-in, executable, and WebAssembly UDFs are all `IFunction`
+                        /// implementations exposed as regular `FunctionOverloadResolverPtr`s,
+                        /// just stored in different factories — so they share the resolver-arity
+                        /// path below. SQL UDFs are not `IFunction`s; their body is an arbitrary
+                        /// SQL expression inlined at analysis time, so arity is read from the
+                        /// stored `CREATE FUNCTION` AST.
                         auto inner_resolver = FunctionFactory::instance().tryGet(identifier_name, scope.context);
                         if (!inner_resolver)
                             inner_resolver = UserDefinedExecutableFunctionFactory::tryGet(identifier_name, scope.context);
+                        if (!inner_resolver && UserDefinedWebAssemblyFunctionFactory::instance().has(identifier_name))
+                        {
+                            /// `has` first: `get` throws `RESOURCE_NOT_FOUND` if the function is
+                            /// missing, and we must not throw from this rewrite-candidate check.
+                            inner_resolver = UserDefinedWebAssemblyFunctionFactory::instance().get(identifier_name, scope.context);
+                        }
 
                         ASTPtr sql_udf_ast;
                         if (!inner_resolver)
