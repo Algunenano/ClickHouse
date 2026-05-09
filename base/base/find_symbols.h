@@ -253,6 +253,25 @@ inline const char * find_first_symbols_sse2(const char * const begin, const char
             return pos + __builtin_ctz(bit_mask);
     }
 #elif defined(__aarch64__)
+    /// Many callers (CSV/TSV/JSON format readers, URL parsers, trim) find a
+    /// match within the first few bytes of the haystack. In that case the
+    /// per-iteration NEON cost (load + 3-4 vceqq + vorrq + shrn + ctz) exceeds
+    /// what a handful of byte compares would do, so an unguarded SIMD body
+    /// regresses such workloads. An 8-byte scalar pre-check covers the common
+    /// short-distance hit and leaves the SIMD body for the sparse case.
+    if (pos + 15 < end)
+    {
+        if (maybe_negate<positive>(is_in<symbols...>(pos[0]))) return pos;
+        if (maybe_negate<positive>(is_in<symbols...>(pos[1]))) return pos + 1;
+        if (maybe_negate<positive>(is_in<symbols...>(pos[2]))) return pos + 2;
+        if (maybe_negate<positive>(is_in<symbols...>(pos[3]))) return pos + 3;
+        if (maybe_negate<positive>(is_in<symbols...>(pos[4]))) return pos + 4;
+        if (maybe_negate<positive>(is_in<symbols...>(pos[5]))) return pos + 5;
+        if (maybe_negate<positive>(is_in<symbols...>(pos[6]))) return pos + 6;
+        if (maybe_negate<positive>(is_in<symbols...>(pos[7]))) return pos + 7;
+        pos += 8;
+    }
+
     for (; pos + 15 < end; pos += 16)
     {
         uint8x16_t bytes = vld1q_u8(reinterpret_cast<const uint8_t *>(pos));
@@ -293,6 +312,21 @@ inline const char * find_first_symbols_sse2(const char * const begin, const char
         }
     }
 #elif defined(__aarch64__)
+    /// See the compile-time variant above for why the SIMD body is preceded
+    /// by a short scalar pre-check.
+    if (pos + 15 < end)
+    {
+        if (maybe_negate<positive>(is_in(pos[0], symbols, num_chars))) return pos;
+        if (maybe_negate<positive>(is_in(pos[1], symbols, num_chars))) return pos + 1;
+        if (maybe_negate<positive>(is_in(pos[2], symbols, num_chars))) return pos + 2;
+        if (maybe_negate<positive>(is_in(pos[3], symbols, num_chars))) return pos + 3;
+        if (maybe_negate<positive>(is_in(pos[4], symbols, num_chars))) return pos + 4;
+        if (maybe_negate<positive>(is_in(pos[5], symbols, num_chars))) return pos + 5;
+        if (maybe_negate<positive>(is_in(pos[6], symbols, num_chars))) return pos + 6;
+        if (maybe_negate<positive>(is_in(pos[7], symbols, num_chars))) return pos + 7;
+        pos += 8;
+    }
+
     if (pos + 15 < end)
     {
         const auto needles = neon_is_in_prepare(symbols, num_chars);
@@ -334,6 +368,20 @@ inline const char * find_last_symbols_sse2(const char * const begin, const char 
             return pos - 1 - (__builtin_clz(bit_mask) - 16);    /// because __builtin_clz works with mask as uint32.
     }
 #elif defined(__aarch64__)
+    /// See the forward variant above for the rationale of the scalar pre-check.
+    if (pos - 16 >= begin)
+    {
+        if (maybe_negate<positive>(is_in<symbols...>(pos[-1]))) return pos - 1;
+        if (maybe_negate<positive>(is_in<symbols...>(pos[-2]))) return pos - 2;
+        if (maybe_negate<positive>(is_in<symbols...>(pos[-3]))) return pos - 3;
+        if (maybe_negate<positive>(is_in<symbols...>(pos[-4]))) return pos - 4;
+        if (maybe_negate<positive>(is_in<symbols...>(pos[-5]))) return pos - 5;
+        if (maybe_negate<positive>(is_in<symbols...>(pos[-6]))) return pos - 6;
+        if (maybe_negate<positive>(is_in<symbols...>(pos[-7]))) return pos - 7;
+        if (maybe_negate<positive>(is_in<symbols...>(pos[-8]))) return pos - 8;
+        pos -= 8;
+    }
+
     for (; pos - 16 >= begin; pos -= 16)
     {
         uint8x16_t bytes = vld1q_u8(reinterpret_cast<const uint8_t *>(pos - 16));
@@ -375,6 +423,20 @@ inline const char * find_last_symbols_sse2(const char * const begin, const char 
         }
     }
 #elif defined(__aarch64__)
+    /// See the forward variant above for the rationale of the scalar pre-check.
+    if (pos - 16 >= begin)
+    {
+        if (maybe_negate<positive>(is_in(pos[-1], symbols, num_chars))) return pos - 1;
+        if (maybe_negate<positive>(is_in(pos[-2], symbols, num_chars))) return pos - 2;
+        if (maybe_negate<positive>(is_in(pos[-3], symbols, num_chars))) return pos - 3;
+        if (maybe_negate<positive>(is_in(pos[-4], symbols, num_chars))) return pos - 4;
+        if (maybe_negate<positive>(is_in(pos[-5], symbols, num_chars))) return pos - 5;
+        if (maybe_negate<positive>(is_in(pos[-6], symbols, num_chars))) return pos - 6;
+        if (maybe_negate<positive>(is_in(pos[-7], symbols, num_chars))) return pos - 7;
+        if (maybe_negate<positive>(is_in(pos[-8], symbols, num_chars))) return pos - 8;
+        pos -= 8;
+    }
+
     if (pos - 16 >= begin)
     {
         const auto needles = neon_is_in_prepare(symbols, num_chars);
