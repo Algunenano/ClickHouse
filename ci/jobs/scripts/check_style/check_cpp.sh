@@ -94,6 +94,8 @@ EXTERN_TYPES_EXCLUDES=(
     ProfileEvents::checkCPUOverload
     ProfileEvents::getDocumentation
     ProfileEvents::NAME
+    ProfileEvents::COUNTER_TRACE_BIT
+    ProfileEvents::COUNTER_VALUE_MASK
 
     CurrentMetrics::add
     CurrentMetrics::max
