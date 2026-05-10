@@ -140,69 +140,32 @@ namespace ProfileEvents
         }
 
         /// Set parent (thread unsafe)
-        void setUserCounters(Counters * user)
-        {
-            auto * current_val = this;
-            auto * parent_val = this->parent.load(std::memory_order_relaxed);
-
-            while (parent_val != nullptr && parent_val->level != VariableContext::Global && parent_val->level != VariableContext::User)
-            {
-                current_val = parent_val;
-                parent_val = current_val->parent.load(std::memory_order_relaxed);
-            }
-
-            current_val->parent.store(user, std::memory_order_relaxed);
-            current_val->inheritTracingFromParent(user);
-        }
+        void setUserCounters(Counters * user);
 
         /// Set parent (thread unsafe)
-        void setParent(Counters * parent_)
-        {
-            parent.store(parent_, std::memory_order_relaxed);
-            inheritTracingFromParent(parent_);
-        }
+        void setParent(Counters * parent_);
 
         /// Trace every event by setting bit 63 on every counter, and mark the chain.
-        void setTraceAllProfileEvents()
-        {
-            for (Event i = Event(0); i < num_counters; ++i)
-                counters[i].fetch_or(COUNTER_TRACE_BIT, std::memory_order_relaxed);
-            markChainTracing();
-        }
+        void setTraceAllProfileEvents();
 
-        void setTraceProfileEvent(ProfileEvents::Event event)
-        {
-            counters[event].fetch_or(COUNTER_TRACE_BIT, std::memory_order_relaxed);
-            markChainTracing();
-        }
+        void setTraceProfileEvent(ProfileEvents::Event event);
 
         bool anyTraceInChain() const noexcept
         {
             return any_trace_in_chain.load(std::memory_order_relaxed);
         }
 
-    private:
-        /// Walk up the parent chain marking `any_trace_in_chain` so descendants attaching
-        /// to any of these ancestors will inherit the flag at attach time.
-        void markChainTracing()
-        {
-            Counters * c = this;
-            while (c != nullptr)
-            {
-                c->any_trace_in_chain.store(true, std::memory_order_relaxed);
-                c = c->parent.load(std::memory_order_relaxed);
-            }
-        }
+        void setTraceProfileEvents(const String & events_list);
 
-        void inheritTracingFromParent(Counters * p)
-        {
-            if (p && p->any_trace_in_chain.load(std::memory_order_relaxed))
-                any_trace_in_chain.store(true, std::memory_order_relaxed);
-        }
+    private:
+        /// Walk the parent chain marking `any_trace_in_chain` so descendants attaching
+        /// to any of these ancestors will inherit the flag at attach time.
+        void markChainTracing();
+
+        /// Refresh `any_trace_in_chain` from the parent chain at attach time.
+        void inheritTracingFromParent(Counters * p);
 
     public:
-
-        void setTraceProfileEvents(const String & events_list);
 
         /// Set all counters to zero
         void resetCounters();

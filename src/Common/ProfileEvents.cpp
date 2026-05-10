@@ -1552,6 +1552,73 @@ void Counters::setTraceProfileEvents(const String & events_list)
     }
 }
 
+void Counters::setUserCounters(Counters * user)
+{
+    auto * current_val = this;
+    auto * parent_val = this->parent.load(std::memory_order_relaxed);
+
+    while (parent_val != nullptr && parent_val->level != VariableContext::Global && parent_val->level != VariableContext::User)
+    {
+        current_val = parent_val;
+        parent_val = current_val->parent.load(std::memory_order_relaxed);
+    }
+
+    current_val->parent.store(user, std::memory_order_relaxed);
+    current_val->inheritTracingFromParent(user);
+}
+
+void Counters::setParent(Counters * parent_)
+{
+    parent.store(parent_, std::memory_order_relaxed);
+    inheritTracingFromParent(parent_);
+}
+
+void Counters::setTraceAllProfileEvents()
+{
+    for (Event i = Event(0); i < num_counters; ++i)
+        counters[i].fetch_or(COUNTER_TRACE_BIT, std::memory_order_relaxed);
+    markChainTracing();
+}
+
+void Counters::setTraceProfileEvent(ProfileEvents::Event event)
+{
+    counters[event].fetch_or(COUNTER_TRACE_BIT, std::memory_order_relaxed);
+    markChainTracing();
+}
+
+void Counters::markChainTracing()
+{
+    Counters * c = this;
+    while (c != nullptr)
+    {
+        c->any_trace_in_chain.store(true, std::memory_order_relaxed);
+        c = c->parent.load(std::memory_order_relaxed);
+    }
+}
+
+void Counters::inheritTracingFromParent(Counters * p)
+{
+    /// Walk the parent chain at attach time and copy `any_trace_in_chain` from the first
+    /// ancestor that has it set. Walking the whole chain (rather than trusting
+    /// `p->any_trace_in_chain` aggregation alone) keeps this robust if any ancestor's flag
+    /// was somehow not refreshed yet.
+    ///
+    /// Note: a child whose attach happens *before* `setTraceProfileEvents` is called on an
+    /// ancestor will keep `any_trace_in_chain == false` and skip the per-event trace-bit
+    /// check. The race window is small (the only caller is `ProcessList::insert` during
+    /// query setup, before worker threads attach) and we accept it to keep `Counters`
+    /// small and attach lock-free.
+    while (p)
+    {
+        if (p->any_trace_in_chain.load(std::memory_order_relaxed))
+        {
+            any_trace_in_chain.store(true, std::memory_order_relaxed);
+            return;
+        }
+        p = p->parent.load(std::memory_order_relaxed);
+    }
+}
+
 
 ValueType getValueType(Event event)
 {
