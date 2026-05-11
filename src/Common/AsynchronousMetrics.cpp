@@ -14,6 +14,7 @@
 #include <Common/Jemalloc.h>
 #include <Common/JemallocCacheArena.h>
 #include <Common/JemallocJITArena.h>
+#include <Common/JemallocMergeTreeArena.h>
 #include <Common/MemoryTracker.h>
 #include <Common/PageCache.h>
 #include <Common/logger_useful.h>
@@ -1164,13 +1165,15 @@ void AsynchronousMetrics::update(TimePoint update_time, bool force_update)
             "jemalloc.cache_arena.pdirty");
     }
 
-    /// Per-arena metrics for the dedicated JIT arena (LLVM bookkeeping: TargetMachine, IR modules,
-    /// optimization passes, RuntimeDyld relocation tables, etc.).
     /// jemalloc reports per-arena `pactive`/`pdirty` as a count of jemalloc pages. The
     /// `*_bytes` variants below multiply by jemalloc's compiled-in page size (read once from
     /// `arenas.page`), not the OS page size: the two differ on platforms where jemalloc is
     /// built with `LG_PAGE=16` (64 KiB pages — aarch64, ppc64le, riscv64) but the kernel uses
     /// 4 KiB pages. Using `getPageSize()` would under-report by 16× there.
+    static const Jemalloc::MibCache<size_t> jemalloc_page_size_mib{"arenas.page"};
+
+    /// Per-arena metrics for the dedicated JIT arena (LLVM bookkeeping: TargetMachine, IR modules,
+    /// optimization passes, RuntimeDyld relocation tables, etc.).
     if (JemallocJITArena::isEnabled())
     {
         unsigned jit_arena = JemallocJITArena::getArenaIndex();
@@ -1181,7 +1184,6 @@ void AsynchronousMetrics::update(TimePoint update_time, bool force_update)
             fmt::format("stats.arenas.{}.pdirty", jit_arena),
             "jemalloc.jit_arena.pdirty");
 
-        static const Jemalloc::MibCache<size_t> jemalloc_page_size_mib{"arenas.page"};
         const size_t page_size = jemalloc_page_size_mib.getValue();
         new_values["jemalloc.jit_arena.active_bytes"] = { jit_pactive * page_size,
             "Active bytes in the dedicated jemalloc JIT arena. Includes both (a) LLVM heap state "
@@ -1194,6 +1196,42 @@ void AsynchronousMetrics::update(TimePoint update_time, bool force_update)
             "in use within those blocks."};
         new_values["jemalloc.jit_arena.dirty_bytes"] = { jit_pdirty * page_size,
             "Dirty bytes in the JIT arena that are eligible for purging back to the OS."};
+    }
+
+    /// Per-arena metrics for the dedicated MergeTree heap arena. Holds long-lived MergeTree state:
+    ///   - per-part metadata (allocations from `IMergeTreeDataPart::setColumns` /
+    ///     `setColumnsSubstreams` / `loadColumnsChecksumsIndexes` / `loadProjections` /
+    ///     `loadChecksums` and from `MergeTreeDataPartBuilder::build`),
+    ///   - per-table metadata (allocations from `MergeTreeData::setProperties`,
+    ///     `resetSerializationHints`, `updateSerializationHints`).
+    if (JemallocMergeTreeArena::isEnabled())
+    {
+        unsigned mergetree_arena = JemallocMergeTreeArena::getArenaIndex();
+        size_t mt_pactive = saveJemallocMetricImpl<size_t>(new_values,
+            fmt::format("stats.arenas.{}.pactive", mergetree_arena),
+            "jemalloc.mergetree_arena.pactive");
+        size_t mt_pdirty = saveJemallocMetricImpl<size_t>(new_values,
+            fmt::format("stats.arenas.{}.pdirty", mergetree_arena),
+            "jemalloc.mergetree_arena.pdirty");
+
+        const size_t page_size = jemalloc_page_size_mib.getValue();
+        new_values["jemalloc.mergetree_arena.active_bytes"] = { mt_pactive * page_size,
+            "Active bytes in the dedicated jemalloc MergeTree arena. Holds long-lived MergeTree heap "
+            "state: per-part metadata (`NamesAndTypesList`, `SerializationInfoByName`, the "
+            "`serializations` map, `column_name_to_position`, `MergeTreeDataPartChecksums` tree, the "
+            "`Poco::LRUCache<String, ColumnSize>` delegates inside each `IMergeTreeDataPart`, the "
+            "per-part `ColumnSize`/`IndexSize` maps, `MinMaxIndex`, `VersionMetadataOnDisk`, and the "
+            "`MergeTreeDataPart{Compact,Wide}` object itself) plus per-table metadata "
+            "(`StorageInMemoryMetadata` / `ColumnsDescription` / `VirtualColumnsDescription` clones "
+            "set up by `setProperties`, the `serialization_hints` aggregation, and the "
+            "`columns_descriptions_cache`). Active parts and outdated parts pending cleanup both "
+            "contribute. Disjoint from the cache arena and JIT arena. The per-part columns "
+            "`system.parts.primary_key_bytes_in_memory[_allocated]` and "
+            "`system.parts.index_granularity_bytes_in_memory[_allocated]` are subsets of this metric "
+            "(when their values are non-zero — they can also live in `PrimaryIndexCacheBytes` instead, "
+            "which is in the cache arena and not counted here)."};
+        new_values["jemalloc.mergetree_arena.dirty_bytes"] = { mt_pdirty * page_size,
+            "Dirty bytes in the MergeTree arena that are eligible for purging back to the OS."};
     }
 #endif
 
