@@ -1466,14 +1466,12 @@ Counters::Counters(VariableContext level_, Counters * parent_)
       level(level_)
 {
     counters = counters_holder.get();
-    inheritTracingFromParent(parent_);
 }
 
 Counters::Counters(Counters && src) noexcept
     : counters(std::exchange(src.counters, nullptr))
     , counters_holder(std::move(src.counters_holder))
     , parent(src.parent.exchange(nullptr))
-    , any_trace_in_chain(src.any_trace_in_chain.load(std::memory_order_relaxed))
     , level(src.level)
 {
 }
@@ -1564,64 +1562,22 @@ void Counters::setUserCounters(Counters * user)
     }
 
     current_val->parent.store(user, std::memory_order_relaxed);
-    current_val->inheritTracingFromParent(user);
 }
 
 void Counters::setParent(Counters * parent_)
 {
     parent.store(parent_, std::memory_order_relaxed);
-    inheritTracingFromParent(parent_);
 }
 
 void Counters::setTraceAllProfileEvents()
 {
     for (Event i = Event(0); i < num_counters; ++i)
         counters[i].fetch_or(COUNTER_TRACE_BIT, std::memory_order_relaxed);
-    markChainTracing();
 }
 
 void Counters::setTraceProfileEvent(ProfileEvents::Event event)
 {
     counters[event].fetch_or(COUNTER_TRACE_BIT, std::memory_order_relaxed);
-    markChainTracing();
-}
-
-void Counters::markChainTracing()
-{
-    Counters * c = this;
-    while (c != nullptr)
-    {
-        c->any_trace_in_chain.store(true, std::memory_order_relaxed);
-        c = c->parent.load(std::memory_order_relaxed);
-    }
-}
-
-void Counters::refreshTracingFromParent()
-{
-    inheritTracingFromParent(parent.load(std::memory_order_relaxed));
-}
-
-void Counters::inheritTracingFromParent(Counters * p)
-{
-    /// Walk the parent chain at attach time and copy `any_trace_in_chain` from the first
-    /// ancestor that has it set. Walking the whole chain (rather than trusting
-    /// `p->any_trace_in_chain` aggregation alone) keeps this robust if any ancestor's flag
-    /// was somehow not refreshed yet.
-    ///
-    /// Note: a child whose attach happens *before* `setTraceProfileEvents` is called on an
-    /// ancestor will keep `any_trace_in_chain == false` and skip the per-event trace-bit
-    /// check. The race window is small (the only caller is `ProcessList::insert` during
-    /// query setup, before worker threads attach) and we accept it to keep `Counters`
-    /// small and attach lock-free.
-    while (p)
-    {
-        if (p->any_trace_in_chain.load(std::memory_order_relaxed))
-        {
-            any_trace_in_chain.store(true, std::memory_order_relaxed);
-            return;
-        }
-        p = p->parent.load(std::memory_order_relaxed);
-    }
 }
 
 
@@ -1713,32 +1669,21 @@ double Counters::getCPUOverload(Int64 os_cpu_busy_time_threshold, bool reset)
 
 void Counters::increment(Event event, Count amount)
 {
-    /// First pass: every parent-level atomic increment. We deliberately ignore `fetch_add`'s
-    /// return value so the compiler emits `lock add` (non-returning) and the parent walk can
-    /// pipeline without a data dependency between iterations.
+    /// Single chain walk: fetch_add at each parent, observe the post-fetch counter value
+    /// for the trace bit on the same load. The trace bit is bit 63 of the packed counter
+    /// (see `COUNTER_TRACE_BIT`); a single `fetch_add` therefore yields both the
+    /// incremented count and the should-trace flag.
     Counters * current = this;
+    bool should_trace = false;
     do
     {
-        current->counters[event].fetch_add(amount, std::memory_order_relaxed);
+        Count prev = current->counters[event].fetch_add(amount, std::memory_order_relaxed);
+        should_trace |= (prev & COUNTER_TRACE_BIT) != 0;
         current = current->parent;
     } while (current != nullptr);
 
-    /// Common case: no tracing is configured anywhere in the parent chain. A single relaxed
-    /// load + branch exits before walking the chain again.
-    if (likely(!any_trace_in_chain.load(std::memory_order_relaxed)))
-        return;
-
-    /// Slow path: tracing is enabled somewhere; check the trace bit, short-circuit on hit.
-    current = this;
-    do
-    {
-        if (current->counters[event].load(std::memory_order_relaxed) & COUNTER_TRACE_BIT)
-        {
-            DB::TraceSender::send(DB::TraceType::ProfileEvent, StackTrace(), {.event = event, .increment = amount});
-            return;
-        }
-        current = current->parent;
-    } while (current != nullptr);
+    if (unlikely(should_trace))
+        DB::TraceSender::send(DB::TraceType::ProfileEvent, StackTrace(), {.event = event, .increment = amount});
 }
 
 void Counters::incrementNoTrace(Event event, Count amount)

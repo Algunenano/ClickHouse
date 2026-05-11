@@ -73,10 +73,6 @@ namespace ProfileEvents
         std::unique_ptr<Counter[]> counters_holder;
         /// Used to propagate increments
         std::atomic<Counters *> parent = {};
-        /// Fast-path gate for `increment`: true iff any tracing flag (per-event or "all")
-        /// has been set on this `Counters` or any ancestor. When false (the common case),
-        /// `increment` skips the per-event trace-bit check loop entirely.
-        std::atomic_bool any_trace_in_chain = false;
         Counter prev_cpu_wait_microseconds = 0;
         Counter prev_cpu_virtual_time_microseconds = 0;
 
@@ -145,33 +141,12 @@ namespace ProfileEvents
         /// Set parent (thread unsafe)
         void setParent(Counters * parent_);
 
-        /// Trace every event by setting bit 63 on every counter, and mark the chain.
+        /// Trace every event by setting bit 63 on every counter.
         void setTraceAllProfileEvents();
 
         void setTraceProfileEvent(ProfileEvents::Event event);
 
-        bool anyTraceInChain() const noexcept
-        {
-            return any_trace_in_chain.load(std::memory_order_relaxed);
-        }
-
         void setTraceProfileEvents(const String & events_list);
-
-        /// Refresh `any_trace_in_chain` from the current parent chain. Called when the
-        /// parent's flag may have been set *after* this counter was attached
-        /// (e.g. `setTraceProfileEvents` runs on the thread group after the calling
-        /// thread already inherited a stale `false`).
-        void refreshTracingFromParent();
-
-    private:
-        /// Walk the parent chain marking `any_trace_in_chain` so descendants attaching
-        /// to any of these ancestors will inherit the flag at attach time.
-        void markChainTracing();
-
-        /// Refresh `any_trace_in_chain` from the parent chain at attach time.
-        void inheritTracingFromParent(Counters * p);
-
-    public:
 
         /// Set all counters to zero
         void resetCounters();
