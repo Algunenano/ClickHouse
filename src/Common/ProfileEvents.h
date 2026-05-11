@@ -157,6 +157,12 @@ namespace ProfileEvents
 
         void setTraceProfileEvents(const String & events_list);
 
+        /// Refresh `any_trace_in_chain` from the current parent chain. Called when the
+        /// parent's flag may have been set *after* this counter was attached
+        /// (e.g. `setTraceProfileEvents` runs on the thread group after the calling
+        /// thread already inherited a stale `false`).
+        void refreshTracingFromParent();
+
     private:
         /// Walk the parent chain marking `any_trace_in_chain` so descendants attaching
         /// to any of these ancestors will inherit the flag at attach time.

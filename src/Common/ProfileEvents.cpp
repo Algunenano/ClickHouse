@@ -1596,6 +1596,11 @@ void Counters::markChainTracing()
     }
 }
 
+void Counters::refreshTracingFromParent()
+{
+    inheritTracingFromParent(parent.load(std::memory_order_relaxed));
+}
+
 void Counters::inheritTracingFromParent(Counters * p)
 {
     /// Walk the parent chain at attach time and copy `any_trace_in_chain` from the first

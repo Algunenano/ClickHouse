@@ -311,6 +311,14 @@ ProcessList::EntryPtr ProcessList::insert(
                     /// Trace all profile events
                     thread_group->performance_counters.setTraceAllProfileEvents();
                 }
+
+                /// The calling thread is already attached to this thread group, so its
+                /// per-thread `any_trace_in_chain` was inherited *before* the calls above
+                /// set the flag on the parent. Refresh it now so increments on this thread
+                /// (e.g. `ProfileEvents::Query` from `InterpreterFactory::get`, which runs
+                /// next) don't get gated out. Worker threads attached later already see
+                /// the parent's flag at their own attach time.
+                CurrentThread::getProfileEvents().refreshTracingFromParent();
             }
 
             thread_group->memory_tracker.setDescription("Query");
