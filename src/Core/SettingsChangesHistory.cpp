@@ -41,7 +41,6 @@ const VersionToSettingsChangesMap & getSettingsChangesHistory()
         /// Note: please check if the key already exists to prevent duplicate entries.
         addSettingsChanges(settings_changes_history, "26.5",
         {
-            {"defer_partition_pruning_after_final", true, true, "New setting introduced in 26.5 to expose the FINAL partition-pruning behavior change that shipped silently in 26.3 (https://github.com/ClickHouse/ClickHouse/pull/98242). No default change in 26.5 — the meaningful change is recorded under the 26.3 block so `compatibility = '26.2'` correctly reverts it."},
             {"paimon_target_snapshot_id", -1, -1, "New setting."},
             {"max_consume_snapshots", 0, 0, "New setting."},
             {"allow_experimental_paimon_storage_engine", false, false, "New setting."},
