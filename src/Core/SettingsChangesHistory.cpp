@@ -41,6 +41,7 @@ const VersionToSettingsChangesMap & getSettingsChangesHistory()
         /// Note: please check if the key already exists to prevent duplicate entries.
         addSettingsChanges(settings_changes_history, "26.5",
         {
+            {"defer_partition_pruning_after_final", false, true, "New setting that gates the FINAL planner's unconditional skipping of partition pruning when the partition-key column is not in the sorting key (regression introduced in 26.3 by https://github.com/ClickHouse/ClickHouse/pull/98242). Default `true` preserves correctness; setting `0` restores pre-26.3 behavior and is safe when rows with the same primary key cannot exist in different partitions."},
             {"paimon_target_snapshot_id", -1, -1, "New setting."},
             {"max_consume_snapshots", 0, 0, "New setting."},
             {"allow_experimental_paimon_storage_engine", false, false, "New setting."},
