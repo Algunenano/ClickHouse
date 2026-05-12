@@ -319,7 +319,6 @@ default_normal_view_sql_security	INVOKER
 default_table_engine	MergeTree
 default_temporary_table_engine	Memory
 default_view_definer	CURRENT_USER
-defer_partition_pruning_after_final	1
 delta_lake_enable_engine_predicate	1
 delta_lake_enable_expression_visitor_logging	0
 delta_lake_insert_max_bytes_in_data_file	1073741824
