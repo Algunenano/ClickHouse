@@ -126,6 +126,14 @@ inline std::array<__m128i, 16u> mm_is_in_prepare(const char * symbols, size_t nu
         result[i] = _mm_set1_epi8(symbols[i]);
     }
 
+    /// Pad unused slots with a repeat of an actual needle byte so `mm_is_in_execute`
+    /// does not spuriously match `\0` bytes in the haystack via the zero-initialised
+    /// slots. Callers ensure `num_chars >= 1` before reaching the SIMD body.
+    for (size_t i = num_chars; i < 16u; ++i)
+    {
+        result[i] = result[0];
+    }
+
     return result;
 }
 
