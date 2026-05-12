@@ -1478,11 +1478,28 @@ Counters::Counters(Counters && src) noexcept
 
 void Counters::resetCounters()
 {
-    /// Counter is a packed `std::atomic<size_t>` (bit 63 = should_trace, bits 0..62 = count),
-    /// so a single `memset` clears both the value and any trace bit. resetCounters runs only on
-    /// per-thread counters (where trace bits are never set), so dropping them here is fine.
-    if (counters)
+    if (!counters)
+        return;
+
+    /// Counter is a packed `std::atomic<size_t>` (bit 63 = should_trace, bits 0..62 = count).
+    /// `resetCounters` runs only on per-thread counters during query setup, where no other
+    /// thread touches them, so a non-atomic clear is safe. On every platform we support,
+    /// `std::atomic<Count>` is lock-free with the same size/alignment/representation as
+    /// `Count`, so a single `memset` clears both the value and any trace bit; the loop
+    /// fallback exists only to keep the code well-defined on hypothetical future targets
+    /// where that no longer holds.
+    if constexpr (
+        std::atomic<Count>::is_always_lock_free
+        && sizeof(Counter) == sizeof(Count)
+        && alignof(Counter) == alignof(Count))
+    {
         std::memset(static_cast<void *>(counters), 0, num_counters * sizeof(Counter));
+    }
+    else
+    {
+        for (size_t i = 0; i < num_counters; ++i)
+            counters[i].store(0, std::memory_order_relaxed);
+    }
 }
 
 void Counters::reset()
