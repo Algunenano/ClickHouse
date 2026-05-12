@@ -348,9 +348,9 @@
     \
     M(ExecuteShellCommand, "Number of shell command executions.", ValueType::Number) \
     \
-    M(ExternalProcessingCompressedBytesTotal, "Number of compressed bytes written by external processing (sorting/aggregating/joining)", ValueType::Bytes) \
-    M(ExternalProcessingUncompressedBytesTotal, "Amount of data (uncompressed, before compression) written by external processing (sorting/aggregating/joining)", ValueType::Bytes) \
-    M(ExternalProcessingFilesTotal, "Number of files used by external processing (sorting/aggregating/joining)", ValueType::Number) \
+    M(ExternalProcessingCompressedBytesTotal, "Number of compressed bytes written by external processing (sorting/aggragating/joining)", ValueType::Bytes) \
+    M(ExternalProcessingUncompressedBytesTotal, "Amount of data (uncompressed, before compression) written by external processing (sorting/aggragating/joining)", ValueType::Bytes) \
+    M(ExternalProcessingFilesTotal, "Number of files used by external processing (sorting/aggragating/joining)", ValueType::Number) \
     M(ExternalSortWritePart, "Number of times a temporary file was written to disk for sorting in external memory.", ValueType::Number) \
     M(ExternalSortMerge, "Number of times temporary files were merged for sorting in external memory.", ValueType::Number) \
     M(ExternalSortCompressedBytes, "Number of compressed bytes written for sorting in external memory.", ValueType::Bytes) \
@@ -1203,14 +1203,14 @@ The server successfully detected this situation and will download merged part fr
     M(SharedMergeTreeMergeMutationAssignmentFailedWithNothingToDo, "How many times we tried to assign merge or mutation and failed because nothing to merge", ValueType::Number) \
     M(SharedMergeTreeMergeMutationAssignmentFailedWithConflict, "How many times we tried to assign merge or mutation and failed because of conflict in Keeper", ValueType::Number) \
     M(SharedMergeTreeMergeMutationAssignmentSuccessful, "How many times we tried to assign merge or mutation", ValueType::Number) \
-    M(SharedMergeTreeMergePartsMovedToOudated, "How many parts moved to outdated directory", ValueType::Number) \
+    M(SharedMergeTreeMergePartsMovedToOudated, "How many parts moved to oudated directory", ValueType::Number) \
     M(SharedMergeTreeMergePartsMovedToCondemned, "How many parts moved to condemned directory", ValueType::Number) \
     M(SharedMergeTreeOutdatedPartsConfirmationRequest, "How many ZooKeeper requests were used to config outdated parts", ValueType::Number) \
     M(SharedMergeTreeOutdatedPartsConfirmationInvocations, "How many invocations were made to confirm outdated parts", ValueType::Number) \
     M(SharedMergeTreeOutdatedPartsHTTPRequest, "How many HTTP requests were send to confirm outdated parts", ValueType::Number) \
     M(SharedMergeTreeOutdatedPartsHTTPResponse, "How many HTTP responses were send to confirm outdated parts", ValueType::Number) \
     M(SharedMergeTreeCondemnedPartsKillRequest, "How many ZooKeeper requests were used to remove condemned parts", ValueType::Number) \
-    M(SharedMergeTreeCondemnedPartsLockConflict, "How many times we failed to acquire lock because of conflict", ValueType::Number) \
+    M(SharedMergeTreeCondemnedPartsLockConflict, "How many times we failed to acquite lock because of conflict", ValueType::Number) \
     M(SharedMergeTreeCondemnedPartsRemoved, "How many condemned parts were removed", ValueType::Number) \
     M(SharedMergeTreePartsKillerRuns, "How many times parts killer has been running", ValueType::Number) \
     M(SharedMergeTreePartsKillerMicroseconds, "How much time does parts killer main thread takes", ValueType::Microseconds) \
@@ -1472,32 +1472,16 @@ Counters::Counters(Counters && src) noexcept
     : counters(std::exchange(src.counters, nullptr))
     , counters_holder(std::move(src.counters_holder))
     , parent(src.parent.exchange(nullptr))
+    , trace_all_profile_events(src.trace_all_profile_events.load(std::memory_order_relaxed))
     , level(src.level)
 {
 }
 
 void Counters::resetCounters()
 {
-    if (!counters)
-        return;
-
-    /// Counter is a packed `std::atomic<size_t>` (bit 63 = should_trace, bits 0..62 = count).
-    /// `resetCounters` runs only on per-thread counters during query setup, where no other
-    /// thread touches them, so a non-atomic clear is safe. On every platform we support,
-    /// `std::atomic<Count>` is lock-free with the same size/alignment/representation as
-    /// `Count`, so a single `memset` clears both the value and any trace bit; the loop
-    /// fallback exists only to keep the code well-defined on hypothetical future targets
-    /// where that no longer holds.
-    if constexpr (
-        std::atomic<Count>::is_always_lock_free
-        && sizeof(Counter) == sizeof(Count)
-        && alignof(Counter) == alignof(Count))
+    if (counters)
     {
-        std::memset(static_cast<void *>(counters), 0, num_counters * sizeof(Counter));
-    }
-    else
-    {
-        for (size_t i = 0; i < num_counters; ++i)
+        for (Event i = Event(0); i < num_counters; ++i)
             counters[i].store(0, std::memory_order_relaxed);
     }
 }
@@ -1516,7 +1500,7 @@ Counters::Snapshot Counters::getPartiallyAtomicSnapshot() const
 {
     Snapshot res;
     for (Event i = Event(0); i < num_counters; ++i)
-        res.counters_holder[i] = counters[i].load(std::memory_order_relaxed) & COUNTER_VALUE_MASK;
+        res.counters_holder[i] = counters[i].load(std::memory_order_relaxed);
     return res;
 }
 
@@ -1565,36 +1549,6 @@ void Counters::setTraceProfileEvents(const String & events_list)
     {
         setTraceProfileEvent(getByName(std::string_view(*it)));
     }
-}
-
-void Counters::setUserCounters(Counters * user)
-{
-    auto * current_val = this;
-    auto * parent_val = this->parent.load(std::memory_order_relaxed);
-
-    while (parent_val != nullptr && parent_val->level != VariableContext::Global && parent_val->level != VariableContext::User)
-    {
-        current_val = parent_val;
-        parent_val = current_val->parent.load(std::memory_order_relaxed);
-    }
-
-    current_val->parent.store(user, std::memory_order_relaxed);
-}
-
-void Counters::setParent(Counters * parent_)
-{
-    parent.store(parent_, std::memory_order_relaxed);
-}
-
-void Counters::setTraceAllProfileEvents()
-{
-    for (Event i = Event(0); i < num_counters; ++i)
-        counters[i].fetch_or(COUNTER_TRACE_BIT, std::memory_order_relaxed);
-}
-
-void Counters::setTraceProfileEvent(ProfileEvents::Event event)
-{
-    counters[event].fetch_or(COUNTER_TRACE_BIT, std::memory_order_relaxed);
 }
 
 
@@ -1664,8 +1618,8 @@ double Counters::getCPUOverload(Int64 os_cpu_busy_time_threshold, bool reset)
 {
     /// It's possible that we'll have slightly inconsistent values between wait time and busy time. But since we take the value of CPU wait time first,
     /// it should not affect the situation a lot. In the worst case scenario we will have a slightly lower CPU overload value than it should be, but it's fine.
-    Int64 curr_cpu_wait_microseconds = counters[OSCPUWaitMicroseconds].load(std::memory_order_relaxed) & COUNTER_VALUE_MASK;
-    Int64 curr_cpu_virtual_time_microseconds = counters[OSCPUVirtualTimeMicroseconds].load(std::memory_order_relaxed) & COUNTER_VALUE_MASK;
+    Int64 curr_cpu_wait_microseconds = counters[OSCPUWaitMicroseconds];
+    Int64 curr_cpu_virtual_time_microseconds = counters[OSCPUVirtualTimeMicroseconds];
 
     Int64 os_cpu_wait_microseconds = curr_cpu_wait_microseconds - prev_cpu_wait_microseconds.load(std::memory_order_acquire);
     Int64 os_cpu_virtual_time_microseconds = curr_cpu_virtual_time_microseconds - prev_cpu_virtual_time_microseconds.load(std::memory_order_acquire);
@@ -1686,20 +1640,19 @@ double Counters::getCPUOverload(Int64 os_cpu_busy_time_threshold, bool reset)
 
 void Counters::increment(Event event, Count amount)
 {
-    /// Single chain walk: fetch_add at each parent, observe the post-fetch counter value
-    /// for the trace bit on the same load. The trace bit is bit 63 of the packed counter
-    /// (see `COUNTER_TRACE_BIT`); a single `fetch_add` therefore yields both the
-    /// incremented count and the should-trace flag.
     Counters * current = this;
-    bool should_trace = false;
+    bool send_to_trace_log = false;
+
     do
     {
-        Count prev = current->counters[event].fetch_add(amount, std::memory_order_relaxed);
-        should_trace |= (prev & COUNTER_TRACE_BIT) != 0;
+        current->counters[event].fetch_add(amount, std::memory_order_relaxed);
+        send_to_trace_log |= current->counters[event].should_trace;
+        send_to_trace_log |= current->trace_all_profile_events.load(std::memory_order_relaxed);
+
         current = current->parent;
     } while (current != nullptr);
 
-    if (unlikely(should_trace))
+    if (unlikely(send_to_trace_log))
         DB::TraceSender::send(DB::TraceType::ProfileEvent, StackTrace(), {.event = event, .increment = amount});
 }
 

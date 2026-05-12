@@ -1320,7 +1320,7 @@ struct EventCounter
 private:
     size_t getValue() const
     {
-        return ProfileEvents::global_counters[event].load(std::memory_order_relaxed) & ProfileEvents::COUNTER_VALUE_MASK;
+        return ProfileEvents::global_counters[event].load(std::memory_order_relaxed);
     }
 };
 
