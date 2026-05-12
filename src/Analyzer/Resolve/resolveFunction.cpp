@@ -783,8 +783,10 @@ ProjectionNames QueryAnalyzer::resolveFunction(QueryTreeNodePtr & node, Identifi
                         const auto & identifier_name = identifier.getFullName();
 
                         /// These checks don't create tree nodes, so they don't affect node ID
-                        /// numbering. None of them throw under normal conditions — this matters
-                        /// for queries run with `terminate_on_any_exception` enabled.
+                        /// numbering. We must not throw from this rewrite-candidate check — it
+                        /// runs before column/alias resolution, so a throw would break the
+                        /// documented "column/alias names take priority" contract and would also
+                        /// be disruptive for queries run with `terminate_on_any_exception` enabled.
                         ///
                         /// Built-in, executable, and WebAssembly UDFs are all `IFunction`
                         /// implementations exposed as regular `FunctionOverloadResolverPtr`s,
@@ -793,8 +795,23 @@ ProjectionNames QueryAnalyzer::resolveFunction(QueryTreeNodePtr & node, Identifi
                         /// SQL expression inlined at analysis time, so arity is read from the
                         /// stored `CREATE FUNCTION` AST.
                         auto inner_resolver = FunctionFactory::instance().tryGet(identifier_name, scope.context);
-                        if (!inner_resolver)
-                            inner_resolver = UserDefinedExecutableFunctionFactory::tryGet(identifier_name, scope.context);
+                        if (!inner_resolver && UserDefinedExecutableFunctionFactory::has(identifier_name, scope.context))
+                        {
+                            /// `has` first: `tryGet` instantiates `UserDefinedFunction` with empty
+                            /// parameters, whose constructor throws `BAD_ARGUMENTS` when the UDF
+                            /// declares command parameters. Such UDFs are not eligible for the
+                            /// lambda rewrite anyway (we have no parameters to supply), so swallow
+                            /// `BAD_ARGUMENTS` and let identifier resolution proceed.
+                            try
+                            {
+                                inner_resolver = UserDefinedExecutableFunctionFactory::tryGet(identifier_name, scope.context);
+                            }
+                            catch (const Exception & e)
+                            {
+                                if (e.code() != ErrorCodes::BAD_ARGUMENTS)
+                                    throw;
+                            }
+                        }
                         if (!inner_resolver && UserDefinedWebAssemblyFunctionFactory::instance().has(identifier_name))
                         {
                             /// `has` first: `get` throws `RESOURCE_NOT_FOUND` if the function is

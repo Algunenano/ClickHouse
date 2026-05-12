@@ -82,6 +82,14 @@ DROP FUNCTION test_04064_add;
 -- `UserDefinedExecutableFunctionFactory` and not only `FunctionFactory`/SQL UDFs.
 SELECT arrayMap(test_function, [toUInt64(1), toUInt64(2), toUInt64(3)], [toUInt64(10), toUInt64(20), toUInt64(30)]);
 
+-- Column/alias takes priority over an executable UDF that requires command parameters.
+-- `test_function_with_parameter` is configured with a `{param:UInt64}` placeholder, so
+-- the candidate-resolver lookup inside the rewrite must not throw `BAD_ARGUMENTS` when
+-- instantiated with empty parameters; otherwise the alias would never get a chance to
+-- resolve. The query selects the alias as the function argument, which fails type
+-- checking — confirming the alias won, not the UDF.
+SELECT arrayMap(test_function_with_parameter, [1, 2, 3]) FROM (SELECT 1 AS test_function_with_parameter); -- { serverError ILLEGAL_TYPE_OF_ARGUMENT }
+
 -- Fixed-arity zero-argument inner function: applying a 0-arg function to lambda
 -- arguments makes no sense, so the rewrite is skipped (rather than building an
 -- invalid `x -> UTCTimestamp(x)` lambda). `UTCTimestamp` then remains as an
