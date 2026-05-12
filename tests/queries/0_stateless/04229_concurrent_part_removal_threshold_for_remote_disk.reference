@@ -1,2 +1,0 @@
-concurrent_part_removal_threshold_for_remote_disk	16	UInt64	16
-concurrent_part_removal_threshold_for_remote_disk = 8
