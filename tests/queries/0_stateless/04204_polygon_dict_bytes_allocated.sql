@@ -4,6 +4,7 @@
 -- dictionary's footprint.
 
 DROP DICTIONARY IF EXISTS polygon_dict_simple;
+DROP DICTIONARY IF EXISTS polygon_dict_each;
 DROP DICTIONARY IF EXISTS polygon_dict_cell;
 DROP TABLE IF EXISTS polygon_dict_bytes_src SYNC;
 
@@ -42,6 +43,13 @@ SOURCE(CLICKHOUSE(TABLE 'polygon_dict_bytes_src'))
 LIFETIME(0)
 LAYOUT(POLYGON_SIMPLE());
 
+CREATE DICTIONARY polygon_dict_each
+(polygon Array(Array(Array(Tuple(Float64, Float64)))), city_id UInt32)
+PRIMARY KEY polygon
+SOURCE(CLICKHOUSE(TABLE 'polygon_dict_bytes_src'))
+LIFETIME(0)
+LAYOUT(POLYGON_INDEX_EACH());
+
 CREATE DICTIONARY polygon_dict_cell
 (polygon Array(Array(Array(Tuple(Float64, Float64)))), city_id UInt32)
 PRIMARY KEY polygon
@@ -50,6 +58,7 @@ LIFETIME(0)
 LAYOUT(POLYGON_INDEX_CELL());
 
 SYSTEM RELOAD DICTIONARY polygon_dict_simple;
+SYSTEM RELOAD DICTIONARY polygon_dict_each;
 SYSTEM RELOAD DICTIONARY polygon_dict_cell;
 
 -- Sanity: the simple layout already has a non-zero footprint from polygons + attribute columns alone.
@@ -57,13 +66,18 @@ SELECT bytes_allocated > 0
 FROM system.dictionaries
 WHERE database = currentDatabase() AND name = 'polygon_dict_simple';
 
--- The index-bearing layout must report meaningfully more bytes than `polygon_simple`. Without the accounting
--- fix, the two values were equal.
+-- Each index-bearing layout must report meaningfully more bytes than `polygon_simple`. Without the
+-- accounting fix, all three values were equal (the index storage was not counted at all).
+SELECT
+    (SELECT bytes_allocated FROM system.dictionaries WHERE database = currentDatabase() AND name = 'polygon_dict_each')
+        > 2 * (SELECT bytes_allocated FROM system.dictionaries WHERE database = currentDatabase() AND name = 'polygon_dict_simple');
+
 SELECT
     (SELECT bytes_allocated FROM system.dictionaries WHERE database = currentDatabase() AND name = 'polygon_dict_cell')
         > 2 * (SELECT bytes_allocated FROM system.dictionaries WHERE database = currentDatabase() AND name = 'polygon_dict_simple');
 
 DROP DICTIONARY polygon_dict_simple;
+DROP DICTIONARY polygon_dict_each;
 DROP DICTIONARY polygon_dict_cell;
 DROP TABLE polygon_dict_bytes_src SYNC;
 
