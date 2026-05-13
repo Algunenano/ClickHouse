@@ -166,6 +166,9 @@ public:
 
     ALWAYS_INLINE bool compare(const UInt8 * /*haystack*/, const UInt8 * haystack_end, const UInt8 * pos) const
     {
+        if (needle == needle_end)
+            return true;
+
 #if defined(__SSE4_1__) || (defined(__aarch64__) && defined(__ARM_NEON))
         if (pos + N <= haystack_end)
         {
@@ -182,7 +185,7 @@ public:
                     pos += N;
                     const auto * needle_pos = needle + N;
 
-                    while (needle_pos < needle_end && std::tolower(*pos) == std::tolower(*needle_pos))
+                    while (needle_pos < needle_end && pos < haystack_end && std::tolower(*pos) == std::tolower(*needle_pos))
                     {
                         ++pos;
                         ++needle_pos;
@@ -204,7 +207,7 @@ public:
             ++pos;
             const auto * needle_pos = needle + 1;
 
-            while (needle_pos < needle_end && std::tolower(*pos) == std::tolower(*needle_pos))
+            while (needle_pos < needle_end && pos < haystack_end && std::tolower(*pos) == std::tolower(*needle_pos))
             {
                 ++pos;
                 ++needle_pos;
