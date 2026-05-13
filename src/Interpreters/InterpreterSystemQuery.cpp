@@ -521,6 +521,7 @@ BlockIO InterpreterSystemQuery::execute()
             /// the old instance at that point.
             resetExpressionJITInstance();
             resetAggregatorJITInstance();
+            resetSortDescriptionJITInstance();
             /// Clearing the cache invokes `~JITModuleMemoryManager` for every entry, which runs LLVM's
             /// per-module destructors and frees their bookkeeping into the dedicated JIT arena. Purge dirty
             /// pages from that arena so the freed memory is returned to the OS without waiting for the

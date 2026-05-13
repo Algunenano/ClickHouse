@@ -126,6 +126,7 @@ private:
 /// at which point any in-flight compile that completes goes into a fresh instance.
 void resetExpressionJITInstance();
 void resetAggregatorJITInstance();
+void resetSortDescriptionJITInstance();
 
 }
 
@@ -136,6 +137,7 @@ namespace DB
 
 inline void resetExpressionJITInstance() {}
 inline void resetAggregatorJITInstance() {}
+inline void resetSortDescriptionJITInstance() {}
 
 }
 
