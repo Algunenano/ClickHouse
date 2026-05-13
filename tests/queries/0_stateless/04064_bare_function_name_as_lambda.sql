@@ -95,3 +95,18 @@ SELECT arrayMap(test_function_with_parameter, [1, 2, 3]) FROM (SELECT 1 AS test_
 -- invalid `x -> UTCTimestamp(x)` lambda). `UTCTimestamp` then remains as an
 -- unresolvable identifier in expression context.
 SELECT arrayMap(UTCTimestamp, [1, 2, 3]); -- { serverError UNKNOWN_IDENTIFIER }
+
+-- `map*Like` functions (`mapContainsKeyLike`, `mapContainsValueLike`, `mapExtractKeyLike`,
+-- `mapExtractValueLike`) take `(Map, String pattern)` at SQL level and synthesise the
+-- lambda internally; their first argument is not a lambda, so the bare-function rewrite
+-- must not trigger. The functions themselves still work with their normal arguments.
+SELECT mapContainsKeyLike(map('apple', 1, 'banana', 2), 'a%');
+SELECT mapContainsValueLike(map('a', 'apple', 'b', 'banana'), 'a%');
+SELECT mapExtractKeyLike(map('apple', 1, 'banana', 2, 'avocado', 3), 'a%') = map('apple', 1, 'avocado', 3);
+SELECT mapExtractValueLike(map('a', 'apple', 'b', 'banana', 'c', 'avocado'), 'a%') = map('a', 'apple', 'c', 'avocado');
+
+-- Passing a bare function name as the first argument to `mapContainsKeyLike` must not be
+-- rewritten into a lambda (the first SQL argument is a Map, not a lambda). The identifier
+-- `negate` fails to resolve as a column/alias, which is the expected diagnostic — proving
+-- the rewrite was skipped rather than producing a confusing lambda-conversion error.
+SELECT mapContainsKeyLike(negate, 'a%'); -- { serverError UNKNOWN_IDENTIFIER }

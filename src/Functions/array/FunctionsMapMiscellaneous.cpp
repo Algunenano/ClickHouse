@@ -58,7 +58,18 @@ public:
     bool useDefaultImplementationForLowCardinalityColumns() const override { return impl.useDefaultImplementationForLowCardinalityColumns(); }
     bool useDefaultImplementationForConstants() const override { return impl.useDefaultImplementationForConstants(); }
     bool isSuitableForShortCircuitArgumentsExecution(const DataTypesWithConstInfo &) const override  { return false; }
-    bool isHigherOrderFunction() const override { return impl.isHigherOrderFunction(); }
+
+    /// Reflect the SQL-level signature, not the internal `impl` plumbing.
+    /// An adapter may opt out via `Adapter::first_argument_is_lambda = false` when its
+    /// user-facing first argument is not a lambda (for example, `MapLikeAdapter` accepts
+    /// a Map and a string pattern, and synthesises the lambda internally).
+    bool isHigherOrderFunction() const override
+    {
+        if constexpr (requires { Adapter::first_argument_is_lambda; })
+            if (!Adapter::first_argument_is_lambda)
+                return false;
+        return impl.isHigherOrderFunction();
+    }
 
     void getLambdaArgumentTypes(DataTypes & arguments) const override
     {
@@ -328,6 +339,10 @@ template <typename Name, bool returns_map, size_t position>
 struct MapLikeAdapter
 {
     static_assert(position <= 1, "position of Map subcolumn must be 0 or 1");
+
+    /// The SQL-level signature is `(Map, String pattern)`; the lambda is constructed internally,
+    /// so the first user-facing argument is not a lambda.
+    static constexpr bool first_argument_is_lambda = false;
 
     static void checkTypes(const DataTypes & types)
     {
