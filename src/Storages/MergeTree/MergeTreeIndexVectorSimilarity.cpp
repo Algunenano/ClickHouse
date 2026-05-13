@@ -21,7 +21,6 @@
 #include <IO/ReadHelpers.h>
 #include <IO/WriteHelpers.h>
 #include <Interpreters/Context.h>
-#include <Interpreters/ProcessList.h>
 #include <Interpreters/castColumn.h>
 
 #include <cmath>
@@ -377,9 +376,7 @@ void updateImpl(const ColumnArray * column_array, const ColumnArray::Offsets & c
         /// Check if the query has been cancelled. USearch internally does not check for cancellation,
         /// and a single `add` call can take a very long time under sanitizers. Without this check, KILL QUERY
         /// cannot stop the index building. The check is cheap (reads an atomic flag).
-        if (auto query_context = CurrentThread::tryGetQueryContext())
-            if (auto query_status = query_context->getProcessListElementSafe())
-                query_status->throwIfKilled();
+        CurrentThread::throwIfQueryCancelled();
 
         const typename Column::ValueType & value = column_array_data_float_data[column_array_offsets[row - 1]];
 

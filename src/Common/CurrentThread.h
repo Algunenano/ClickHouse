@@ -89,6 +89,11 @@ public:
     /// Returns attached query context or nullptr if there is no query context
     static ContextPtr tryGetQueryContext();
 
+    /// Throws if the running query has been killed (via KILL QUERY or by the
+    /// CancellationChecker reaching max_execution_time). No-op when the thread is not
+    /// attached to a query or no process-list entry has been created yet.
+    static void throwIfQueryCancelled();
+
     static std::string_view getQueryId();
 
     // For IO Scheduling

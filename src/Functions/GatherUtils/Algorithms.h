@@ -2,6 +2,7 @@
 
 #include <base/arithmeticOverflow.h>
 #include <base/types.h>
+#include <Common/CurrentThread.h>
 #include <Common/FieldVisitorConvertToNumber.h>
 #include <Functions/GatherUtils/Sources.h>
 #include <Functions/GatherUtils/Sinks.h>
@@ -22,6 +23,10 @@ namespace DB::GatherUtils
 {
 
 inline constexpr size_t MAX_ARRAY_SIZE = 1 << 30;
+
+/// How often inner fill loops poll for query cancellation. Power of two so the compiler can
+/// turn the modulo into a bitmask test.
+inline constexpr size_t CANCELLATION_CHECK_INTERVAL = 1024;
 
 
 /// Methods to copy Slice to Sink, overloaded for various combinations of types.
@@ -722,7 +727,11 @@ void resizeDynamicSize(ArraySource && array_source, ValueSource && value_source,
                 {
                     writeSlice(array_source.getWhole(), sink);
                     for (size_t i = array_size; i < length; ++i)
+                    {
+                        if (i % CANCELLATION_CHECK_INTERVAL == 0)
+                            CurrentThread::throwIfQueryCancelled();
                         writeSlice(value_source.getWhole(), sink);
+                    }
                 }
                 else
                     writeSlice(array_source.getSliceFromLeft(0, length), sink);
@@ -737,7 +746,11 @@ void resizeDynamicSize(ArraySource && array_source, ValueSource && value_source,
                 if (array_size <= length)
                 {
                     for (size_t i = array_size; i < length; ++i)
+                    {
+                        if (i % CANCELLATION_CHECK_INTERVAL == 0)
+                            CurrentThread::throwIfQueryCancelled();
                         writeSlice(value_source.getWhole(), sink);
+                    }
                     writeSlice(array_source.getWhole(), sink);
                 }
                 else
@@ -771,7 +784,11 @@ void resizeConstantSize(ArraySource && array_source, ValueSource && value_source
             {
                 writeSlice(array_source.getWhole(), sink);
                 for (size_t i = array_size; i < length; ++i)
+                {
+                    if (i % CANCELLATION_CHECK_INTERVAL == 0)
+                        CurrentThread::throwIfQueryCancelled();
                     writeSlice(value_source.getWhole(), sink);
+                }
             }
             else
                 writeSlice(array_source.getSliceFromLeft(0, length), sink);
@@ -786,7 +803,11 @@ void resizeConstantSize(ArraySource && array_source, ValueSource && value_source
             if (array_size <= length)
             {
                 for (size_t i = array_size; i < length; ++i)
+                {
+                    if (i % CANCELLATION_CHECK_INTERVAL == 0)
+                        CurrentThread::throwIfQueryCancelled();
                     writeSlice(value_source.getWhole(), sink);
+                }
                 writeSlice(array_source.getWhole(), sink);
             }
             else

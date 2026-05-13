@@ -105,6 +105,13 @@ ContextPtr CurrentThread::tryGetQueryContext()
     return current_thread->tryGetQueryContext();
 }
 
+void CurrentThread::throwIfQueryCancelled()
+{
+    if (auto query_context = tryGetQueryContext())
+        if (auto query_status = query_context->getProcessListElementSafe())
+            query_status->throwIfKilled();
+}
+
 std::string_view CurrentThread::getQueryId()
 {
     if (unlikely(!current_thread))
