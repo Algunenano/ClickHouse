@@ -838,7 +838,17 @@ void IPolygonDictionary::extractPolygons(const ColumnPtr & column)
             const size_t num_inner = offset.numInnerRingsOfPolygon(p);
             data.addPolygon(new_mp, outer, num_inner);
             if (has_outer)
+            {
+                /// Realign `offset` to the first polygon with rings -- the one the upcoming points
+                /// belong to. Without this, `atLastRingOfPolygon` would keep referencing the leading
+                /// empty polygon and a ring boundary in the middle of the block would be classified
+                /// as an inner-ring transition instead of a new-polygon transition.
+                offset.current_polygon = p;
+                while (offset.current_multi_polygon < offset.multi_polygon_offsets.size()
+                       && p >= offset.multi_polygon_offsets[offset.current_multi_polygon])
+                    ++offset.current_multi_polygon;
                 break;
+            }
             ++p;
         }
     }
