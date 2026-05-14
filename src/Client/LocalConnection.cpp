@@ -1,5 +1,6 @@
 #include <Client/LocalConnection.h>
 #include <memory>
+#include <mutex>
 #include <Client/ClientBase.h>
 #include <Client/ClientApplicationBase.h>
 #include <Core/Protocol.h>
@@ -156,9 +157,19 @@ void LocalConnection::sendQuery(
 
     if (is_cancelled_callback)
     {
+        /// The interactive cancel callback is now invoked from `CurrentThread::throwIfQueryCancelled`
+        /// in addition to the pipeline executor's wait loop, so it can run concurrently from
+        /// multiple worker threads. Serialize the body so writes to `state->is_cancelled` and the
+        /// user-supplied `progress_callback` are race-free; `try_to_lock` skips the call entirely
+        /// when another thread is already inside the callback (it would do the same work).
+        auto callback_mutex = std::make_shared<std::mutex>();
         query_context->setInteractiveCancelCallback(
-            [this, check_cancelled = is_cancelled_callback, progress_callback = process_progress_callback]() -> bool
+            [this, check_cancelled = is_cancelled_callback, progress_callback = process_progress_callback, callback_mutex]() -> bool
         {
+            std::unique_lock lock(*callback_mutex, std::try_to_lock);
+            if (!lock.owns_lock())
+                return false;
+
             /// Send accumulated progress to the client so the progress bar updates during analysis.
             if (progress_callback)
             {
