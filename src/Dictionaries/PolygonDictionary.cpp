@@ -569,67 +569,16 @@ struct Offset
             return *this;
 
         ++current_polygon;
-        /// Skip zero-ring polygons: if the next polygon's ring range starts
-        /// where the just-finished ring left off, it has no rings of its
-        /// own. `addNewPoint` creates polygon-vector entries for these
-        /// before the upcoming point is appended, so `polygons.back()` (the
-        /// polygon currently being filled) stays in sync with this state.
-        while (current_polygon < polygon_offsets.size()
-               && polygon_offsets[current_polygon] == current_ring)
-            ++current_polygon;
+        if (current_polygon < multi_polygon_offsets[current_multi_polygon])
+            return *this;
 
-        /// Walk `current_multi_polygon` forward: a run of zero-polygon rows
-        /// would otherwise leave it pointing at a multi-polygon that has
-        /// already finished.
-        while (current_multi_polygon < multi_polygon_offsets.size()
-               && current_polygon >= multi_polygon_offsets[current_multi_polygon])
-            ++current_multi_polygon;
+        ++current_multi_polygon;
         return *this;
     }
 
     bool atLastPolygonOfMultiPolygon() { return current_polygon + 1 == multi_polygon_offsets[current_multi_polygon]; }
     bool atLastRingOfPolygon() { return current_ring + 1 == polygon_offsets[current_polygon]; }
     bool atLastPointOfRing() { return points_added == ring_offsets[current_ring]; }
-
-    /// Number of points in the ring at index `r` (0-based among all rings).
-    size_t pointsInRing(size_t r) const
-    {
-        const auto prev = (r == 0) ? IColumn::Offset(0) : ring_offsets[r - 1];
-        return ring_offsets[r] - prev;
-    }
-
-    /// Index (in the flat ring list) of the outer ring of polygon `p`.
-    size_t firstRingOfPolygon(size_t p) const
-    {
-        return (p == 0) ? size_t(0) : polygon_offsets[p - 1];
-    }
-
-    /// Number of inner rings of polygon `p` (total rings minus the outer one),
-    /// or 0 for the malformed case of a polygon with zero rings (which the
-    /// existing code accepts as an empty polygon entry).
-    size_t numInnerRingsOfPolygon(size_t p) const
-    {
-        const size_t total_rings = polygon_offsets[p] - firstRingOfPolygon(p);
-        return total_rings == 0 ? 0 : total_rings - 1;
-    }
-
-    /// Whether polygon `p` has at least one ring (i.e., an outer ring exists).
-    bool polygonHasOuterRing(size_t p) const
-    {
-        return polygon_offsets[p] > firstRingOfPolygon(p);
-    }
-
-    /// True iff polygon `p` is the first polygon of its multi-polygon (= source row).
-    /// Used by the `addPolygon` flow to know when to bump the polygon-to-attribute id.
-    bool isFirstPolygonOfMultiPolygon(size_t p) const
-    {
-        if (p == 0)
-            return true;
-        for (size_t i = 0; i + 1 < multi_polygon_offsets.size(); ++i)
-            if (multi_polygon_offsets[i] == p)
-                return true;
-        return false;
-    }
 
     bool allRingsHaveAPositiveArea()
     {
@@ -649,25 +598,10 @@ struct Data
     VectorWithMemoryTracking<IPolygonDictionary::Polygon> & dest;
     VectorWithMemoryTracking<size_t> & ids;
 
-    void addPolygon(bool new_multi_polygon, size_t outer_size, size_t num_inner_rings)
+    void addPolygon(bool new_multi_polygon = false)
     {
         dest.emplace_back();
-        /// Pre-size the rings so `addPoint` does not grow them by capacity
-        /// doubling. With many small polygons, the doubling slack across
-        /// every outer ring adds up.
-        if (outer_size != 0)
-            dest.back().outer().reserve(outer_size);
-        if (num_inner_rings != 0)
-            dest.back().inners().reserve(num_inner_rings);
         ids.push_back((ids.empty() ? 0 : ids.back() + new_multi_polygon));
-    }
-
-    void startInnerRing(size_t size)
-    {
-        auto & last_polygon = dest.back();
-        last_polygon.inners().emplace_back();
-        if (size != 0)
-            last_polygon.inners().back().reserve(size);
     }
 
     void addPoint(IPolygonDictionary::Coord x, IPolygonDictionary::Coord y)
@@ -683,35 +617,14 @@ void addNewPoint(IPolygonDictionary::Coord x, IPolygonDictionary::Coord y, Data 
     if (offset.atLastPointOfRing())
     {
         if (offset.atLastRingOfPolygon())
-        {
-            /// Walk forward over any zero-ring polygons that follow the one just finished, creating
-            /// a (necessarily empty) entry for each, until we land on the next polygon with an
-            /// outer ring -- the one that owns the upcoming point. Without this loop, the upcoming
-            /// point would be appended to the previous polygon's `dest.back()`, mis-attributing it.
-            size_t next_p = offset.current_polygon + 1;
-            bool first_after_transition = true;
-            while (next_p < offset.polygon_offsets.size())
-            {
-                const bool new_mp = first_after_transition
-                    ? offset.atLastPolygonOfMultiPolygon()
-                    : offset.isFirstPolygonOfMultiPolygon(next_p);
-                first_after_transition = false;
-
-                const bool has_outer = offset.polygonHasOuterRing(next_p);
-                const size_t outer = has_outer ? offset.pointsInRing(offset.firstRingOfPolygon(next_p)) : 0;
-                const size_t num_inner = offset.numInnerRingsOfPolygon(next_p);
-                data.addPolygon(new_mp, outer, num_inner);
-                if (has_outer)
-                    break;
-                ++next_p;
-            }
-        }
+            data.addPolygon(offset.atLastPolygonOfMultiPolygon());
         else
         {
             /** An outer ring is added automatically with a new polygon, thus we need the else statement here.
              *  This also implies that if we are at this point we have to add an inner ring.
              */
-            data.startInnerRing(offset.pointsInRing(offset.current_ring + 1));
+            auto & last_polygon = data.dest.back();
+            last_polygon.inners().emplace_back();
         }
     }
     data.addPoint(x, y);
@@ -814,44 +727,8 @@ void IPolygonDictionary::extractPolygons(const ColumnPtr & column)
         throw Exception(ErrorCodes::BAD_ARGUMENTS,
             "Every ring included in a polygon or excluded from it should contain at least 3 points");
 
-    /** Walk leading polygons, adding an entry for each. We keep going past zero-ring polygons so
-      * subsequent points -- which belong to a later polygon -- aren't appended to an empty entry.
-      * Stop once we reach the first polygon with an outer ring; transitions in `addNewPoint` take
-      * over from there. Ring sizes are reserved precisely so `addPoint` doesn't grow them by
-      * capacity doubling.
-      *
-      * If there are no polygons at all (empty multi-polygon row), still emplace one entry to mirror
-      * the long-standing behaviour of the unconditional initial `addPolygon`.
-      */
-    if (offset.polygon_offsets.empty())
-    {
-        data.addPolygon(true, 0, 0);
-    }
-    else
-    {
-        size_t p = 0;
-        while (p < offset.polygon_offsets.size())
-        {
-            const bool new_mp = offset.isFirstPolygonOfMultiPolygon(p);
-            const bool has_outer = offset.polygonHasOuterRing(p);
-            const size_t outer = has_outer ? offset.pointsInRing(offset.firstRingOfPolygon(p)) : 0;
-            const size_t num_inner = offset.numInnerRingsOfPolygon(p);
-            data.addPolygon(new_mp, outer, num_inner);
-            if (has_outer)
-            {
-                /// Realign `offset` to the first polygon with rings -- the one the upcoming points
-                /// belong to. Without this, `atLastRingOfPolygon` would keep referencing the leading
-                /// empty polygon and a ring boundary in the middle of the block would be classified
-                /// as an inner-ring transition instead of a new-polygon transition.
-                offset.current_polygon = p;
-                while (offset.current_multi_polygon < offset.multi_polygon_offsets.size()
-                       && p >= offset.multi_polygon_offsets[offset.current_multi_polygon])
-                    ++offset.current_multi_polygon;
-                break;
-            }
-            ++p;
-        }
-    }
+    /** Adding the first empty polygon */
+    data.addPolygon(true);
 
     switch (configuration.point_type)
     {
