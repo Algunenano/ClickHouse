@@ -231,11 +231,24 @@ else()
     target_compile_definitions(clickhouse_common_io PUBLIC ENABLE_DISTRIBUTED_CACHE=0)
 endif()
 
-# Settings dumpToMap is too slow with MSAN
+# Origin tracking dominates two flush hot paths under MSan: Settings::dumpToMapColumn (in
+# Core/Settings.cpp) and ProfileEvents::dumpToMapColumn (in Interpreters/ProfileEventsExt.cpp).
+# Both walk hundreds of keys and do tight LowCardinality::insertData calls in a loop, so the
+# per-call __msan_set_alloca_origin / __msan_chain_origin cost adds up to seconds per
+# `SYSTEM FLUSH LOGS query_log` (test 01548_query_log_query_execution_ms etc. were timing out
+# on the MSan WasmEdge stateless check after x86-64-v3 became the default). SystemLog.cpp is
+# included because `flushImpl` is on the same thread and contributes to the same bottleneck.
+# Origin tracking is still on globally for the rest of the build; these files are leaf
+# helpers where MSan checks don't carry uninit values into user code, so the trade is safe.
+# History: Core/Settings.cpp got this treatment in #92716; the other two were added when the
+# same pattern surfaced on QueryLog flush under v3.
+set_source_files_properties(Core/Settings.cpp                  PROPERTIES COMPILE_FLAGS "-fomit-frame-pointer -momit-leaf-frame-pointer")
+set_source_files_properties(Interpreters/ProfileEventsExt.cpp  PROPERTIES COMPILE_FLAGS "-fomit-frame-pointer -momit-leaf-frame-pointer")
+set_source_files_properties(Interpreters/SystemLog.cpp         PROPERTIES COMPILE_FLAGS "-fomit-frame-pointer -momit-leaf-frame-pointer")
 if (SANITIZE STREQUAL "memory")
-    set_source_files_properties(Core/Settings.cpp PROPERTIES COMPILE_FLAGS "-fomit-frame-pointer -momit-leaf-frame-pointer -fno-sanitize-memory-track-origins")
-else ()
-    set_source_files_properties(Core/Settings.cpp PROPERTIES COMPILE_FLAGS "-fomit-frame-pointer -momit-leaf-frame-pointer")
+    set_source_files_properties(Core/Settings.cpp                  PROPERTIES COMPILE_FLAGS "-fomit-frame-pointer -momit-leaf-frame-pointer -fno-sanitize-memory-track-origins")
+    set_source_files_properties(Interpreters/ProfileEventsExt.cpp  PROPERTIES COMPILE_FLAGS "-fomit-frame-pointer -momit-leaf-frame-pointer -fno-sanitize-memory-track-origins")
+    set_source_files_properties(Interpreters/SystemLog.cpp         PROPERTIES COMPILE_FLAGS "-fomit-frame-pointer -momit-leaf-frame-pointer -fno-sanitize-memory-track-origins")
 endif ()
 
 set_source_files_properties(Common/ThreadFuzzer.cpp PROPERTIES COMPILE_FLAGS "-fomit-frame-pointer -momit-leaf-frame-pointer")
