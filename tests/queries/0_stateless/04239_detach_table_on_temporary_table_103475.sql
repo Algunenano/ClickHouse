@@ -22,4 +22,11 @@ DETACH TABLE t_103475; -- { serverError SYNTAX_ERROR }
 -- Both failed attempts must leave the table accessible.
 SELECT count() FROM t_103475;
 
+-- `DETACH TEMPORARY TABLE IF EXISTS` on a non-existent name: must also throw.
+-- This path never reaches `executeToTemporaryTable` because `Context::ResolveExternal` fails,
+-- so the broad guard in `executeToTemporaryTable` alone would not cover it — without the
+-- narrow guard in `executeToTableImpl`, the `if (query.if_exists) return {};` short-circuit
+-- would silently no-op the (unsupported) operation.
+DETACH TEMPORARY TABLE IF EXISTS no_such_t_103475; -- { serverError SYNTAX_ERROR }
+
 DROP TEMPORARY TABLE t_103475;
