@@ -159,9 +159,10 @@ void LocalConnection::sendQuery(
     {
         /// The interactive cancel callback is now invoked from `CurrentThread::throwIfQueryCancelled`
         /// in addition to the pipeline executor's wait loop, so it can run concurrently from
-        /// multiple worker threads. Serialize the body so writes to `state->is_cancelled` and the
-        /// user-supplied `progress_callback` are race-free; `try_to_lock` skips the call entirely
-        /// when another thread is already inside the callback (it would do the same work).
+        /// multiple worker threads. Serialize the body so the user-supplied `progress_callback` is
+        /// not invoked re-entrantly; `try_to_lock` skips the call entirely when another thread is
+        /// already inside the callback (it would do the same work). `state->is_cancelled` itself
+        /// is `std::atomic<bool>`, so writes and reads from any thread are race-free regardless.
         auto callback_mutex = std::make_shared<std::mutex>();
         query_context->setInteractiveCancelCallback(
             [this, check_cancelled = is_cancelled_callback, progress_callback = process_progress_callback, callback_mutex]() -> bool

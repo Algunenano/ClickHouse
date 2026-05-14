@@ -1,5 +1,6 @@
 #pragma once
 
+#include <atomic>
 #include <Client/Connection.h>
 #include <Interpreters/Context_fwd.h>
 #include <QueryPipeline/BlockIO.h>
@@ -46,8 +47,11 @@ struct LocalQueryState
     std::shared_ptr<ColumnsDescription> columns_description;
     std::optional<ProfileInfo> profile_info;
 
-    /// Is request cancelled
-    bool is_cancelled = false;
+    /// Is request cancelled. Atomic because the interactive cancel callback can fire from
+    /// arbitrary pipeline worker threads via `CurrentThread::throwIfQueryCancelled`, while
+    /// `LocalConnection::sendCancel` and the destructor read/write this flag from the main
+    /// thread.
+    std::atomic<bool> is_cancelled{false};
     bool is_finished = false;
 
     bool sent_totals = false;
