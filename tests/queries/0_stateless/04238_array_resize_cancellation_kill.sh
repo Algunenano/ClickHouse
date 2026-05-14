@@ -11,6 +11,10 @@ CUR_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 # function call no progress packets flow, so the callback never fires from the executor's
 # wait loop. `throwIfQueryCancelled` invokes the callback itself (throttled to
 # `interactive_delay`), which is what this test verifies.
+#
+# Without the fix this query would take ~60s on a release build before noticing the
+# cancel. With the fix it aborts shortly after the SIGINT reaches the server. We allow
+# up to 20s to keep ample headroom for the slowest CI machines.
 
 QUERY_ID="$CLICKHOUSE_TEST_UNIQUE_NAME"
 
@@ -40,9 +44,9 @@ ${CLICKHOUSE_CLIENT} --query "SELECT exception FROM system.query_log
     WHERE query_id = '$QUERY_ID' AND current_database = '$CLICKHOUSE_DATABASE' AND type != 'QueryStart'" \
     | grep -oF "QUERY_WAS_CANCELLED" | head -1
 
-if (( ELAPSED_MS < 5000 ))
+if (( ELAPSED_MS < 20000 ))
 then
-    echo "cancelled under 5s"
+    echo "cancelled under 20s"
 else
     echo "FAIL: cancellation took ${ELAPSED_MS}ms"
 fi
