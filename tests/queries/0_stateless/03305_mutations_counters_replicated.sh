@@ -54,7 +54,7 @@ $CLICKHOUSE_CLIENT --query "
     SYSTEM SYNC REPLICA t_mutations_counters_2 LIGHTWEIGHT;
 
     SELECT 'active_on_fly_data_mutations (before kill)', active_on_fly_data_mutations FROM system.tables WHERE database = currentDatabase() AND table = 't_mutations_counters_2';
-    KILL MUTATION WHERE mutation_id = '0000000002' SYNC FORMAT Null;
+    KILL MUTATION WHERE database = currentDatabase() AND mutation_id = '0000000002' SYNC FORMAT Null;
     SYSTEM SYNC REPLICA t_mutations_counters_2 LIGHTWEIGHT;
     SELECT 'active_on_fly_data_mutations (after kill)', active_on_fly_data_mutations FROM system.tables WHERE database = currentDatabase() AND table = 't_mutations_counters_2';
 

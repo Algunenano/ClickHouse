@@ -49,7 +49,7 @@ $CLICKHOUSE_CLIENT --query "
     ALTER TABLE t_mutations_counters UPDATE b = 1000 WHERE a = 1;
 
     SELECT 'active_on_fly_data_mutations (before kill)', active_on_fly_data_mutations FROM system.tables WHERE database = currentDatabase() AND table = 't_mutations_counters';
-    KILL MUTATION WHERE mutation_id = 'mutation_4.txt' SYNC FORMAT Null;
+    KILL MUTATION WHERE database = currentDatabase() AND mutation_id = 'mutation_4.txt' SYNC FORMAT Null;
     SELECT 'active_on_fly_data_mutations (after kill)', active_on_fly_data_mutations FROM system.tables WHERE database = currentDatabase() AND table = 't_mutations_counters';
 
     DROP TABLE t_mutations_counters;
