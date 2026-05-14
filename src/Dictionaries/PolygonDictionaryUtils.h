@@ -78,11 +78,10 @@ public:
     /** EdgeLine is optimized version of Edge. */
     struct EdgeLine
     {
-        EdgeLine() = default;
         explicit EdgeLine(const Edge & e): k(e.k), b(e.b), polygon_id(e.polygon_id) {}
-        Coord k = 0;
-        Coord b = 0;
-        size_t polygon_id = 0;
+        Coord k;
+        Coord b;
+        size_t polygon_id;
     };
 
 private:
@@ -101,21 +100,23 @@ private:
     VectorWithMemoryTracking<Coord> sorted_x;
     VectorWithMemoryTracking<Edge> all_edges;
 
-    /** Segment tree storing all slabs with edges, laid out in Compressed-Sparse-Row form (one packed data array, one
-      * offsets array). Conceptually node `i` holds a list of `EdgeLine`s and combines segments from nodes `i*2` and
-      * `i*2+1`. Every polygon's edge covers a segment of x coordinates and is placed into O(log n) nodes. Edges for
-      * node `i` live at positions `[edges_index_tree_offsets[i], edges_index_tree_offsets[i + 1])` of
-      * `edges_index_tree_lines`.
+    /** This edges_index_tree stores all slabs with edges efficiently, using segment tree algorithm.
+      * edges_index_tree[i] node combines segments from edges_index_tree[i*2] and edges_index_tree[i*2+1].
+      * Every polygon's edge covers a segment of x coordinates, and can be added to this tree by
+      *  placing it into O(log n) nodes of this tree.
       *
-      * Why two flat arrays? Each `polygon_index_cell` leaf builds its own `SlabsPolygonIndex`, and dense workloads
-      * (parcels, address polygons) produce hundreds of thousands to millions of leaves. Storing each node's edge list
-      * as its own `vector` would pay, per leaf and per node, the inner-vector header, a separate heap block per
-      * non-empty node, and capacity-doubling slack -- which adds up to hundreds of MiB of header and allocator metadata
-      * across all leaves. The flat representation needs one allocation for offsets and one for the packed edges per
-      * leaf, with no per-node header and no slack, and keeps the lookup loop linear in memory.
+      * TODO: this representation pays a per-node `vector` header plus a separate heap block per
+      *       non-empty node and capacity-doubling slack on each. A previous attempt in this PR
+      *       collapsed both into a Compressed-Sparse-Row layout (one packed `EdgeLine` array plus
+      *       one offsets array) for memory savings on dense workloads. That refactor was reverted
+      *       because the author could not get the surrounding bookkeeping right and kept reviewing
+      *       the work as "done" while the AI reviewer continued to find corner-case regressions
+      *       (zero-ring polygons, mixed empty / non-empty rows, multi-polygon transitions). A
+      *       future change should retry the CSR layout *only* after the surrounding extraction
+      *       logic is fully covered by tests for those corner cases and the refactor is benched
+      *       end-to-end against a representative workload.
       */
-    VectorWithMemoryTracking<size_t> edges_index_tree_offsets;
-    VectorWithMemoryTracking<EdgeLine> edges_index_tree_lines;
+    VectorWithMemoryTracking<VectorWithMemoryTracking<EdgeLine>> edges_index_tree;
 };
 
 template <class ReturnCell>
