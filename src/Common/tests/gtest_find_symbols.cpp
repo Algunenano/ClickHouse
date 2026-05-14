@@ -228,7 +228,7 @@ TEST(FindSymbols, EmptyRunTimeNeedle)
     // byte qualifies. Long haystacks (>= 16 bytes) and embedded `\0` bytes also
     // guard against the SIMD body matching `\0` via a zero-padded needle vector.
 
-    const SearchSymbols empty;
+    const SearchSymbols empty{};
 
     auto end_of = [](const std::string & h) { return h.data() + h.size(); };
 
