@@ -12,9 +12,10 @@ CUR_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 # wait loop. `throwIfQueryCancelled` invokes the callback itself (throttled to
 # `interactive_delay`), which is what this test verifies.
 #
-# Without the fix this query would take ~60s on a release build before noticing the
-# cancel. With the fix it aborts shortly after the SIGINT reaches the server. We allow
-# up to 20s to keep ample headroom for the slowest CI machines.
+# The ARRAY JOIN list runs the resize once per element. Three copies make the natural
+# completion time on the order of tens of seconds even on the fastest CI machines, so
+# the 20s threshold below clearly distinguishes "fix in effect" from "running to
+# completion." On the unpatched binary the same query takes well over a minute.
 
 QUERY_ID="$CLICKHOUSE_TEST_UNIQUE_NAME"
 
@@ -23,7 +24,7 @@ ${CLICKHOUSE_CLIENT} --query_id="$QUERY_ID" --max_threads 1 --query "
         SELECT a FROM generateRandom(
             'a Array(Nested(e1 Tuple(x Int256, y Float64, z Decimal(38, 10))))',
             1, 4, 4) LIMIT 1)
-    ARRAY JOIN [-1000000000]::Array(Int32) AS b
+    ARRAY JOIN [-1000000000, -1000000000, -1000000000]::Array(Int32) AS b
     FORMAT Null
 " >/dev/null 2>&1 &
 CLIENT_PID=$!
