@@ -822,11 +822,14 @@ ProjectionNames QueryAnalyzer::resolveFunction(QueryTreeNodePtr & node, Identifi
                                     throw;
                             }
                         }
-                        if (!inner_resolver && UserDefinedWebAssemblyFunctionFactory::instance().has(identifier_name))
+                        if (!inner_resolver)
                         {
-                            /// `has` first: `get` throws `RESOURCE_NOT_FOUND` if the function is
-                            /// missing, and we must not throw from this rewrite-candidate check.
-                            inner_resolver = UserDefinedWebAssemblyFunctionFactory::instance().get(identifier_name, scope.context);
+                            /// Use `tryGet` (returns nullptr if missing) instead of `has` + `get`:
+                            /// a `has` + `get` sequence has a TOCTOU race with concurrent
+                            /// `DROP FUNCTION`, where `get` would throw `RESOURCE_NOT_FOUND`
+                            /// and preempt the documented "column/alias names take priority"
+                            /// behavior. This rewrite probe must stay strictly non-throwing.
+                            inner_resolver = UserDefinedWebAssemblyFunctionFactory::instance().tryGet(identifier_name, scope.context);
                         }
 
                         ASTPtr sql_udf_ast;
