@@ -94,19 +94,19 @@ Features:
 ### ClickHouse Schema Flow Visualizer {#clickhouse-schemaflow-visualizer}
 
 [ClickHouse Schema Flow Visualizer](https://github.com/FulgerX2007/clickhouse-schemaflow-visualizer) is an open-source web application for visualizing ClickHouse table relationships.
-It connects to a ClickHouse instance, parses `system.tables` metadata (engine types, dependencies, materialized view SELECTs), and renders interactive table-level data-flow diagrams alongside column-level relationships with the transformation expression labelled on every edge. Diagrams are laid out with [Dagre](https://github.com/dagrejs/dagre) and rendered as plain inline SVG — no client-side diagramming runtime is loaded.
+It connects to a ClickHouse instance, parses `system.tables` metadata (engine types, dependencies, materialized view SELECTs), and renders interactive table-level data-flow diagrams alongside column-level relationships with the transformation expression labelled on every edge. Diagrams are laid out with Dagre and rendered as plain inline SVG — no client-side diagramming runtime is loaded.
 
 Features:
 
-  - Browse ClickHouse databases and tables with an intuitive sidebar
-  - Data Flow view: table-level upstream sources and downstream materializations
-  - Relationships view: column-level mapping with the parsed transformation expression on each edge (e.g. `toStartOfHour(scheduled_departure)`, `avgState(delay_minutes)`)
-  - Engine-aware icons and colour coding for `MergeTree`, `Replicated*`, `Distributed`, `MaterializedView`, and `Dictionary`
-  - Click a column in the Relationships view to highlight its full data path through the pipeline
-  - Live sidebar filter and a `Ctrl+K` / `⌘K` command palette to jump to any table, column, or engine
-  - Optional metadata overlay showing row counts and on-disk size per table
-  - Export the current diagram as a self-contained HTML file
-  - TLS connection to ClickHouse, with optional skip-verify and custom CA / client certificates
+- Browse ClickHouse databases and tables with an intuitive sidebar
+- Data Flow view: table-level upstream sources and downstream materialized views
+- Relationships view: column-level mapping with the parsed transformation expression on each edge (e.g. `toStartOfHour(scheduled_departure)`, `avgState(delay_minutes)`)
+- Engine-aware icons and colour coding for `MergeTree`, `Replicated*`, `Distributed`, `MaterializedView`, and `Dictionary`
+- Click a column in the Relationships view to highlight its full data path through the pipeline
+- Live sidebar filter and a `Ctrl+K` / `⌘K` command palette to jump to any table, column, or engine
+- Optional metadata overlay showing row counts and on-disk size per table
+- Export the current diagram as a self-contained HTML file
+- TLS connection to ClickHouse, with optional skip-verify and custom CA / client certificates
 
 [ClickHouse Schema Flow Visualizer - source code](https://github.com/FulgerX2007/clickhouse-schemaflow-visualizer)
 
