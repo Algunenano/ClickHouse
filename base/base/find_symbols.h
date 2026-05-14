@@ -630,6 +630,18 @@ inline const char * find_first_symbols_dispatch(const char * begin, const char *
 template <bool positive, ReturnMode return_mode>
 inline const char * find_first_symbols_dispatch(const std::string_view haystack, const SearchSymbols & symbols)
 {
+    /// Empty needle: no byte is in the (empty) symbol set. For positive search
+    /// nothing is found; for the negative variant every byte qualifies and we
+    /// return the first one. Bypassing the SIMD body here keeps `mm_is_in_prepare`
+    /// and `neon_is_in` free of an extra branch and guards against the zero-pad
+    /// degenerate case (a zero-filled needle vector would otherwise match `\0`).
+    if (symbols.str.empty())
+    {
+        if constexpr (!positive)
+            if (!haystack.empty())
+                return haystack.data();
+        return return_mode == ReturnMode::End ? haystack.data() + haystack.size() : nullptr;
+    }
 #if defined(__SSE4_2__)
     if (symbols.str.size() >= 5)
         return find_first_symbols_sse42<positive, return_mode>(haystack.data(), haystack.data() + haystack.size(), symbols);
@@ -647,6 +659,14 @@ inline const char * find_last_symbols_dispatch(const char * begin, const char * 
 template <bool positive, ReturnMode return_mode>
 inline const char * find_last_symbols_dispatch(const std::string_view haystack, const SearchSymbols & symbols)
 {
+    /// See the forward dispatcher above.
+    if (symbols.str.empty())
+    {
+        if constexpr (!positive)
+            if (!haystack.empty())
+                return haystack.data() + haystack.size() - 1;
+        return return_mode == ReturnMode::End ? haystack.data() + haystack.size() : nullptr;
+    }
     return find_last_symbols_sse2<positive, return_mode>(haystack.data(), haystack.data() + haystack.size(), symbols.str.data(), symbols.str.size());
 }
 

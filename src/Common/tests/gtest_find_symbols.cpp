@@ -221,6 +221,55 @@ TEST(FindNotSymbols, NullCharacter)
     test_find_first_not(long_s, "abcdefg", 16u);
 }
 
+TEST(FindSymbols, EmptyRunTimeNeedle)
+{
+    // Empty SearchSymbols. With `positive=true` the result must be end/nullptr
+    // (no byte is in the empty symbol set); with `positive=false` the first/last
+    // byte qualifies. Long haystacks (>= 16 bytes) and embedded `\0` bytes also
+    // guard against the SIMD body matching `\0` via a zero-padded needle vector.
+
+    const SearchSymbols empty;
+
+    auto end_of = [](const std::string & h) { return h.data() + h.size(); };
+
+    // Short haystack, no `\0`.
+    {
+        const std::string h = "abc";
+        EXPECT_EQ(find_first_symbols(h, empty), end_of(h));
+        EXPECT_EQ(find_first_not_symbols(h, empty), h.data());
+        EXPECT_EQ(find_first_symbols_or_null(h, empty), nullptr);
+        EXPECT_EQ(find_first_not_symbols_or_null(h, empty), h.data());
+        EXPECT_EQ(find_last_symbols_or_null(h, empty), nullptr);
+        EXPECT_EQ(find_last_not_symbols_or_null(h, empty), end_of(h) - 1);
+    }
+
+    // Empty haystack.
+    {
+        const std::string h;
+        EXPECT_EQ(find_first_symbols(h, empty), end_of(h));
+        EXPECT_EQ(find_first_not_symbols(h, empty), end_of(h));
+        EXPECT_EQ(find_first_symbols_or_null(h, empty), nullptr);
+        EXPECT_EQ(find_first_not_symbols_or_null(h, empty), nullptr);
+        EXPECT_EQ(find_last_symbols_or_null(h, empty), nullptr);
+        EXPECT_EQ(find_last_not_symbols_or_null(h, empty), nullptr);
+    }
+
+    // Long haystack (exercises SIMD body) containing a `\0`. A zero-padded needle
+    // vector would falsely match the `\0`; the empty-needle fast path must skip
+    // SIMD entirely.
+    {
+        const std::string h("aaaaaaaaaaaaaaaa\0aaaaaaaaaaaaaaa", 32u);
+        ASSERT_EQ(h.size(), 32u);
+        EXPECT_EQ(find_first_symbols(h, empty), end_of(h));
+        EXPECT_EQ(find_first_symbols_or_null(h, empty), nullptr);
+        EXPECT_EQ(find_last_symbols_or_null(h, empty), nullptr);
+
+        EXPECT_EQ(find_first_not_symbols(h, empty), h.data());
+        EXPECT_EQ(find_first_not_symbols_or_null(h, empty), h.data());
+        EXPECT_EQ(find_last_not_symbols_or_null(h, empty), end_of(h) - 1);
+    }
+}
+
 TEST(FindLastSymbols, RunTimeNeedleLongHaystack)
 {
     // These exercise find_last_symbols_or_null(string_view, SearchSymbols) and
