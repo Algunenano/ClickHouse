@@ -1,8 +1,10 @@
+#include <chrono>
 #include <memory>
 
 #include <Common/CurrentThread.h>
 #include <Common/logger_useful.h>
 #include <Common/ThreadStatus.h>
+#include <Core/Settings.h>
 #include <Interpreters/ProcessList.h>
 #include <Interpreters/Context.h>
 #include <base/getThreadId.h>
@@ -11,6 +13,11 @@
 
 namespace DB
 {
+
+namespace Setting
+{
+    extern const SettingsUInt64 interactive_delay;
+}
 
 namespace ErrorCodes
 {
@@ -108,8 +115,31 @@ ContextPtr CurrentThread::tryGetQueryContext()
 void CurrentThread::throwIfQueryCancelled()
 {
     if (auto query_context = tryGetQueryContext())
+    {
+        /// Incoming cancel packets on a TCP connection are only processed when we send progress.
+        /// Slow operations (analysis steps, long function calls) don't emit intermediate progress,
+        /// so the interactive cancel callback would never fire from the executor side. Invoke it
+        /// here, throttled to at most once per `interactive_delay` per thread so we don't flood
+        /// the wire or do redundant work in tight polling loops.
+        if (auto cancel_callback = query_context->getInteractiveCancelCallback())
+        {
+            static thread_local std::chrono::steady_clock::time_point last_callback_at{};
+            const auto now = std::chrono::steady_clock::now();
+            const auto period = std::chrono::microseconds(query_context->getSettingsRef()[Setting::interactive_delay]);
+            if (now - last_callback_at >= period)
+            {
+                last_callback_at = now;
+                cancel_callback();
+            }
+        }
+
+        /// `checkTimeLimit` enforces both `is_killed` (set by KILL QUERY or by the
+        /// CancellationChecker reaching the deadline) and the elapsed-time limit directly,
+        /// so the polling site stays responsive even if the CancellationChecker thread is
+        /// slow to fire the deadline.
         if (auto query_status = query_context->getProcessListElementSafe())
-            query_status->throwIfKilled();
+            query_status->checkTimeLimit();
+    }
 }
 
 std::string_view CurrentThread::getQueryId()
