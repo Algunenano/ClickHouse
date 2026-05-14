@@ -1,5 +1,4 @@
 #!/usr/bin/env bash
-# Tags: no-parallel
 
 CUR_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 # shellcheck source=../shell_config.sh
@@ -10,12 +9,10 @@ CUR_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 
 set -e
 
-counters_query="SELECT active_on_fly_alter_mutations FROM system.tables WHERE database = currentDatabase() AND table = 't_mutations_counter_modify'"
-
 function wait_for_mutation_cleanup()
 {
     for _ in {0..50}; do
-        res=`$CLICKHOUSE_CLIENT --query "$counters_query"`
+        res="$($CLICKHOUSE_CLIENT --query "SELECT active_on_fly_alter_mutations FROM system.tables WHERE database = currentDatabase() AND table = 't_mutations_counter_modify'")"
         if [[ $res == "0" ]]; then
             break
         fi
@@ -36,7 +33,8 @@ $CLICKHOUSE_CLIENT --query "
     SYSTEM STOP MERGES t_mutations_counter_modify;
     ALTER TABLE t_mutations_counter_modify MODIFY COLUMN b String;
 
-    $counters_query;
+    SELECT 'active_on_fly_alter_mutations', active_on_fly_alter_mutations FROM system.tables WHERE database = currentDatabase() AND table = 't_mutations_counter_modify';
+
     SYSTEM START MERGES t_mutations_counter_modify;
 "
 
@@ -44,7 +42,7 @@ wait_for_mutation "t_mutations_counter_modify" "mutation_2.txt"
 wait_for_mutation_cleanup
 
 $CLICKHOUSE_CLIENT --query "
-    $counters_query;
-    SELECT count() FROM system.mutations WHERE database = currentDatabase() AND table = 't_mutations_counter_modify' AND NOT is_done;
+    SELECT 'active_on_fly_alter_mutations', active_on_fly_alter_mutations FROM system.tables WHERE database = currentDatabase() AND table = 't_mutations_counter_modify';
+    SELECT 'mutations', count() FROM system.mutations WHERE database = currentDatabase() AND table = 't_mutations_counter_modify' AND NOT is_done;
     DROP TABLE t_mutations_counter_modify;
 "
