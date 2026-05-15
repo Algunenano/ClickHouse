@@ -49,7 +49,19 @@ struct IntExp2Impl
     {
         if (!arg->getType()->isIntegerTy())
             throw Exception(ErrorCodes::LOGICAL_ERROR, "IntExp2Impl expected an integral type");
-        return b.CreateShl(llvm::ConstantInt::get(arg->getType(), 1), arg);
+
+        /// The argument is cast to the result type (`UInt64`) by the framework before reaching here.
+        /// In LLVM IR, `shl` by a value `>= bitwidth` is poison, so we must guard the shift to
+        /// match the non-JIT path which returns `UINT64_MAX` for shifts `> 63`.
+        auto * arg_type = arg->getType();
+        auto * one = llvm::ConstantInt::get(arg_type, 1);
+        auto * sixty_three = llvm::ConstantInt::get(arg_type, 63);
+        auto * uint_max = llvm::ConstantInt::getAllOnesValue(arg_type);
+
+        auto * is_overflow = b.CreateICmpUGT(arg, sixty_three);
+        auto * masked_arg = b.CreateAnd(arg, sixty_three);
+        auto * shifted = b.CreateShl(one, masked_arg);
+        return b.CreateSelect(is_overflow, uint_max, shifted);
     }
 #endif
 };
