@@ -32,11 +32,17 @@ struct IntExp2Impl
                 /// and for `BFloat16` (which has no `std::isnan` overload).
                 if (a != a)
                     throw Exception(ErrorCodes::BAD_ARGUMENTS, "intExp2 must not be called with nan");
+            }
+
+            /// Range-check before the narrowing `static_cast<int>` below. Without this, integer
+            /// inputs whose magnitude exceeds `INT_MAX` (e.g. `UInt32` near `2^32`, `Int64`
+            /// near `INT64_MAX`) get implementation-defined truncation and return nonsense.
+            if constexpr (is_signed_v<A>)
                 if (a < A{0})
                     return 0;
-                if (a >= A{64})
-                    return std::numeric_limits<UInt64>::max();
-            }
+            if (a >= A{64})
+                return std::numeric_limits<UInt64>::max();
+
             return intExp2(static_cast<int>(a));
         }
     }
