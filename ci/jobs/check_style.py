@@ -235,6 +235,13 @@ def check_cpp_code():
 
 
 def check_repo_submodules():
+    # Populate submodule working trees so the recursive-submodule check
+    # can inspect each submodule's contents.
+    Shell.check(
+        "git submodule update --init --depth 1 --single-branch --jobs 64",
+        verbose=True,
+        strict=True,
+    )
     res, out, err = Shell.get_res_stdout_stderr(
         "./ci/jobs/scripts/check_style/check_submodules.sh"
     )
