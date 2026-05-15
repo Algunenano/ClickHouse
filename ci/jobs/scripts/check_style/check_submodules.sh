@@ -7,9 +7,17 @@ set -e
 
 cd "$(git rev-parse --show-toplevel)"
 
+# Resolve every submodule's pinned gitlink SHA from the superproject in one
+# call (avoids one `git rev-parse` per submodule).
+declare -A pinned_sha
+while IFS=$'\t' read -r meta path; do
+    pinned_sha["$path"]=${meta##* }
+done < <(git config --file .gitmodules --get-regexp path | awk '{print $2}' | xargs git ls-tree HEAD)
+
 # For each registered submodule: ensure its bare repo is present and that
 # the pinned commit does not pull in nested submodules. We read .gitmodules
-# directly from the bare repo so we don't need the submodule working tree.
+# directly from the bare repo at the pinned SHA so we don't need the
+# submodule working tree and don't trust the bare repo's HEAD.
 # Process substitution (not a pipe) so `exit 1` aborts the whole script.
 while IFS= read -r -d '' submodule_path; do
     if ! test -d "$submodule_path"; then
@@ -23,7 +31,12 @@ while IFS= read -r -d '' submodule_path; do
         echo "Submodule $submodule_path is not initialized; run 'git submodule init'."
         exit 1
     fi
-    if git --git-dir="$submodule_git_dir" show HEAD:.gitmodules 2>/dev/null | grep -q '\[submodule'; then
+    submodule_sha=${pinned_sha[$submodule_path]}
+    if [ -z "$submodule_sha" ]; then
+        echo "Failed to resolve pinned commit for submodule $submodule_path"
+        exit 1
+    fi
+    if git --git-dir="$submodule_git_dir" show "$submodule_sha:.gitmodules" 2>/dev/null | grep -q '\[submodule'; then
         echo "Recursive submodules are not allowed: $submodule_path contains its own .gitmodules with submodule entries"
         exit 1
     fi
