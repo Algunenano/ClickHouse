@@ -7,16 +7,19 @@ set -e
 
 cd "$(git rev-parse --show-toplevel)"
 
-# Check that every registered submodule has a valid status.
-# One bulk call is ~30x faster than `git submodule status` per path.
-git submodule status -q
-
-# Check that every submodule directory exists, and that no submodule contains
-# its own .gitmodules with entries (recursive submodules are not allowed).
+# For each registered submodule: ensure it is initialized (so we can inspect
+# its working tree) and that it does not pull in nested submodules.
 # Process substitution (not a pipe) so `exit 1` aborts the whole script.
 while IFS= read -r -d '' submodule_path; do
     if ! test -d "$submodule_path"; then
         echo "Directory for submodule $submodule_path is not found"
+        exit 1
+    fi
+    # A populated submodule has a `.git` gitlink file; an uninitialized one
+    # does not. Without it, the recursive-submodule check below would silently
+    # pass even if the submodule contains nested submodules.
+    if [ ! -e "$submodule_path/.git" ]; then
+        echo "Submodule $submodule_path is not initialized; run 'git submodule update --init'."
         exit 1
     fi
     if [ -f "$submodule_path/.gitmodules" ] && grep -q '\[submodule' "$submodule_path/.gitmodules"; then
