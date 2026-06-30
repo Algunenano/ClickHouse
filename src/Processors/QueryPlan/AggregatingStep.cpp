@@ -25,6 +25,8 @@
 #include <Processors/ResizeProcessor.h>
 #include <Processors/Transforms/AggregatingInOrderTransform.h>
 #include <Processors/Transforms/AggregatingTransform.h>
+#include <Processors/Transforms/RadixUniqExactTransform.h>
+#include <DataTypes/IDataType.h>
 #include <Processors/Transforms/BufferedShardByHashTransform.h>
 #include <Processors/Transforms/CopyTransform.h>
 #include <Processors/Transforms/ExpressionTransform.h>
@@ -385,6 +387,40 @@ void AggregatingStep::transformPipeline(QueryPipelineBuilder & pipeline, const B
       */
     const auto & src_header = pipeline.getSharedHeader();
     auto transform_params = std::make_shared<AggregatingTransformParams>(src_header, std::move(params), final);
+
+    /// PROTOTYPE: radix-partitioned uniqExact over a single 64-bit integer key, no GROUP BY keys,
+    /// final single stage. Route by hash to per-stream const-size block chains, then build one hash
+    /// set per partition in a thread pool (no merge) and sum the sizes. Gated by enable_sharding_aggregator.
+    {
+        const auto & p = transform_params->params;
+        const bool arg_is_int64sized = p.aggregates_size == 1 && p.aggregates[0].argument_names.size() == 1
+            && src_header->has(p.aggregates[0].argument_names[0])
+            && [&]{ WhichDataType w(src_header->getByName(p.aggregates[0].argument_names[0]).type);
+                    return w.isUInt64() || w.isInt64(); }();
+        if (enable_sharding_aggregator && final && p.keys_size == 0 && p.aggregates_size == 1
+            && p.aggregates[0].function->getName() == "uniqExact"
+            && pipeline.getNumStreams() > 1
+            && arg_is_int64sized)
+        {
+            const size_t key_pos = src_header->getPositionByName(p.aggregates[0].argument_names[0]);
+            const size_t num_streams = pipeline.getNumStreams();
+            auto radix_data = std::make_shared<RadixUniqExactData>(num_streams);
+            size_t idx = 0;
+            pipeline.addSimpleTransform([&](const SharedHeader & h)
+            { return std::make_shared<RadixRouteTransform>(h, radix_data, idx++, key_pos); });
+
+            auto out_header = std::make_shared<const Block>(transform_params->getHeader());
+            pipeline.transform([&](OutputPortRawPtrs ports)
+            {
+                auto finalize = std::make_shared<RadixFinalizeTransform>(src_header, out_header, radix_data, max_threads);
+                auto in_it = finalize->getInputs().begin();
+                for (auto * port : ports) { connect(*port, *in_it); ++in_it; }
+                return Processors{std::move(finalize)};
+            });
+            aggregating = collector.detachProcessors(0);
+            return;
+        }
+    }
 
     if (!grouping_sets_params.empty())
     {
