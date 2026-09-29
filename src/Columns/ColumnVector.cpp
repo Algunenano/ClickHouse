@@ -917,6 +917,41 @@ alignas(16) constexpr auto compress_table = []
     return table;
 }();
 
+/// Moves each of the 8 groups of `GROUP_ROWS` bits in the low `8 * GROUP_ROWS` bits of `bits` to its own byte.
+template <size_t GROUP_ROWS>
+ALWAYS_INLINE UInt64 spreadGroupsToBytes(UInt64 bits)
+{
+    if constexpr (GROUP_ROWS == 4)
+    {
+        bits = static_cast<UInt32>(bits);
+        bits = (bits | (bits << 16)) & 0x0000FFFF0000FFFFULL;
+        bits = (bits | (bits << 8)) & 0x00FF00FF00FF00FFULL;
+        bits = (bits | (bits << 4)) & 0x0F0F0F0F0F0F0F0FULL;
+    }
+    else if constexpr (GROUP_ROWS == 2)
+    {
+        bits = static_cast<UInt16>(bits);
+        bits = (bits | (bits << 24)) & 0x000000FF000000FFULL;
+        bits = (bits | (bits << 12)) & 0x000F000F000F000FULL;
+        bits = (bits | (bits << 6)) & 0x0303030303030303ULL;
+    }
+    else
+        static_assert(GROUP_ROWS == 8);
+    return bits;
+}
+
+/// The population count of each byte of `x`, where only the low `BITS` bits of each byte may be set.
+template <size_t BITS>
+ALWAYS_INLINE UInt64 popcountBytes(UInt64 x)
+{
+    x -= (x >> 1) & 0x5555555555555555ULL;
+    if constexpr (BITS > 2)
+        x = (x & 0x3333333333333333ULL) + ((x >> 2) & 0x3333333333333333ULL);
+    if constexpr (BITS > 4)
+        x = (x + (x >> 4)) & 0x0F0F0F0F0F0F0F0FULL;
+    return x;
+}
+
 /// Filters whole blocks of `SIMD_ELEMENTS` rows, compressing mixed blocks with a table-driven byte shuffle.
 template <typename T, typename Container, size_t SIMD_ELEMENTS>
 void doFilterAlignedShuffle(const UInt8 *& filt_pos, const UInt8 *& filt_end_aligned, const T *& data_pos, Container & res_data)
@@ -961,16 +996,25 @@ void doFilterAlignedShuffle(const UInt8 *& filt_pos, const UInt8 *& filt_end_ali
         }
         else
         {
-            for (size_t i = 0; i < SIMD_ELEMENTS; i += ROWS, mask >>= ROWS)
+            /// The output offsets of 8 groups at once: a multiplication sums the per-byte population counts of the groups,
+            /// so byte `k` of `ends` is where group `k` ends. A `std::popcount` per group is not a scalar instruction on ARMv8.2.
+            static constexpr size_t CHUNK_ROWS = 8 * ROWS;
+            for (size_t chunk = 0; chunk < SIMD_ELEMENTS; chunk += CHUNK_ROWS)
             {
-                const UInt64 rows_mask = mask & ROWS_MASK;
-                UInt8x16 source{};
-                memcpy(&source, data_pos + i, BYTES);
-                UInt8x16 control;
-                memcpy(&control, compress_table<ELEMENT_WIDTH>[rows_mask].data(), sizeof(control));
-                UInt8x16 compressed = shuffleBytes(source, control);
-                memcpy(res + current_offset, &compressed, BYTES);
-                current_offset += std::popcount(rows_mask);
+                const UInt64 chunk_mask = mask >> chunk;
+                const UInt64 ends = popcountBytes<ROWS>(spreadGroupsToBytes<ROWS>(chunk_mask)) * 0x0101010101010101ULL;
+                const UInt64 starts = ends << 8;
+                for (size_t group = 0; group < 8; ++group)
+                {
+                    const UInt64 rows_mask = (chunk_mask >> (group * ROWS)) & ROWS_MASK;
+                    UInt8x16 source{};
+                    memcpy(&source, data_pos + chunk + group * ROWS, BYTES);
+                    UInt8x16 control;
+                    memcpy(&control, compress_table<ELEMENT_WIDTH>[rows_mask].data(), sizeof(control));
+                    UInt8x16 compressed = shuffleBytes(source, control);
+                    memcpy(res + current_offset + ((starts >> (group * 8)) & 0xFF), &compressed, BYTES);
+                }
+                current_offset += ends >> 56;
             }
         }
 
